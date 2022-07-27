@@ -1,0 +1,116 @@
+.session-message-view-wrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+
+    .header {
+        height: 43px;
+        border-bottom: 1px solid var(--separator-color);
+        padding: 4px 20px;
+        display: flex;
+        justify-content: space-between;
+
+        .title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-color-accent-1);
+            display: flex;
+            align-items: center;
+
+            .anticon {
+                font-size: 16px;
+                margin-right: 5px;
+            }
+        }
+    }
+
+    .body {
+        flex-grow: 1;
+        padding: 10px;
+        overflow: auto;
+
+        .message-wrapper {
+            display: flex;
+            flex-direction: column;
+
+            .title {
+                margin-bottom: 20px;
+                color: var(--text-color);
+                font-size: 14px;
+                font-weight: 500;
+            }
+
+            .no-data {
+                color: var(--text-color);
+            }
+
+            .styled-table {
+                border-collapse: collapse;
+                box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+                color: var(--text-color);
+                width: 100%;
+
+                th,
+                td {
+                    border: 1px solid var(--separator-color);
+                }
+
+                th {
+                    background-color: var(--shade-375);
+                    color: var(--shade-250);
+                    padding: 3px 5px;
+                }
+
+                td {
+                    padding: 3px 5px;
+                }
+
+                tr:last-of-type {
+                    border-bottom: none;
+                }
+            }
+        }
+
+        .raw-message-wrapper {
+            display: flex;
+            flex-direction: column;
+            margin-top: 15px;
+
+            .title {
+                margin-bottom: 5px;
+                color: var(--text-color);
+                font-size: 14px;
+                font-weight: 500;
+            }
+
+            .raw-msg {
+                display: flex;
+                position: relative;
+                cursor: pointer;
+                color: var(--text-color);
+                padding: 12px 10px;
+                border: 1px solid var(--separator-color);
+                margin-top: 10px;
+                word-break: break-all;
+                white-space: pre-wrap;
+                background-color: var(--shade-375);
+                
+                .copy-indicator {
+                    transition: all 0.3s;
+                    position: absolute;
+                    bottom: 0px;
+                    right: 3px;
+                    visibility: hidden;
+                    color: var(--shade-250);
+                }
+
+                &:hover {
+                    .copy-indicator {
+                        visibility: visible;
+                    }
+                }
+            }
+        }
+    }
+}

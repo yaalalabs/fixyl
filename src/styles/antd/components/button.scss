@@ -1,0 +1,97 @@
+// Ant button
+.ant-btn {
+    color: var(--text-color);
+    border: none;
+}
+
+.ant-btn {
+    color: var(--text-color);
+    border: none;
+}
+.ant-btn-dashed {
+    border: 1px solid var(--shade-300);
+    border-style: dashed;
+}
+
+.ant-btn[disabled],
+.ant-btn[disabled]:hover {
+    color: rgba(var(--text-color-rgb), 0.75);
+    background-color: var(--disabled);
+}
+
+.ant-btn-ghost[disabled], .ant-btn-ghost[disabled]:hover, .ant-btn-ghost[disabled]:focus, .ant-btn-ghost[disabled]:active {
+    border-color: transparent;
+}
+
+.ant-btn-link[disabled],
+.ant-btn-link[disabled]:hover {
+    color: rgba(var(--text-color-rgb), 0.5);
+    background-color: transparent;
+}
+
+.ant-btn-primary,
+.ant-btn-ghost {
+    min-width: 120px;
+    border-radius: 2px;
+}
+
+.ant-btn-primary {
+    background-color: var(--accent-2-text);
+    border-color: var(--accent-2-text);
+    font-weight: bolder;
+}
+
+.ant-btn-ghost {
+    border: 1px solid var(--separator-color);
+}
+
+.ant-radio-wrapper {
+    color: var(--text-color);
+}
+
+.ant-radio-inner {
+    background-color: transparent;
+    border-color: var(--shade-300);
+
+    &::after {
+        background: var(--accent-2-text);
+    }
+}
+
+.ant-radio-checked .ant-radio-inner {
+    border-color: var(--accent-2-text);
+}
+
+.ant-radio-checked::after {
+    border: 1px solid var(--accent-2-text);
+}
+
+.ant-switch-checked .ant-switch-handle {
+    left: calc(100% - 12px - 2px);
+}
+
+.ant-switch {
+    background-color: var(--shade-300);
+    min-width: 35px;
+    height: 16px;
+    line-height: 16px;
+
+    .ant-switch-handle {
+        width: 12px;
+        height: 12px;
+    }
+}
+
+.ant-switch-checked {
+    background-color: var(--accent-2-text) !important;
+}
+
+.ant-btn-circle {
+    background-color: transparent;
+
+    &:focus,
+    &:active,
+    &:hover {
+        background-color: var(--shade-350);
+    }
+}

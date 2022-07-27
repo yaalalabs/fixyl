@@ -1,0 +1,53 @@
+@import "node_modules/flexlayout-react/style/light.scss";
+
+.flexlayout__tab,
+.flexlayout__tabset {
+    background-color: var(--background-color);
+}
+
+.flexlayout__splitter {
+    background-color: var(--separator-color);
+
+    &--selected,
+    &:hover {
+        background-color: var(--shade-300);
+    }
+}
+
+.flexlayout__tab_toolbar {
+    background-color: var(--background-shade-2);
+}
+
+.flexlayout__outline_rect {
+    border-color: var(--accent-2);
+}
+
+.flexlayout__tabset_tabbar_inner {
+    background-color: var(--tab-bar);
+}
+
+.flexlayout__tabset_tabbar_outer_top {
+    border-bottom: 1px solid var(--separator-color);
+}
+
+.flexlayout__tabset_tabbar_inner_tab_container_top {
+    border-top: 0;
+}
+
+.flexlayout__tab_button {
+    font-size: 12px;
+    min-width: 70px;
+    margin: 0 1px 0 0;
+    padding: 5px 20px;
+    background-color: var(--tab-color);
+
+    &:hover {
+        background-color: var(--tab-color);
+        color: var(--text-color);
+    }
+
+    &--selected {
+        background-color: var(--background-shade-1);
+        color: var(--text-color);
+    }
+}

@@ -1,0 +1,17 @@
+.ant-drawer-content {
+    background-color: var(--background-color);
+
+    .ant-drawer-header {
+        background-color: var(--background-color);
+        border-color: var(--separator-color);
+
+        .ant-drawer-title,
+        .ant-drawer-close {
+            color: var(--text-color);
+        }
+    }
+
+    .ant-drawer-body {
+        padding: 0px;
+    }
+}

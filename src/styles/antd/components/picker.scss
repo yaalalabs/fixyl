@@ -1,0 +1,169 @@
+.ant-picker {
+    background-color: transparent;
+    color: var(--text-color);
+    border: 1px solid var(--separator-color);
+    width: 100%;
+    border-radius: 2px;
+
+    .ant-picker-input input {
+        color: var(--text-color);
+
+        &::placeholder {
+            color: var(--text-color);
+            opacity: 0.4;
+        }
+    }
+
+    .ant-picker-range-separator .ant-picker-separator {
+        color: var(--text-color-accent-1);
+    }
+
+    .ant-picker-suffix {
+        color: var(--separator-color);
+    }
+
+    .ant-picker-clear {
+        color: var(--text-color);
+        background-color: transparent;
+    }
+
+    &:hover,
+    &:focus {
+        border-color: var(--separator-color);
+    }
+}
+
+.ant-picker.ant-picker-disabled {
+    background-color: transparent;
+    border: 1px solid var(--separator-color);
+}
+
+.ant-picker-dropdown {
+    .ant-picker-range-arrow::after {
+        border-color: var(--panel-bg) var(--panel-bg) transparent transparent;
+    }
+
+    .ant-picker-panel-container {
+        background-color: var(--panel-bg);
+
+        .ant-picker-panel {
+            border-bottom: 1px solid var(--separator-color);
+
+            .ant-picker-cell {
+                color: var(--text-color-accent-1);
+            }
+
+            .ant-picker-cell-in-view {
+                color: var(--text-color);
+            }
+
+            .ant-picker-cell:hover:not(.ant-picker-cell-in-view) .ant-picker-cell-inner,
+            .ant-picker-cell:hover:not(.ant-picker-cell-selected):not(.ant-picker-cell-range-start):not(.ant-picker-cell-range-end):not(.ant-picker-cell-range-hover-start):not(.ant-picker-cell-range-hover-end) .ant-picker-cell-inner {
+                background-color: var(--shade-200);
+            }
+
+            .ant-picker-header {
+                color: var(--text-color);
+                border-bottom: 1px solid var(--separator-color);
+
+                button {
+                    color: var(--text-color);
+
+                    &:hover {
+                        color: var(--text-color-accent-1);
+                    }
+                }
+
+                .ant-picker-header-view button:hover {
+                    color: var(--accent-2);
+                }
+            }
+
+            .ant-picker-footer {
+                border-top: 1px solid var(--separator-color);
+
+                .ant-picker-ok button {
+                    min-width: 60px;
+                }
+            }
+
+            .ant-picker-date-panel {
+                .ant-picker-content {
+                    th {
+                        color: var(--text-color);
+                    }
+
+                    .ant-picker-cell-disabled {
+                        &::before {
+                            background-color: var(--shade-150);
+                        }
+
+                        .ant-picker-cell-inner {
+                            color: var(--text-color-accent-1);
+                        }
+                    }
+
+                    .ant-picker-cell-in-view.ant-picker-cell-in-range::before {
+                        background-color: var(--shade-200);
+                    }
+
+                    .ant-picker-cell:hover:not(.ant-picker-cell-in-view) .ant-picker-cell-inner,
+                    .ant-picker-cell:hover:not(.ant-picker-cell-selected):not(.ant-picker-cell-range-start):not(.ant-picker-cell-range-end):not(.ant-picker-cell-range-hover-start):not(.ant-picker-cell-range-hover-end) .ant-picker-cell-inner {
+                        background-color: var(--shade-200);
+                    }
+
+                    .ant-picker-cell-in-view.ant-picker-cell-range-start::before,
+                    .ant-picker-cell-in-view.ant-picker-cell-range-end::before {
+                        background-color: var(--shade-150);
+                    }
+
+                    .ant-picker-cell-in-view.ant-picker-cell-range-start:not(.ant-picker-cell-range-start-single)::before,
+                    .ant-picker-cell-in-view.ant-picker-cell-range-end:not(.ant-picker-cell-range-end-single)::before {
+                        background-color: var(--shade-200);
+                    }
+
+                    .ant-picker-cell-in-view.ant-picker-cell-in-range.ant-picker-cell-range-hover-start .ant-picker-cell-inner::after,
+                    .ant-picker-cell-in-view.ant-picker-cell-in-range.ant-picker-cell-range-hover-end .ant-picker-cell-inner::after {
+                        background-color: var(--separator-color);
+                    }
+
+                    .ant-picker-cell-in-view.ant-picker-cell-in-range.ant-picker-cell-range-hover::before,
+                    .ant-picker-cell-in-view.ant-picker-cell-range-start.ant-picker-cell-range-hover::before,
+                    .ant-picker-cell-in-view.ant-picker-cell-range-end.ant-picker-cell-range-hover::before,
+                    .ant-picker-cell-in-view.ant-picker-cell-range-start:not(.ant-picker-cell-range-start-single).ant-picker-cell-range-hover-start::before,
+                    .ant-picker-cell-in-view.ant-picker-cell-range-end:not(.ant-picker-cell-range-end-single).ant-picker-cell-range-hover-end::before,
+                    .ant-picker-panel> :not(.ant-picker-date-panel) .ant-picker-cell-in-view.ant-picker-cell-in-range.ant-picker-cell-range-hover-start::before,
+                    .ant-picker-panel> :not(.ant-picker-date-panel) .ant-picker-cell-in-view.ant-picker-cell-in-range.ant-picker-cell-range-hover-end::before {
+                        background-color: var(--separator-color);
+                    }
+                }
+            }
+
+            .ant-picker-time-panel {
+                border-left: 1px solid var(--separator-color);
+
+                .ant-picker-time-panel-column:not(:first-child) {
+                    border-left: 1px solid var(--separator-color);
+                }
+
+                .ant-picker-time-panel-cell-selected .ant-picker-time-panel-cell-inner {
+                    background-color: var(--separator-color);
+                }
+
+                .ant-picker-time-panel-cell .ant-picker-time-panel-cell-inner {
+                    color: var(--text-color);
+
+                    &:hover {
+                        background-color: var(--shade-200);
+                    }
+                }
+            }
+
+            .ant-picker-now {
+                a {
+                    color: var(--text-color);
+                }
+            }
+        }
+    }
+}

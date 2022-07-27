@@ -1,0 +1,25 @@
+.file-select-container {
+    height: 28px;
+    
+    .ant-input-group-addon {
+        padding: 0;
+        border: 1px solid var(--accent-2-hover);
+        background-color: var(--accent-2);
+    }
+
+    .ant-input-group{
+        height: 28px;
+
+        .ant-btn {
+            height: 28px;
+            font-size: 12px;
+            background-color: var(--accent-2);
+            
+            &:active,
+            &:focus,
+            &:hover {
+                color: var(--text-color-accent-2)
+            }
+        }
+    }
+}

@@ -1,0 +1,30 @@
+.session-management-warpper {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+
+    .tab-view {
+        width: 100%;
+        height: 100%;
+
+        .ant-tabs-tabpane {    
+            height: 100%;
+        }
+
+        .ant-tabs-content-holder {
+            height: 100%;
+        }
+        
+        .ant-tabs {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            
+            .ant-tabs-content {
+                width: 100%;
+                height: 100%;
+            }
+        }
+    }
+}

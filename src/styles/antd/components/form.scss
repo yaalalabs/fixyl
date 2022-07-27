@@ -1,0 +1,300 @@
+.ant-form-item {
+    margin-bottom: 8px;
+    color: var(--text-color);
+
+    .ant-form-item-label > label {
+        font-size: 12px;
+    }
+
+    .ant-input-affix-wrapper {
+        border-radius: 2px;
+        background: transparent;
+        border: 1px solid var(--separator-color);
+        color: var(--text-color);
+        font-size: 12px;
+        padding: 0px 11px;
+
+        &:hover {
+            border-color: var(--separator-color);
+        }
+        .ant-input-prefix {
+            color: var(--text-color);
+        }
+
+        .ant-input-suffix .ant-input-clear-icon {
+            color: var(--text-color);
+        }
+    }
+
+    .ant-input-password-icon {
+        color: var(--text-color);
+        fill: var(--text-color);
+    }
+
+    .ant-input::placeholder,
+    .ant-input-number-input::placeholder {
+        color: var(--shade-275);
+    }
+
+    .ant-select:not(.ant-select-customize-input) .ant-select-selector {
+        background: transparent;
+        color: var(--text-color);
+        border: 1px solid var(--separator-color);
+        border-radius: 2px;
+    }
+
+    .ant-select-multiple {
+        .ant-select-selection-item {
+            background-color: var(--background-shade-5);
+            border-color: var(--separator-color);
+            color: var(--text-color);
+
+            &-remove {
+                color: var(--shade-400);
+            }
+        }
+
+        &.ant-select-disabled.ant-select:not(.ant-select-customize-input) .ant-select-selector {
+            background-color: transparent;
+        }
+    }
+
+    .ant-select-selection-placeholder {
+        color: var(--shade-275);
+    }
+
+    .ant-form-item-label {
+        line-height: normal;
+        font-weight: 500;
+        font-size: 12px;
+
+        label {
+            color: var(--text-color);
+        }
+    }
+
+    .ant-input,
+    .ant-input-number {
+        width: 100%;
+        font-size: 12px;
+        height: 30px;
+        border-radius: 2px;
+        color: var(--text-color);
+    }
+
+    .ant-input {
+        background: transparent;
+        border: 1px solid var(--separator-color);
+        color: var(--text-color);
+    }
+
+    .ant-input[disabled]:hover {
+        border-color: var(--separator-color);
+    }
+
+    .ant-input-number {
+        border-radius: 2px;
+        background: transparent;
+        border: 1px solid var(--separator-color);
+        color: var(--text-color);
+    }
+
+    .ant-input-number-input-wrap {
+        border-radius: 2px;
+    }
+
+    .ant-input-number-handler-wrap {
+        background: var(--background-color);
+        border-left: var(--background-color);
+        color: var(--text-color);
+        border-radius: 2px;
+
+        .ant-input-number-handler-up {
+            border-top-right-radius: 0;
+        }
+
+        .ant-input-number-handler-down {
+            border-bottom-right-radius: 0;
+            border-top: 1px solid var(--background-color);
+        }
+
+        .anticon-up,
+        .anticon-down {
+            svg {
+                fill: var(--shade-300);
+            }
+        }
+    }
+}
+
+.ant-input[disabled] {
+    color: var(--text-color-accent-1);
+}
+
+.ant-input {
+    color: var(--text-color);
+}
+
+.ant-checkbox-wrapper {
+    color: var(--text-color);
+
+    .ant-checkbox .ant-checkbox-inner {
+        border-color: var(--separator-color) !important;
+        background-color: var(--background-shade-2);
+    }
+
+    .ant-checkbox-checked .ant-checkbox-inner {
+        background-color: var(--info);
+    }
+
+    .ant-checkbox-disabled.ant-checkbox-checked .ant-checkbox-inner {
+        background-color: var(--background-shade-3);
+        color: var(--text-color-accent-2);
+
+        &::after {
+            border-color: currentColor;
+        }
+    }
+}
+
+.ant-dropdown-menu,
+.ant-dropdown {
+    background-color: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    color: var(--text-color);
+
+    .ant-dropdown-menu-item,
+    .ant-dropdown-menu-submenu-title {
+        color: var(--text-color);
+
+        &:hover {
+            background-color: var(--accent-2-hover);
+        }
+    }
+
+    .ant-dropdown-menu-item > a,
+    .ant-dropdown-menu-submenu-title > a {
+        color: var(--text-color);
+    }
+
+    .ant-dropdown-menu-item-disabled,
+    .ant-dropdown-menu-submenu-title-disabled {
+        color: var(--shade-250);
+    }
+}
+
+.ant-select {
+    font-size: 12px;
+
+    .ant-select-arrow {
+        color: var(--shade-250);
+    }
+
+    .ant-select-clear {
+        background-color: var(--panel-bg);
+        color: var(--text-color);
+    }
+}
+.ant-picker-dropdown {
+    z-index: 3001;
+}
+
+.ant-select-dropdown {
+    background-color: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    color: var(--text-color);
+    width: unset !important;
+    z-index: 3001;
+    
+    .rc-virtual-list-holder-inner {
+        position: static !important;
+    }
+
+    .ant-select-item {
+        color: var(--text-color);
+
+        &:hover {
+            background-color: var(--accent-2-hover);
+        }
+    }
+
+    .ant-select-item-option-active:not(.ant-select-item-option-disabled) {
+        background-color: var(--accent-2-hover);
+    }
+}
+
+.ant-select-item-empty,
+.ant-select-dropdown-empty .ant-empty-description,
+.ant-empty .ant-empty-description {
+    color: var(--text-color-accent-2);
+}
+
+.ant-empty-img-simple-ellipse,
+.ant-empty-img-simple-path {
+    fill: var(--text-color-accent-2);
+}
+
+.ant-empty-img-simple-g {
+    stroke: var(--text-color-accent-1);
+}
+
+.ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
+    background-color: var(--accent-2-text);
+    color: var(--text-color);
+}
+
+.ant-form-item-has-error .ant-form-item-explain,
+.ant-form-item-has-error .ant-form-item-split {
+    font-size: 12px;
+}
+
+.ant-form-item-explain,
+.ant-form-item-split {
+    font-size: 12px;
+}
+
+.ant-form-item-has-error .ant-picker,
+.ant-form-item-has-error .ant-picker:not([disabled]):hover,
+.ant-form-item-has-error .ant-input,
+.ant-form-item-has-error .ant-input-affix-wrapper,
+.ant-form-item-has-error .ant-input:hover,
+.ant-form-item-has-error .ant-input-number:not([disabled]):hover,
+.ant-form-item-has-error .ant-input-affix-wrapper:hover {
+    background-color: transparent;
+    border: 1px solid var(--danger) !important;
+
+    input {
+        border: none !important;
+
+        &:focus,
+        &:hover {
+            border: none !important;
+        }
+    }
+}
+
+.ant-form-item-has-error .ant-input:focus,
+.ant-form-item-has-error .ant-input:hover,
+.ant-form-item-has-error .ant-select:not(.ant-select-disabled):not(.ant-select-customize-input) .ant-select-selector {
+    background-color: transparent;
+    border: 1px solid var(--danger) !important;
+
+    // border-color: var(--shade-250) !important;
+    input {
+        border: none !important;
+
+        &:focus,
+        &:hover {
+            border: none !important;
+        }
+    }
+}
+
+.ant-form-item-has-error :not(.ant-input-disabled):not(.ant-input-borderless).ant-input,
+.ant-form-item-has-error
+    :not(.ant-input-affix-wrapper-disabled):not(.ant-input-affix-wrapper-borderless).ant-input-affix-wrapper,
+.ant-form-item-has-error :not(.ant-input-disabled):not(.ant-input-borderless).ant-input:hover,
+.ant-form-item-has-error
+    :not(.ant-input-affix-wrapper-disabled):not(.ant-input-affix-wrapper-borderless).ant-input-affix-wrapper:hover {
+    background-color: transparent;
+}

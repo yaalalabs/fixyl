@@ -1,0 +1,60 @@
+.add-msg-modal {
+    .ant-modal-body {
+        padding: 0;
+    }
+
+    .add-msg-wrapper {
+        height: 70vh;
+        max-height: 70vh;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+
+        .header {
+            width: 100%;
+            padding: 10px 20px;
+        }
+
+        .body {
+            height: 100%;
+            width: 100%;
+            display: flex;
+            overflow: auto;
+            background: var(--shade-400);
+
+            .loading-container {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .favorite-container {
+                padding: 5px;
+                width: 100%;
+
+                .fav-row {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr 1fr;
+                    padding: 5px;
+
+                    & > div {
+                        flex-grow: 1;
+                        display: flex;
+
+                        .ant-btn-primary {
+                            min-width: 70px;
+                            margin-left: auto;
+                        }   
+                    }
+
+                    .fav-header {
+                        font-weight: 500;
+                    }
+                }
+                
+            }
+        }
+    }
+}

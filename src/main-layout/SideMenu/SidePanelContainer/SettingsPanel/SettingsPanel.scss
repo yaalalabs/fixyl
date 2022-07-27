@@ -1,0 +1,37 @@
+.settings-management {
+    .field-container {
+        display: flex;
+        width: 100%;
+        margin-bottom: 3px;
+        font-size: 12px;
+
+        .field-name {
+            width: 40%;
+            font-weight: 500;
+        }
+
+        .field-value {
+            width: 60%;
+            text-transform: capitalize;
+            justify-content: flex-end;
+            display: flex;
+
+            .value-container {
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                overflow: hidden;
+            }
+
+            .ant-select-selector {
+                background-color: transparent;
+                border: none;
+                color: var(--text-color);
+            }
+
+            .working-dir-selector {
+                cursor: pointer;
+                margin-right: 10px;
+            }
+        }
+    }
+}

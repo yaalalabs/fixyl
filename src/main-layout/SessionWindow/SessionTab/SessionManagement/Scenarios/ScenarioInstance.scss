@@ -1,0 +1,218 @@
+.add-btn {
+    margin-bottom: 5px;
+
+    .ant-btn-ghost {
+        font-size: 12px !important;
+    }
+}
+
+.stage-extra-header {
+    display: flex;
+    align-items: center;
+    height: 22px;
+
+    .anticon {
+        margin-left: 15px;
+    }
+
+    .stage-state {
+        font-size: 10px;
+        padding: 0 5px;
+        color: var(--text-color-accent-2);
+        border-radius: 3px;
+    }
+
+    .skip-stage {
+        margin-left: 5px;
+        margin-right: -10px;
+    }
+
+    .ant-checkbox-disabled + span {
+        color: var(--disabled);
+    }
+}
+
+.pending {
+    &-label {
+        background-color: var(--accent-4);
+    }
+}
+
+.success {
+    &-label {
+        background-color: var(--success);
+    }
+}
+
+.failed {
+    &-label {
+        background-color: var(--danger);
+    }
+}
+
+
+.executing {
+    &-label {
+        background-color: var(--accent-2-hover);
+        animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+        0% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0;
+        }
+
+        100% {
+            opacity: 1;
+        }
+    }
+
+    .ant-collapse-header {
+        background: var(--accent-2-hover) !important;
+    }
+}
+
+
+
+.skipped {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    z-index: 1;
+    opacity: 0.7;
+    background: var(--shade-250);
+}
+
+.stage {
+    display: flex;
+    font-size: 12px;
+
+    .input {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .output {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        padding-left: 5px;
+    }
+
+    .section-header {
+        padding: 5px;
+        font-weight: 500;
+    }
+
+    .section-body {
+        display: flex;
+        flex-direction: column;
+
+        .msg-body {
+            display: flex;
+            flex-direction: column;
+
+            .msg {
+                display: flex;
+                align-items: center;
+
+                .action-btns {
+                    margin-left: 5px;
+
+                    .ant-btn[disabled],
+                    .ant-btn[disabled]:hover,
+                    .ant-btn[disabled]:focus,
+                    .ant-btn[disabled]:active {
+                        background-color: transparent;
+                    }
+                    .anticon {
+                        font-size: 13px;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.ant-popover-content {
+    border-radius: 2px;
+    width: 200px;
+
+    .ant-popover-title {
+        color: var(--text-color);
+        border: none;
+        padding: 4px 8px;
+    }
+
+    .ant-popover-inner-content {
+        padding: 0 12px 12px 12px;
+    }
+
+    .add-new-stage-container {
+        position: relative;
+
+        .header {
+            position: absolute;
+            top: -25px;
+            right: 8px;
+
+            .close {
+                cursor: pointer;
+                margin-left: auto;
+                font-size: 14px;
+                color: var(--text-color);
+                user-select: none;
+
+                &:hover {
+                    color: var(--text-color);
+                    cursor: pointer;
+                }
+            }
+        }
+    }
+
+    .add-new-stage-form {
+        .ant-select-single:not(.ant-select-customize-input) .ant-select-selector {
+            height: 30px;
+            border-radius: 3px !important;
+        }
+
+        .form-item-container {
+            margin-bottom: 15px;
+        }
+
+        .ant-form-item {
+            margin-bottom: 8px;
+            padding-left: 0px;
+
+            .ant-form-item-label {
+                padding-bottom: 3px;
+
+                label {
+                    color: var(--text-color);
+                }
+            }
+
+            .ant-input {
+                color: var(--text-color);
+                height: 30px;
+                border-radius: 3px;
+                border-color: var(--shade-300);
+            }
+
+            .ant-input-number {
+                color: var(--text-color);
+                height: 30px;
+                border-radius: 3px;
+                border-color: var(--shade-300);
+            }
+        }
+    }
+}

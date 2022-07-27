@@ -1,0 +1,113 @@
+.profile-wrapper {
+    margin: 10px;
+    border: 1px solid var(--background-shade-4);
+    background: var(--shade-400);
+    border-radius: 2px;
+    box-shadow: var(--box-shadow);
+    display: flex;
+    flex-direction: row;
+
+    .info-panel {
+        width: 70%;
+        padding: 10px 0 10px 20px;
+
+        .title {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            font-weight: 500;
+            color: var(--shade-100);
+        }
+
+        .field-container {
+            display: flex;
+            width: 100%;
+            margin-bottom: 3px;
+            font-size: 12px;
+
+            .field-name {
+                width: 40%;
+                font-weight: 500;
+            }
+
+            .field-value {
+                width: 60%;
+                text-transform: capitalize;
+            }
+        }
+    }
+
+    .action-panel {
+        width: 30%;
+        background: var(--background-shade-4);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 10px;
+
+        .ant-btn-ghost {
+            min-width: 0;
+        }
+
+        .connect {
+            border-color: var(--shade-250);
+            color: var(--shade-250);
+
+            &:hover,
+            &:active,
+            &:focus {
+                color: var(--info);
+                border-color: var(--info);
+            }
+        }
+
+        .connect-disabled {
+            &:hover,
+            &:active,
+            &:focus {
+                border-color: var(--shade-250) !important;
+                color: var(--shade-250) !important;
+            }
+        }
+
+        .copy {
+            border-color: var(--shade-250);
+            color: var(--shade-250);
+
+            &:hover,
+            &:active,
+            &:focus {
+                color: var(--success);
+                border-color: var(--success);
+            }
+        }
+
+        .edit {
+            border-color: var(--shade-250);
+            color: var(--shade-250);
+
+            &:hover,
+            &:active,
+            &:focus {
+                color: var(--accent-3);
+                border-color: var(--accent-3);
+            }
+        }
+
+        .delete {
+            border-color: var(--shade-250);
+            color: var(--shade-250);
+
+            &:hover,
+            &:active,
+            &:focus {
+                color: var(--danger);
+                border-color: var(--danger);
+            }
+        }
+        .ant-btn {
+            font-size: 12px;
+            margin-top: 5px;
+        }
+    }
+}

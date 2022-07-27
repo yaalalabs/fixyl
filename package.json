@@ -1,0 +1,92 @@
+{
+	"name": "fixyl",
+	"version": "1.0.0",
+	"private": true,
+	"dependencies": {
+		"@ag-grid-community/all-modules": "^26.1.0",
+		"@ag-grid-community/core": "^26.1.0",
+		"@ag-grid-community/react": "^26.1.0",
+		"@ant-design/icons": "^4.7.0",
+		"@capacitor/cli": "^3.2.4",
+		"@capacitor/core": "^3.2.4",
+		"@capacitor/electron": "^2.5.0",
+		"@testing-library/jest-dom": "^5.11.4",
+		"@testing-library/react": "^11.1.0",
+		"@testing-library/user-event": "^12.1.10",
+		"@types/jest": "^26.0.15",
+		"@types/node": "^12.0.0",
+		"@types/react": "^17.0.0",
+		"@types/react-dom": "^17.0.0",
+		"antd": "^4.16.13",
+		"antd-mask-input": "^0.1.15",
+		"electron-is-dev": "^2.0.0",
+		"flexlayout-react": "^0.5.16",
+		"keytar": "^7.7.0",
+		"mark.js": "^8.11.1",
+		"moment": "2.27.0",
+		"node-sass": "6.0.0",
+		"react": "^17.0.2",
+		"react-diff-viewer": "^3.1.1",
+		"react-dom": "^17.0.2",
+		"react-intl-universal": "2.4.2",
+		"react-joyride": "^2.5.0",
+		"react-json-view": "^1.21.3",
+		"react-scripts": "4.0.3",
+		"resize-observer-polyfill": "^1.5.1",
+		"rxjs": "^7.1.0",
+		"sass": "^1.42.1",
+		"typescript": "^4.1.2",
+		"uuid": "^8.3.2",
+		"web-vitals": "^1.0.1",
+		"xml-reader": "^2.4.3"
+	},
+	"homepage": "./",
+	"main": "./src/app/electron-starter.js",
+	"scripts": {
+		"react-start": "react-scripts start",
+		"react-build": "react-scripts build",
+		"react-test": "react-scripts test",
+		"react-eject": "react-scripts eject",
+		"electron": "electron .",
+		"dev": "set ELECTRON_START_URL=http://localhost:3000 && electron .",
+		"electron-build": "electron-builder",
+		"build": "npm run react-build && npm run electron-build",
+		"start": "concurrently \"cross-env BROWSER=none npm run react-start\" \"wait-on http://localhost:3000 && electron .\""
+	},
+	"eslintConfig": {
+		"extends": [
+			"react-app",
+			"react-app/jest"
+		]
+	},
+	"browserslist": {
+		"production": [
+			">0.2%",
+			"not dead",
+			"not op_mini all"
+		],
+		"development": [
+			"last 1 chrome version",
+			"last 1 firefox version",
+			"last 1 safari version"
+		]
+	},
+	"devDependencies": {
+		"concurrently": "^6.3.0",
+		"cross-env": "^7.0.3",
+		"electron": "^15.1.1",
+		"electron-builder": "^22.13.1",
+		"wait-on": "^6.0.1"
+	},
+	"build": {
+		"files": [
+			"./build/**/*",
+			"./src/app/**/*"
+		],
+		"appId": "yaala.fix.client",
+		"extends": null,
+		"productName": "FixYL",
+		"copyright": "Copyright @2021-2022 Yaala Labs",
+		"buildVersion": "1"
+	}
+}

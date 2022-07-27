@@ -1,0 +1,67 @@
+// Ant tab control
+.ant-tabs-tab {
+    margin: 0 0;
+    padding: 12px 8px;
+    font-size: 12px;
+}
+.ant-tabs-tab + .ant-tabs-tab {
+    margin: 0 0 0 20px;
+}
+
+.ant-tabs-nav .ant-tabs-tab-active {
+    color: var(--accent-2-text);
+}
+
+.ant-tabs-top .ant-tabs-nav {
+    border-bottom-color: var(--shade-250);
+
+    &::before {
+        border: none;
+    }
+}
+
+.ant-tabs-ink-bar {
+    background-color: var(--accent-2-text);
+}
+
+.ant-tabs {
+    color: var(--text-color);
+    background: var(--background-color);
+    padding: 0 5px;
+}
+
+.ant-tabs-top > .ant-tabs-nav,
+.ant-tabs-bottom > .ant-tabs-nav,
+.ant-tabs-top > div > .ant-tabs-nav,
+.ant-tabs-bottom > div > .ant-tabs-nav {
+    margin: 0;
+    border-bottom: 1px solid #2a2e39;
+}
+
+.ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+    color: var(--text-color);
+}
+
+.ant-tabs-top > .ant-tabs-nav,
+.ant-tabs-bottom > .ant-tabs-nav,
+.ant-tabs-top > div > .ant-tabs-nav,
+.ant-tabs-bottom > div > .ant-tabs-nav {
+    border-bottom: 1px solid var(--separator-color);
+}
+
+.ant-tabs-dropdown {
+    .ant-tabs-dropdown-menu {
+        background-color: var(--panel-bg);
+        border: 1px solid var(--panel-border);
+        color: var(--text-color);
+    }
+
+    .ant-tabs-dropdown-menu-item {
+        color: var(--text-color);
+        font-size: 12px;
+
+        &:hover {
+            background-color: var(--accent-2-hover);
+        }
+    }
+}

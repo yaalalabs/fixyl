@@ -1,0 +1,55 @@
+// Ant popover
+.ant-popover {
+    z-index: 3000;
+
+    .ant-popover-content {
+        .ant-popover-arrow {
+            border-color: var(--shade-350);
+
+            .ant-popover-arrow-content {
+                background-color: var(--shade-350);
+            }
+        }
+
+        .ant-popover-inner {
+            background-color: var(--shade-350);
+
+            .ant-popover-inner-content {
+                .anticon {
+                    color: var(--warning);
+                }
+
+                .ant-form-item .anticon {
+                    color: unset;
+                }
+
+                .ant-popover-message {
+                    color: var(--text-color);
+                }
+
+                .ant-popover-buttons {
+                    display: flex;
+                    flex-direction: row-reverse;
+                    justify-content: space-between;
+                    color: var(--text-color);
+
+                    .ant-btn {
+                        min-width: 100px;
+                        background-color: var(--transparent);
+                        border: 1px solid var(--shade-300);
+                        border-radius: 2px;
+
+                        &:hover {
+                            border: 1px solid var(--accent-2);
+                        }
+                    }
+
+                    .ant-btn-primary {
+                        background-color: var(--accent-2);
+                        border: none;
+                    }
+                }
+            }
+        }
+    }
+}

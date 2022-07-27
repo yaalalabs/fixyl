@@ -1,0 +1,83 @@
+.add-msg-modal {
+    .ant-modal-body {
+        padding: 0;
+    }
+
+    .add-msg-wrapper {
+        height: 70vh;
+        max-height: 70vh;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+
+        .header {
+            width: 100%;
+            padding: 10px 20px;
+
+            .ant-select {
+                width: 100%;
+            }
+
+            .ant-btn-primary {
+                min-width: 60px;
+            }
+
+            .ant-input-group-wrapper {
+                border-radius: 20px;
+
+                .ant-input {
+                    border-radius: 20px;
+                    font-size: 12px;
+                    height: 32px;
+                    background: var(--background-shade-5);
+                    border-color: var(--separator-color);
+                }
+
+                .ant-input-group-addon,
+                .ant-btn-primary {
+                    border-radius: 20px;
+                    border-color: transparent;
+                }
+                .ant-input-search-button {
+                    border-radius: 0 20px 20px 0 !important;
+                }
+
+                .ant-input-group > .ant-input:last-child,
+                .ant-input-group-addon:last-child {
+                    border-top-left-radius: 0;
+                    border-bottom-left-radius: 0;
+                }
+
+                .ant-input-group > .ant-input:first-child,
+                .ant-input-group-addon:first-child {
+                    border-top-right-radius: 0;
+                    border-bottom-right-radius: 0;
+                }
+            }
+        }
+
+        .body {
+            height: 100%;
+            width: 100%;
+            display: flex;
+            overflow: auto;
+            background: var(--shade-400);
+
+            .no-message-msg {
+                height: 100%;
+                width: 100%;
+                display: flex;
+
+                .ant-empty {
+                    margin: auto;
+                }
+
+                .ant-select-item-empty,
+                .ant-select-dropdown-empty .ant-empty-description,
+                .ant-empty .ant-empty-description {
+                    color: var(--shade-300);
+                }
+            }
+        }
+    }
+}

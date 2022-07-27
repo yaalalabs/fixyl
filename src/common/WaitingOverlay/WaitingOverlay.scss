@@ -1,0 +1,21 @@
+.waiting-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 60%;
+
+    .wrapper {
+        display: flex;
+        flex-direction: column;
+
+        .text {
+            font-weight: 700;
+        }
+
+        .spinner {
+            color: var(--accent-2);
+            position: inherit;
+        }
+    }
+}

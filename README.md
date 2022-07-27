@@ -107,7 +107,7 @@ You can select a message to get a preview of it. You can also select two message
 
 ![diff_view_screenshot.jpg](doc_support/diff_view_screenshot.jpg)
 
-### Message Perview
+### Message Preview
 
 This section visualizes a message selected in the message stream. 
 
@@ -160,6 +160,6 @@ You may contribute to this project in any of the following manners.
 
 ---
 
-Copyright 2022 Yaala Labs
+Copyright 2022 [Yaala Labs](https://www.yaalalabs.com/)
 
 ![yl_logo.png](doc_support/yl_logo.png)

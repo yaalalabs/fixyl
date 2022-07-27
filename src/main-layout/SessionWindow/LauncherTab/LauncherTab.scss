@@ -1,0 +1,56 @@
+.launcher-tab-wrapper {
+    display: flex;
+    flex-direction: column;
+    padding: 20px 30px;
+    color: var(--text-color);
+
+    .title-section {
+        display: flex;
+        flex-direction: column;
+        width: 50%;
+
+        .title {
+            font-size: 30px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 30px;
+        }
+
+        .sub-title {
+            font-size: 18px;
+        }
+    }
+
+    .launcher-actions {
+        margin-top: 20px;
+        width: 50%;
+
+        .action-title {
+            font-size: 18px;
+        }
+
+        .profiles {
+            display: flex;
+            flex-direction: column;
+            font-size: 14px;
+            margin-top: 10px;
+
+            .profile {
+                cursor: pointer;
+            }
+        }
+
+        .actions {
+            display: flex;
+            flex-direction: row;
+            margin-top: 20px;
+        }
+    }
+
+    .launcher-img {
+        width: 35%;
+        position: absolute;
+        bottom: 0;
+        right: 0;
+    }
+}

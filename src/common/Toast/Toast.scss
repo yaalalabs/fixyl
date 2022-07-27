@@ -1,0 +1,68 @@
+.toast-notification {
+    color: var(--text-color-accent-1);
+    background-color: var(--background-shade-4);
+
+    .ant-notification-notice-message {
+        color: var(--text-color);
+    }
+
+    .ant-notification-notice-close {
+        color: var(--text-color-accent-1);
+    }
+
+    .notification-count {
+        position: absolute;
+        top: 0;
+        left: 0;
+        padding: 0 5px;
+        height: 22px;
+        line-height: 20px;
+        font-size: 12px;
+        border: 1px dashed;
+        border-top: none;
+        border-left: none;
+        border-bottom-right-radius: 5px;
+        background-color: var(--toast-count-bg);
+        user-select: none;
+    }
+}
+
+.toast-success .ant-notification-notice-icon {
+    color: var(--success);
+}
+
+.toast-info .ant-notification-notice-icon {
+    color: var(--info);
+}
+
+.toast-warn .ant-notification-notice-icon {
+    color: var(--warning);
+}
+
+.toast-error .ant-notification-notice-icon {
+    color: var(--danger);
+}
+
+.toast-close-btn {
+    color: var(--text-color-accent-3);
+    box-shadow: none;
+    padding: 0;
+    background: transparent;
+    border-radius: 50% !important;
+    width: 24px;
+    height: 24px;    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .anticon {
+        font-size: 15px;
+    }
+
+    &:focus,
+    &:hover {
+        color: var(--text-color-accent-3);
+        background: var(--background-color-transparent);
+        font-weight: 800 !important;
+    }
+}

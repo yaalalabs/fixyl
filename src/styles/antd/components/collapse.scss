@@ -1,0 +1,27 @@
+.ant-collapse {
+    border: 1px solid var(--separator-color);
+    background-color: var(--shade-375);
+    margin-top: 5px;
+
+    .ant-collapse-item > .ant-collapse-header {
+        background: var(--shade-350);
+        color: var(--text-color);
+        padding: 5px 10px;
+    }
+
+    .ant-collapse-content > .ant-collapse-content-box {
+        padding: 5px;
+        position: relative;
+    }
+
+    .ant-collapse-content {
+        color: var(--text-color);
+        background-color: var(--shade-375);
+        border-top: 1px solid var(--shade-300);
+    }
+
+    & > .ant-collapse-item {
+        border-bottom: 1px solid var(--shade-300);
+    }
+    
+}

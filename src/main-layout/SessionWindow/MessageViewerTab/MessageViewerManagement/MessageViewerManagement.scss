@@ -1,0 +1,42 @@
+.message-viewer-man-wrapper {
+    color: var(--text-color);
+    padding: 10px;
+
+    .message-list-wrapper {
+        display: flex;
+        flex-direction: column;
+        margin-top: 10px;
+
+        .message-title {
+            font-weight: 500;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .message {
+            padding: 6px 10px;
+            border: 1px solid var(--separator-color);
+            background-color: var(--shade-350);
+            cursor: pointer;
+
+            &:hover {
+                background-color: var(--accent-2-hover);
+            }
+        }
+    }
+
+    .header {
+        margin-bottom: 10px;
+
+        .title {
+            font-size: 16px;
+            font-weight: 500;
+        }
+    }
+
+    .session-wrapper {
+        margin-bottom: 10px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid var(--separator-color);
+    }
+}

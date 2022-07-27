@@ -1,0 +1,33 @@
+.tab-title {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    .name {
+        margin-right: 10px;
+    }
+
+    .connected {
+        width: 5px;
+        height: 5px;
+        content: "";
+        border-radius: 3px;
+        display: inline-block;
+        background-color: var(--success);
+    }
+
+    .disconnected {
+        width: 5px;
+        height: 5px;
+        content: "";
+        border-radius: 3px;
+        display: inline-block;
+        background-color: var(--danger);
+    }
+}
+
+.session-window {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}

@@ -1,0 +1,14 @@
+// Antd card
+.ant-card-bordered {
+    border: 1px solid var(--separator-color-accent-1);
+}
+
+.ant-card-head {
+    color: var(--text-color);
+    border-bottom: 1px solid var(--separator-color-accent-1);
+}
+
+.ant-card {
+    color: var(--text-color);
+    background: var(--background-shade-3);
+}

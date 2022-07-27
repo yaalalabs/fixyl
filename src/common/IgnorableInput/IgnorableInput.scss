@@ -1,0 +1,14 @@
+.ignorable-input-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    .ignore-btn {
+        cursor: pointer;
+        margin-right: 5px;
+    }
+
+    .ignore-msg {
+        color: var(--shade-250);
+    }
+}

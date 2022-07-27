@@ -1,0 +1,13 @@
+// Ant message
+.ant-message-notice-content {
+    display: block;
+    margin: auto;
+    max-width: 30%;
+    padding: 0;
+    background-color: var(--background-color);
+    color: var(--text-color-accent-1);
+
+    .ant-message-custom-content>.anticon {
+        display: none;
+    }
+}

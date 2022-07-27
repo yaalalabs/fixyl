@@ -1,0 +1,17 @@
+.app-layout-wrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+
+    .side-menu-wrapper {
+        display: flex;
+        flex-direction: row;
+        position: relative;
+    }
+
+    .session-window-wrapper {
+        width: 100%;
+        height: 100%;
+    }
+}

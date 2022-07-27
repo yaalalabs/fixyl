@@ -1,0 +1,28 @@
+// Ant skeleton
+.ant-skeleton-paragraph {
+    margin: 20px;
+}
+
+.ant-skeleton-title {
+    margin: 20px;
+}
+
+[data-theme="light"] .ant-skeleton.ant-skeleton-active .ant-skeleton-content .ant-skeleton-paragraph > li,
+[data-theme="dark"] .ant-skeleton.ant-skeleton-active .ant-skeleton-content .ant-skeleton-paragraph > li {
+    background: linear-gradient(90deg, #acacac 25%, #8f8f8f 37%, #616161 63%);
+    background-size: 400% 100%;
+}
+
+[data-theme="light"] .ant-skeleton.ant-skeleton-active .ant-skeleton-content .ant-skeleton-title,
+[data-theme="dark"] .ant-skeleton.ant-skeleton-active .ant-skeleton-content .ant-skeleton-title {
+    margin: 20px;
+    background: linear-gradient(90deg, #acacac 25%, #8f8f8f 37%, #616161 63%);
+    background-size: 400% 100%;
+}
+
+[data-theme="light"] .ant-skeleton.ant-skeleton-active .ant-skeleton-content .ant-skeleton-button,
+[data-theme="dark"] .ant-skeleton.ant-skeleton-active .ant-skeleton-content .ant-skeleton-button {
+    height: 10px;
+    background: linear-gradient(90deg, #acacac 25%, #8f8f8f 37%, #616161 63%);
+    background-size: 400% 100%;
+}

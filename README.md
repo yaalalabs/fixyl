@@ -44,15 +44,15 @@ This launches a React development server on `localhost:3000`, and starts an Elec
 
 Once you start the application for the first time, it will ask for a `working directory` to store configuration files. Set this to a valid directory.
 
-This directory is used for storing user configuration such as profiles and favorites. Deleting this directory manually would remove such configuration and would cause the application to prompt for a working directory the next time it is launched.
+This directory is used for storing user configurations such as profiles and favorites. Deleting this directory manually would remove such configurations and would cause the application to prompt for a working directory the next time it is launched.
 
 ![start_screenshot.jpg](doc_support/start_screenshot.jpg)
 
 ### Adding a new profile
 
-A profile contains all the information required for creating a new FIX session. You may open the profile creation form by clicking on `Profile` menu item and clicking `+` button on the top of the opened panel.
+A profile contains all of the information required for creating a new FIX session. You may open the profile creation form by clicking on the `Profile` menu item and clicking the `+` button on the top of the opened panel.
 
-Once this form is opened you should enter the following information of the target FIX server.
+Once this form is opened, you should enter the following information of the target FIX server:
 
 |Field               |Description                                             |
 |--------------------|--------------------------------------------------------|
@@ -73,15 +73,15 @@ The profile information will be saved in a configuration file inside the `workin
 
 ### Starting a FIX session
 
-Open the `Profile` menu and click the connet button of the profile that you've previously created. This will open a TCP connection to the FIX server mentioned in the profile, A new tab will be opened in main window for the established session.
+Open the `Profile` menu and click the connet button of the profile that you have previously created. This will open a TCP connection to the FIX server mentioned in the profile, A new tab will be opened in the main window for the established session.
 
-If the connection is successfull, the connection indicator will go `green` and the state will be presented as `CONNECTED`. 
+If the connection is successfull, the connection indicator will turn `green` and the state will be presented as `CONNECTED`. 
 
 ![new_session_screenshot.jpg](doc_support/new_session_screenshot.jpg)
 
 ## FIX Session Management
 
-Each FIX session tab consists of the following 3 sections.
+Each FIX session tab consists of the following 3 sections:
 
 1. Session management
 2. Message streams
@@ -94,10 +94,10 @@ This section provides an overview of the session and tools required to interact 
 |Section     |Description                                                                                                                                                                                                                                                                                                                                                                                                      |Screenshot                                                                      |
 |------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------|
 |General     |Provides basic information on the FIX session, such as connection details and the status. It also provides the functionality to `connect` and `disconnect` the session.                                                                                                                                                                                                                                          |![general_section_screenshot.jpg](doc_support/general_section_screenshot.jpg)   |
-|New Message |Use this to send a new message through your FIX session. A message definition can be found using the dropdown menu (which also supports auto complete). Selecting a messsage definition will prompt a form to fill relevant fields before sending the message. You can also add the message you've configured to your favorites for later use. Refer [FIX Message Form](#fix-message-form) for more information. |                                                                                |
+|New Message |Use this to send a new message through your FIX session. A message definition can be found using the dropdown menu (which supports auto complete). Selecting a messsage definition will prompt a form to fill the relevant fields before sending the message. You can also add the message you have saved to your favorites for later use. Refer [FIX Message Form](#fix-message-form) for more information. |                                                                                |
 |Raw Data    |This is another way of sending a message. If you have a raw FIX message with printable field separators, use this tab to send it.                                                                                                                                                                                                                                                                                |![raw_data_section_screenshot.jpg](doc_support/raw_data_section_screenshot.jpg) |
-|Favorites   |All the favorites that you've saved previously are listed here. You can select a saved favorite message and send it.                                                                                                                                                                                                                                                                                             |![favorite_section_screenshot.jpg](doc_support/favorite_section_screenshot.jpg) |
-|Scenarios   |[EXPERIMATAL] This section gives the users the ability to add automated testing for a message flow to cover a scenario. Refer [Scenario Configuration](#scenario-configuration) section for more information.                                                                                                                                                                                                    |                                                                                |
+|Favorites   |All the favorites that you have saved previously are listed here. You can select a saved favorite message and send it.                                                                                                                                                                                                                                                                                             |![favorite_section_screenshot.jpg](doc_support/favorite_section_screenshot.jpg) |
+|Scenarios   |[EXPERIMATAL] This section gives users the ability to add automated testing for a message flow to cover a scenario. Refer [Scenario Configuration](#scenario-configuration) section for more information.                                                                                                                                                                                                    |                                                                                |
 
 ### Message Stream
 
@@ -107,7 +107,7 @@ You can select a message to get a preview of it. You can also select two message
 
 ![diff_view_screenshot.jpg](doc_support/diff_view_screenshot.jpg)
 
-### Message Perview
+### Message Preview
 
 This section visualizes a message selected in the message stream. 
 
@@ -120,32 +120,32 @@ Each message is shown in two formats.
 
 ## FIX Message Form
 
-This form is used for editing messages before being sent on the session, and can also be used for adding a configured message to the list of favorites for later use.
+This form is used for editing messages before they are sent on the session. It can also be used for adding a configured message to the list of favorites for later use.
 
-Following are some noteworthy features of this form.
+Following are some noteworthy features of this form:
 
-1. If you press `Ctrl + F` you'll get a search panel for searching through message fields.
-2. The form also supports auto-generated fields. In order to use this, set the value of the field to `{auto-gen}`. Currently auto generation of values are only supported on FIX fields of type `string`, `char`, `int`, `float`, `utctimestamp`, `monthyear`, `utcdateonly`, and `utctimeonly` only. For example, if a date/time field is set to auto generate, the field value would be auto populated with the date always being set to the current date.
+1. If you press `Ctrl + F` you will get a search panel for searching through message fields.
+2. The form also supports auto-generated fields. In order to use this, set the value of the field to `{auto-gen}`. Currently, auto generation of values are only supported on FIX fields of type `string`, `char`, `int`, `float`, `utctimestamp`, `monthyear`, `utcdateonly`, and `utctimeonly`. For example, if a date/time field is set to auto generate, the field value would be auto populated with the date always being set to the current date.
 
 ## Scenario Configuration
 
-This section give the user the abiity to configure test scenarios. A scenario can have multiple stages and each stage has an input and an output. Both input and output can have mutiple messages and each can be selected either from your favorites or manually.
+This section gives the user the abiity to configure test scenarios. A scenario can have multiple stages and each stage has an input and an output. Both input and output can have mutiple messages and each can be selected either from your favorites or manually.
 
 ![scenarios_screenshot.jpg](doc_support/scenarios_screenshot.jpg)
 
-Execution is done stage by stage and the application will send each message in the input list and check the received messages against the ones mentioned in the output list. Each output message should have field values that you need to check when the actual message is received. You can ignore field from this validation by not having them in the  output messages.
+Execution is done stage by stage and the application will send each message in the input list and check the received messages against the ones mentioned in the output list. Each output message should have the field values that you want to check when the actual message is received. You can exempt a field from this validation by not having them in the  output messages.
 
-Another feature of this is that you can capture field values from the output message and use it in an input message. In above screenshot, the `order` stage contains an input message for submitting a new order and the output message as the execution report that can be recieved if the order submittion is successful. 
+You can also capture field values from the output message and use it in an input message. In the above screenshot, the `order` stage contains an input message for submitting a new order and the output message as the execution report that can be recieved if the order submittion is successful. 
 
 ![scenarios_output_screenshot.jpg](doc_support/scenarios_output_screenshot.jpg)
 
 The values recieved from the execution report can be captured using `{get: <unique name>}` tag.
 
-The captured values are used in the next stage of this example by using `{set: <unique name>}`, to send an order cancellation request.
+The captured values are used in the next stage of this example by using `{set: <unique name>}` to send an order cancellation request.
 
 ![scenarios_input_screenshot.jpg](doc_support/scenarios_input_screenshot.jpg)
 
-IMPORTANT: This is an experimental feature and may have issues at present. 
+IMPORTANT: This feature is currently in an experimental stage so you may find some issues. 
 
 ## License 
 

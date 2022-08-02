@@ -11,6 +11,7 @@
 		"antd-mask-input": "^0.1.15",
 		"electron-is-dev": "^2.0.0",
 		"flexlayout-react": "^0.5.16",
+		"iconv-corefoundation": "^1.1.7",
 		"keytar": "^7.7.0",
 		"mark.js": "^8.11.1",
 		"moment": "^2.29.4",

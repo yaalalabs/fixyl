@@ -66,8 +66,18 @@ module.exports = class FileManager {
   }
 
   static listFiles(dir) {
+    let files = undefined;
+    
+    if (fs.existsSync(dir)) {
+      try {
+        files = fs.readdirSync(dir);
+      } catch (err) {
+        return { error };
+      }
+    }
+
     return {
-      files: fs.readdirSync(dir),
+      files,
     };
   }
 };

@@ -44,6 +44,8 @@ export class ProfileManagementService {
                 const data = await this.fileManager.readFile(this.appManager.getProfilesFile());
                 if (data.fileData) {
                     resolve(JSON.parse(data.fileData.data))
+                } else {
+                    resolve([])
                 }
             } catch (err) {
                 resolve([])

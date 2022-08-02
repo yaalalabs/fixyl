@@ -19,11 +19,6 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: npm run build
-    - uses: JasonEtco/upload-to-release@master
-      with:
-        args: dist/* application/linux
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   publish_on_mac:
     runs-on: macos-latest
@@ -40,11 +35,6 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: npm run build
-    - uses: JasonEtco/upload-to-release@master
-      with:
-        args: dist/* application/macos
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   publish_on_win:
     runs-on: windows-latest
@@ -59,8 +49,3 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: npm run build
-    - uses: JasonEtco/upload-to-release@master
-      with:
-        args: dist/* application/windows
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

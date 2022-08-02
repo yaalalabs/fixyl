@@ -160,6 +160,6 @@ You may contribute to this project in any of the following manners.
 
 ---
 
-Copyright 2022 Yaala Labs
+Copyright 2022 [Yaala Labs](https://yaalalabs.com)
 
 ![yl_logo.png](doc_support/yl_logo.png)

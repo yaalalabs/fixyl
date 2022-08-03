@@ -1,11 +1,11 @@
 # FIXYL
 ![logo.png](doc_support/icon.png)
 
-FIXYL is a tool for testing and verifying software that uses the [FIX protocol](https://www.fixtrading.org/what-is-fix/). It allows establishing FIX sessions, and exchanging (and manipulating) FIX messages.
+FIXYL is a tool for testing and verifying software that uses the [FIX protocol](https://www.fixtrading.org/what-is-fix/). It allows establishing FIX sessions and exchanging (and manipulating) FIX messages. As this tool can currently only act as a FIX client, it can only be used to test applications that act as a FIX server.
 
-The tool is based on the message definition format in [QuickFix](https://github.com/quickfix/quickfix) and the tool provides support for all standard and custom FIX dictionaries across version 4 and 5 variants of the FIX protocol. It features a wide variety of options to support the testing and debugging of FIX gateways. You can find a sample definition [here](https://github.com/quickfix/quickfix/blob/master/spec/FIX44.xml).
+The tool is based on the message definition format used in [QuickFix](https://github.com/quickfix/quickfix/tree/master/spec) and the tool provides support for all standard and custom FIX dictionaries across version 4.x and 5.x of the FIX protocol. It features a wide variety of options to support the testing and debugging of FIX gateways. You can find a sample definition [here](https://github.com/quickfix/quickfix/blob/master/spec/FIX44.xml).
 
-This tool is created using React and is based on Electron, and supports cross-platform builds.
+This tool is created using React, is based on Electron and supports cross-platform builds.
 
 
 ## Installation

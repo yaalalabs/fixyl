@@ -32,6 +32,10 @@ module.exports = class SocketManager {
     }
   }
 
+  static isWinDestroyed = (mainWindow) => {
+    return !mainWindow || mainWindow.isDestroyed() || !mainWindow.webContents
+  }
+
   static async  connect(id, host, port, mainWindow) {
     return new Promise(async (resolve, reject) => {
       const socket = new Net.Socket()
@@ -44,7 +48,11 @@ module.exports = class SocketManager {
                 resolve()
               })
               .setEncoding('utf8')
-              .on('data', (data) => {
+              .on('data', (data) => {                
+                if (this.isWinDestroyed(mainWindow)) {
+                  return;
+                }
+
                 console.log("==> data", data)
                 mainWindow.webContents.send(
                   'socketManagerIn',
@@ -52,6 +60,10 @@ module.exports = class SocketManager {
                 )
               })
               .on('end', () => {
+                if (this.isWinDestroyed(mainWindow)) {
+                  return;
+                }
+
                 console.log("==> end")
                 mainWindow.webContents.send(
                   'socketManagerIn',
@@ -59,6 +71,10 @@ module.exports = class SocketManager {
                 )
               })
               .on('error', (error) => {
+                if (this.isWinDestroyed(mainWindow)) {
+                  return;
+                }
+                
                 console.log("==> error")
                 mainWindow.webContents.send(
                   'socketManagerIn',

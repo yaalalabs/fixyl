@@ -52,6 +52,7 @@ const DemoContent = ({ title, text }: { title: string, text: string }) => {
 }
 export class SideMenu extends React.Component<any, SideMenuState> {
   private navSubscription?: Subscription;
+  private ref = React.createRef<SidePanelContainer>();
 
   constructor(props: any) {
     super(props);
@@ -63,7 +64,7 @@ export class SideMenu extends React.Component<any, SideMenuState> {
         },
         {
           target: '.menu-message-viewer',
-          content: <DemoContent title="Message Viewer" text={'The message viewer allows you to visualize  messages from raw data messages, without having a Fix session.'} />,
+          content: <DemoContent title="Message Viewer" text={'The section of the app lets you import a raw message and view its content in a tabular format.'} />,
         },
         {
           target: '.menu-settings',
@@ -91,6 +92,7 @@ export class SideMenu extends React.Component<any, SideMenuState> {
   }
 
   onMessageViwer = () => {
+    this.ref?.current?.onDrawerToggle();
     GlobalServiceRegistry.appManager.onSessionAction({ type: "message_viewer" })
   }
 
@@ -166,7 +168,7 @@ export class SideMenu extends React.Component<any, SideMenuState> {
         <MenuItem icon={<SettingOutlined />} name={getIntlMessage("settings")} id={ActionPanelType.SETTINGS}
           isActive={activePanel === ActionPanelType.SETTINGS} onSelected={this.onSelected} />
       </div>
-      <SidePanelContainer onDrawerClosed={this.onDrawerClosed} activePanel={activePanel} />
+      <SidePanelContainer ref={this.ref} onDrawerClosed={this.onDrawerClosed} activePanel={activePanel} />
     </React.Fragment>
   }
 }

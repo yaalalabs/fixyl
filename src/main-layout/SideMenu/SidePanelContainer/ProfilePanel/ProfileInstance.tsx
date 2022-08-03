@@ -89,7 +89,8 @@ export class ProfileInstance extends React.Component<ProfileInstanceProps, Profi
 
         return <div className="profile-wrapper">
             <div className="info-panel">
-                <div className="title">{profile.name}</div>
+                <div className="title">{profile.name}</div>                
+                {this.getField(getIntlMessage("target_comp"), profile.targetCompId)}
                 {this.getField(getIntlMessage("ip"), profile.ip)}
                 {this.getField(getIntlMessage("port"), profile.port)}
                 {this.getField(getIntlMessage("hb_interval"), profile.hbInterval)}

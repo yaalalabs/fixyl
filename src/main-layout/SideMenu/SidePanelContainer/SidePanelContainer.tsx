@@ -29,7 +29,7 @@ export class SidePanelContainer extends React.Component<SidePanelContainerProps,
         }
     }
 
-    private onDrawerToggle = () => {
+    onDrawerToggle = () => {
         this.props.onDrawerClosed();
         this.setState({ drawerOpened: false });
     }

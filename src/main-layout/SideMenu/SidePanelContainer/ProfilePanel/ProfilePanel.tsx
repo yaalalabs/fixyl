@@ -101,7 +101,7 @@ export class ProfilePanel extends React.Component<any, ProfilePanelState> {
                         val["fixVersion"] && this.setState({ requireTransportDic: val["fixVersion"] === FixVersion.FIX_5 })
                     }}>
                     <Form.Item name="name" label={getIntlMessage("name")} rules={[{ required: true }]}>
-                        <Input />
+                        <Input disabled={!isNewForm}/>
                     </Form.Item>
                     <Form.Item name="ip" label={getIntlMessage("ip")} rules={[{ required: true }]}>
                         <Input />
@@ -115,7 +115,7 @@ export class ProfilePanel extends React.Component<any, ProfilePanelState> {
                     <Form.Item name="senderCompId" label={getIntlMessage("sender_comp_id")} rules={[{ required: true }]}>
                         <Input />
                     </Form.Item>
-                    <Form.Item name="password" label={getIntlMessage("password")} rules={[{ required: true }]}>
+                    <Form.Item name="password" label={getIntlMessage("password")}>
                         <Password />
                     </Form.Item>
                     <Form.Item name="targetCompId" label={getIntlMessage("target_comp_id")} rules={[{ required: true }]}>
@@ -123,8 +123,8 @@ export class ProfilePanel extends React.Component<any, ProfilePanelState> {
                     </Form.Item>
                     <Form.Item name="fixVersion" label={getIntlMessage("fix_version_selector")} rules={[{ required: true }]}>
                         <Select >
-                            <Option value={FixVersion.FIX_4}>{FixVersion.FIX_4}</Option>
-                            <Option value={FixVersion.FIX_5}>{FixVersion.FIX_5}</Option>
+                            <Option value={FixVersion.FIX_4}>FIX 4.x</Option>
+                            <Option value={FixVersion.FIX_5}>FIX 5.x</Option>
                         </Select>
                     </Form.Item>
                     <Form.Item name="dictionaryLocation" label={getIntlMessage("dictionary_location")} rules={[{ required: true }]}>

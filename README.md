@@ -3,7 +3,7 @@
 
 FIXYL is a tool for testing and verifying software that uses the [FIX protocol](https://www.fixtrading.org/what-is-fix/). It allows establishing FIX sessions, and exchanging (and manipulating) FIX messages.
 
-The tool is based on the message definition format in [QuickFix](https://github.com/quickfix/quickfix) and the tool provides support for all standard and custom FIX dictionaries across version 4 and 5 variants of the FIX protocol. It features a wide variety of options to support the testing and debugging of FIX gateways. You can find a same definition in [here](https://github.com/quickfix/quickfix/blob/master/spec/FIX44.xml).
+The tool is based on the message definition format in [QuickFix](https://github.com/quickfix/quickfix) and the tool provides support for all standard and custom FIX dictionaries across version 4 and 5 variants of the FIX protocol. It features a wide variety of options to support the testing and debugging of FIX gateways. You can find a sample definition [here](https://github.com/quickfix/quickfix/blob/master/spec/FIX44.xml).
 
 This tool is created using React and is based on Electron, and supports cross-platform builds.
 
@@ -12,7 +12,7 @@ This tool is created using React and is based on Electron, and supports cross-pl
 
 ### Installing from binaries
 
-Pre-built binaries can be downloaded from the [Releases Page](https://github.com/yaalalabs/fixyl-dist). Make sure to use the installer for that match your operating system.
+Pre-built binaries can be downloaded from the [Releases Page](https://github.com/yaalalabs/fixyl/releases). Make sure to use the installer for that match your operating system.
 
 ### Building from source
 
@@ -160,6 +160,6 @@ You may contribute to this project in any of the following manners.
 
 ---
 
-Copyright 2022 Yaala Labs
+Copyright 2022 [Yaala Labs](https://yaalalabs.com)
 
 ![yl_logo.png](doc_support/yl_logo.png)

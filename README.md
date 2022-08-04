@@ -12,7 +12,14 @@ This tool is created using React and is based on Electron, and supports cross-pl
 
 ### Installing from binaries
 
-Pre-built binaries can be downloaded from the [Releases Page](https://github.com/yaalalabs/fixyl/releases). Make sure to use the installer for that match your operating system.
+Pre-built binaries can be downloaded from the [Releases Page](https://github.com/yaalalabs/fixyl/releases). Make sure to use the installer for your operating system.
+
+|OS         |Instructions                 |
+|-----------|-----------------------------|
+|Windows    | Download the .exe file      |
+|Mac        | Download the .dmg file      |
+|Linux      | Download the .AppImage file |
+
 
 ### Building from source
 

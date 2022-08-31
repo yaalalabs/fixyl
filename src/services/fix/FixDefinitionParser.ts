@@ -38,7 +38,7 @@ export class FixDefinitionParser {
             if (!this.dictionaryInfo.transportDicPath) {
                 this.readyCB()
             } else {
-                this.loadDictionary(this.dictionaryInfo.transportDicPath, false, () => {
+                this.loadDictionary(this.dictionaryInfo.transportDicPath, true, () => {
                     this.readyCB()
                 })
             }
@@ -54,9 +54,6 @@ export class FixDefinitionParser {
 
         this.VERSION += `.${xmlObj.attributes.major}.${xmlObj.attributes.minor}`
         this.BEGIN_STRING = '8=' + this.VERSION;
-        
-        Object.freeze(this.VERSION)
-        Object.freeze(this.BEGIN_STRING)
     }
 
     private loadDictionary(path: string, setVersionInfo: boolean, done: () => void) {

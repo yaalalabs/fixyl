@@ -5,7 +5,8 @@ import { FixSession } from "src/services/fix/FixSession";
 export interface FixCommMsg {
     def: FixComplexType,
     session: FixSession,
-    rawMsg: string
+    rawMsg: string,
+    metaData?: any
 }
 export class IntraTabCommunicator {
     private msgSelectSubject = new Subject<FixCommMsg | undefined>();

@@ -29,11 +29,21 @@
             font-size: 18px;
         }
 
+        .ant-input {
+            margin-top: 10px;
+            width: 50%;
+            background: var(--shade-350);
+            border: none;
+            margin-right: 5px;
+        }
+
         .profiles {
             display: flex;
             flex-direction: column;
             font-size: 14px;
             margin-top: 10px;
+            max-height: 50vh;
+            overflow: auto;
 
             .profile {
                 cursor: pointer;

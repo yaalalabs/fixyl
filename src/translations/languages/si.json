@@ -2,7 +2,8 @@
 	"menu": {
 		"profile": "ගිණුම්",
 		"settings": "සැකසීම්",
-		"message_viewer": "Msg. පැනලය"
+		"message_viewer": "Msg. පැනලය",
+		"message_diff_viewer": "Msg. Diff"
 	},
 	"profile_management": {
 		"title": "ගිණුම් කළමනාකරණය",
@@ -42,13 +43,15 @@
 		"lancher": "සාදරයෙන් පිළිගනිමු",
 		"msg_connection_failed_title": "සම්බන්ධතා අසමත් වීම",
 		"msg_connection_failed_desc": "සැසිය නිවැරදි කිරීමට සම්බන්ධ වීමට අසමත් විය",
-		"message_viewer": "පණිවිඩ නරඹන්නා"
+		"message_viewer": "පණිවිඩ නරඹන්නා",
+		"message_diff_viewer": "Message Diff Viewer"
 	},
 	"launcher_tab": {
 		"title": "FIXYL",
 		"sub_title": "FIXYL FIX සැසි ආරම්භ කිරීමට සහ FIX පණිවිඩ හුවමාරු කිරීමට සහ සංස්කරණය කිරීමට ඉඩ දෙයි. මෙවලම ඉලෙක්ට්‍රෝනය මත පදනම් වන අතර හරස් වේදිකා ගොඩනැගීමට සහාය විය හැක. මෙම මෙවලම සියලු සම්මත සහ අභිරුචි FIX ශබ්දකෝෂ සඳහා සම්පූර්ණ සහාය සපයයි.",
 		"action_title": "නව ගිණුමක් සාදන්න හෝ පවතින එකක් තෝරන්න",
-		"create_profile": "නව ගිණුමක් සාදන්න"
+		"create_profile": "නව ගිණුමක් සාදන්න",
+		"filter": "Filter Profiles"
 	},
 	"session_tab": {},
 	"session_management": {
@@ -118,6 +121,7 @@
 		"input": "ආදානය",
 		"output": "ප්රතිදානය",
 		"diff_title": "පණිවිඩ වෙනස බලන්නා",
+		"side_by_side": "Side By Side",
 		"diff": "වෙනස බලන්න",
 		"scroll_lock": "Scroll lock",
 		"clear": "Clear"
@@ -201,6 +205,19 @@
 		"field_separator": "Field Separator",
 		"view": "View",
 		"fix_definition":"Fix අර්ථ දැක්වීම",
+		"message_title": "විකේතනය කළ පණිවිඩය"
+	},
+	"message_diff_viewer": {
+		"title":  "පණිවිඩ පැනලය",
+		"profile_selection": "ගිණුමෙන් ශබ්දකෝෂය තෝරන්න",
+		"msg_invalid_message": "ලබා දී ඇති පණිවිඩය Fix පණිවිඩයක් ලෙස හඳුනාගෙන නොමැත. කරුණාකර වලංගු පණිවිඩයක් { msg }ට ඇතුළු කරන්න.",
+		"msg_invalid_message_title": "වලංගු නොවන පණිවිඩයක්",
+		"raw_msg": "අමු පණිවිඩ",
+		"raw_msg_desc": "සාම්ප්‍රදායික එක වෙනුවට SOH අක්ෂරය '^A' විය යුතු බව කරුණාවෙන් සලකන්න. ඔබට ඒවා වෙන් කිරීම සඳහා නව පේළියක් සමඟින් බහුවිධ පණිවිඩ එක් කළ හැක.",
+		"field_separator": "Field Separator",
+		"view": "View",
+		"fix_definition":"Fix අර්ථ දැක්වීම",
+		"viewer_title": "Diff View",
 		"message_title": "විකේතනය කළ පණිවිඩය"
 	}
 }

@@ -1,5 +1,5 @@
 import { PlusOutlined } from '@ant-design/icons';
-import { Button } from 'antd';
+import { Button, Input } from 'antd';
 import React from 'react';
 import { Subscription } from 'rxjs';
 import { ActionPanelType } from 'src/common/CommonDefs';
@@ -13,7 +13,8 @@ const getIntlMessage = (msg: string) => {
 }
 
 interface LauncherTabState {
-  profiles: ProfileWithCredentials[]
+  profiles: ProfileWithCredentials[],
+  filter?: string
 }
 
 export class LauncherTab extends React.Component<any, LauncherTabState> {
@@ -45,8 +46,9 @@ export class LauncherTab extends React.Component<any, LauncherTabState> {
   }
 
   render() {
-    const { profiles } = this.state;
-    
+    const { profiles, filter } = this.state;
+    const filteredProfiles = profiles.filter(inst => !filter || inst.name.includes(filter))
+
     return <div className="launcher-tab-wrapper">
       <div className="title-section">
         <div className="title">{getIntlMessage("title")}</div>
@@ -54,8 +56,11 @@ export class LauncherTab extends React.Component<any, LauncherTabState> {
       </div>
       <div className="launcher-actions">
         <div className="action-title">{getIntlMessage("action_title")}</div>
+        <div>
+          <Input placeholder={getIntlMessage("filter")} onChange={e => this.setState({ filter: e.target.value })} />
+        </div>
         <ul className="profiles">
-          {profiles.map((profile, i) => <li className="profile" key={i} onClick={() => GlobalServiceRegistry.appManager.onSessionAction({ profile, type: "new" })}>
+          {filteredProfiles.map((profile, i) => <li className="profile" key={i} onClick={() => GlobalServiceRegistry.appManager.onSessionAction({ profile, type: "new" })}>
             {profile.name}
           </li>)}
         </ul>

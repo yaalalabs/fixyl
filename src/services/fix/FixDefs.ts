@@ -121,6 +121,7 @@ export class FixComplexType {
     groupInstances: any = {};
     id: string;
     private value: any;
+    private valueWithHeaders: any;
 
     constructor(private xmlNode: FixXmlNode, private fieldDefMap: Map<string, FixFieldDef>) {
         this.name = xmlNode.attributes.name;
@@ -150,8 +151,16 @@ export class FixComplexType {
         this.value = value;
     }
 
+    setValueWithHeaders(value: any) {
+        this.valueWithHeaders = value;
+    }
+
     getValue() {
         return this.value;
+    }
+    
+    getValueWithHeaders() {
+        return this.valueWithHeaders;
     }
 
     clone(): FixComplexType {

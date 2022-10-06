@@ -1,4 +1,4 @@
-import { ClearOutlined, SwapOutlined, WechatOutlined, MoreOutlined } from '@ant-design/icons';
+import { ClearOutlined, SwapOutlined, WechatOutlined, MoreOutlined, DiffOutlined } from '@ant-design/icons';
 import { Switch, Form, Button, Tooltip, Checkbox, Popover, } from 'antd';
 import { AgGridColumn, AgGridReact } from '@ag-grid-community/react';
 import { AllCommunityModules, ColumnApi, GridApi, } from '@ag-grid-community/all-modules';
@@ -8,7 +8,7 @@ import { LM } from 'src/translations/language-manager';
 import './SessoinMessageStream.scss';
 import { transformDate } from 'src/utils/utils';
 import { Subscription } from 'rxjs';
-import { IntraTabCommunicator } from '../../../../common/IntraTabCommunicator';
+import { IntraTabCommunicator, FixCommMsg } from '../../../../common/IntraTabCommunicator';
 import { MessageDiffViewer } from './MessageDiffViewer';
 
 const getIntlMessage = (msg: string) => {
@@ -27,15 +27,17 @@ interface SessoinMessageStreamProps {
   communicator: IntraTabCommunicator;
 }
 
+
 interface SessoinMessageStreamState {
   columnConfig: any;
   rowData: any[];
-  selectedRow?: any;
-  selectedRows?: any[];
+  selectedRow?: FixCommMsg;
+  selectedRows?: FixCommMsg[];
   hb: boolean;
   input: boolean;
   output: boolean;
   showDiffModal: boolean;
+  showSideBySideModal: boolean;
   diffModeEnabled: boolean;
   scrollLocked: boolean;
   minimizedMode: boolean;
@@ -69,7 +71,8 @@ export class SessoinMessageStream extends React.Component<SessoinMessageStreamPr
       showDiffModal: false,
       diffModeEnabled: false,
       scrollLocked: true,
-      minimizedMode: false
+      minimizedMode: false,
+      showSideBySideModal: false
     }
   }
 
@@ -144,7 +147,13 @@ export class SessoinMessageStream extends React.Component<SessoinMessageStreamPr
 
     const rows = this.gridApi?.getSelectedRows();
     if (rows?.length === 2) {
-      this.setState({ selectedRows: rows.map(row => JSON.stringify(row.msg.getValue(), null, 2)), diffModeEnabled: true })
+      this.setState({
+        selectedRows: rows.map(row => ({
+          def: row.msg,
+          rawMsg: JSON.stringify(row.msg.getValue(), null, 2),
+          session: this.props.session
+        })), diffModeEnabled: true
+      })
     } else {
       this.setState({ selectedRows: [], diffModeEnabled: false })
     }
@@ -236,7 +245,7 @@ export class SessoinMessageStream extends React.Component<SessoinMessageStreamPr
 
   render() {
     const { columnConfig, diffModeEnabled, selectedRows, input,
-      output, hb, showDiffModal, scrollLocked, minimizedMode } = this.state;
+      output, hb, showDiffModal, showSideBySideModal, scrollLocked, minimizedMode } = this.state;
 
     return <div className="session-message-stream-wrapper" ref={this.ref}>
       <div className="header">
@@ -245,6 +254,11 @@ export class SessoinMessageStream extends React.Component<SessoinMessageStreamPr
           <Tooltip title={getIntlMessage("diff")}>
             <Button shape="circle" disabled={!diffModeEnabled} onClick={() => {
               this.setState({ showDiffModal: true })
+            }} icon={<DiffOutlined />}></Button>
+          </Tooltip>
+          <Tooltip title={getIntlMessage("side_by_side")}>
+            <Button shape="circle" disabled={!diffModeEnabled} onClick={() => {
+              this.setState({ showSideBySideModal: true })
             }} icon={<SwapOutlined />}></Button>
           </Tooltip>
 
@@ -307,9 +321,12 @@ export class SessoinMessageStream extends React.Component<SessoinMessageStreamPr
               />
             })}
           </AgGridReact>
-          <MessageDiffViewer msg1={selectedRows?.[0]} msg2={selectedRows?.[1]} visible={showDiffModal} closable={true} onDialogClosed={() => {
-            this.setState({ showDiffModal: false })
-          }} />
+          <MessageDiffViewer msg1={selectedRows?.[0]?.rawMsg} msg2={selectedRows?.[1]?.rawMsg} visible={showDiffModal || showSideBySideModal}
+            sideBySide={showSideBySideModal}
+            msgObj1={selectedRows?.[0]} msgObj2={selectedRows?.[1]}
+            closable={true} onDialogClosed={() => {
+              this.setState({ showDiffModal: false, showSideBySideModal: false })
+            }} />
         </div>
 
       </div>

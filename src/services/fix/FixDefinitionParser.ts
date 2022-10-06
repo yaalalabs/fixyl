@@ -93,7 +93,7 @@ export class FixDefinitionParser {
                     if (!inst.name) {
                         return;
                     }
-                    const comp = new FixComplexType(inst, this.fieldMap)                    
+                    const comp = new FixComplexType(inst, this.fieldMap)
                     this.messageMap.set(comp.name, comp);
                     this.messageTypeMap.set(comp.id, comp);
                 }, {})
@@ -230,17 +230,17 @@ export class FixDefinitionParser {
         return message;
     }
 
-    private getFieldValues = (def: FixComplexType, inputData: string, fieldIterationIndex: number) => {
+    private getFieldValues = (def: FixComplexType, inputData: string, fieldIterationIndex: number, withHeaders: boolean) => {
         const ret: any = {};
         def.fields.forEach(field => {
             const fieldValue = this.getTagValue(inputData, field.def.number, fieldIterationIndex);
-            ret[field.def.name] = fieldValue;
+            ret[`${field.def.name}${withHeaders ? `[${field.def.number}]` : ""}`] = fieldValue;
         })
 
         return ret;
     }
 
-    private getGroupValues = (def: FixComplexType, inputData: string,) => {
+    private getGroupValues = (def: FixComplexType, inputData: string, withHeaders: boolean) => {
         const ret: any = [];
         const interationLen = this.getTagValue(inputData, def.id);
 
@@ -249,14 +249,14 @@ export class FixDefinitionParser {
         }
 
         for (let i = 0; i < Number(interationLen); i++) {
-            const fieldData = this.getFieldValues(def, inputData, i)
+            const fieldData = this.getFieldValues(def, inputData, i, withHeaders)
             let groupData: any = {};
             if (def.group) {
-                groupData[def.group.name] = this.getGroupValues(def.group, inputData,);
+                groupData[def.group.name] = this.getGroupValues(def.group, inputData, withHeaders);
             }
             let componentData: any = {};
             def.components.forEach(comp => {
-                componentData[comp.name] = this.getComponentValues(comp, inputData,);
+                componentData[comp.name] = this.getComponentValues(comp, inputData, withHeaders);
             })
 
             ret.push({ ...fieldData, ...groupData, ...componentData })
@@ -265,15 +265,15 @@ export class FixDefinitionParser {
         return ret;
     }
 
-    private getComponentValues = (def: FixComplexType, inputData: string,) => {
-        const fieldData = this.getFieldValues(def, inputData, 0)
+    private getComponentValues = (def: FixComplexType, inputData: string, withHeaders: boolean) => {
+        const fieldData = this.getFieldValues(def, inputData, 0, withHeaders)
         let groupData: any = {};
         if (def.group) {
-            groupData[def.group.name] = this.getGroupValues(def.group, inputData,);
+            groupData[def.group.name] = this.getGroupValues(def.group, inputData, withHeaders);
         }
         let componentData: any = {};
         def.components.forEach(comp => {
-            componentData[comp.name] = this.getComponentValues(comp, inputData,);
+            componentData[comp.name] = this.getComponentValues(comp, inputData, withHeaders);
         })
 
         return { ...fieldData, ...groupData, ...componentData };
@@ -289,6 +289,20 @@ export class FixDefinitionParser {
         }
     }
 
+    private decodeInternals(msgDef: FixComplexType, msg: string, withHeaders = false) {
+        const fieldData = this.getFieldValues(msgDef, msg, 0, withHeaders)
+        let groupData: any = {};
+        if (msgDef.group) {
+            groupData[msgDef.group.name] = this.getGroupValues(msgDef.group, msg, withHeaders)
+        }
+        let componentData: any = {};
+        msgDef.components.forEach(comp => {
+            componentData[comp.name] = this.getComponentValues(comp, msg, withHeaders)
+        })
+
+        return { ...fieldData, ...groupData, ...componentData };
+    }
+
     decodeFixMessage(msg: string): { msg: FixComplexType, header: FixMsgHeader } | undefined {
         const msgType = this.getTagValue(msg, "35");
         if (!msgType) {
@@ -298,21 +312,13 @@ export class FixDefinitionParser {
 
         const msgDef = this.messageTypeMap.get(msgType);
         if (msgDef) {
+            const ret = this.decodeInternals(msgDef, msg);
+            const headerRet = this.decodeInternals(msgDef, msg, true);
 
-            const fieldData = this.getFieldValues(msgDef, msg, 0)
-            let groupData: any = {};
-            if (msgDef.group) {
-                groupData[msgDef.group.name] = this.getGroupValues(msgDef.group, msg,)
-            }
-            let componentData: any = {};
-            msgDef.components.forEach(comp => {
-                componentData[comp.name] = this.getComponentValues(comp, msg,)
-            })
-
-            const ret = { ...fieldData, ...groupData, ...componentData };
             const def = msgDef.clone();
             (def as FixComplexType).setValue(ret);
-
+            (def as FixComplexType).setValueWithHeaders(headerRet);
+            
             return { msg: def, header: this.decodeHeader(msg) }
         }
 

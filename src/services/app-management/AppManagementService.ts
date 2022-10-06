@@ -3,10 +3,11 @@ import { APP_NAME } from "src/common/CommonDefs";
 import { FileManagementService } from "../file-management/FileManagementService";
 import { ProfileWithCredentials } from "../profile/ProfileDefs";
 
+export type SessionActionType = "new" | "destroy" | "message_viewer" | "message_diff_viewer";
 
 export interface SessionAction {
     profile?: ProfileWithCredentials;
-    type: "new" | "destroy" | "message_viewer"
+    type: SessionActionType
 }
 
 export class AppManagementService {

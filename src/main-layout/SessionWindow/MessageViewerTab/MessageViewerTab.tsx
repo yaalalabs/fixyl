@@ -34,7 +34,7 @@ const MAXIMIZED_VERSION: IJsonModel = {
         ]
       }, {
         type: "tabset",
-        weight: 55,
+        weight: 65,
         selected: 0,
         enableMaximize: false,
         children: [

@@ -2,7 +2,8 @@
 	"menu": {
 		"profile": "Profile",
 		"settings": "Settings",
-		"message_viewer": "Msg. Viewer"
+		"message_viewer": "Msg. Viewer",
+		"message_diff_viewer": "Msg. Diff"
 	},
 	"profile_management": {
 		"title": "Profile Management",
@@ -25,9 +26,9 @@
 		"delete": "Delete",
 		"no_profiles": "No Profiles",
 		"sender_comp_id": "SenderCompID",
-		"target_comp_id": "TargetCompID",		
+		"target_comp_id": "TargetCompID",
 		"fix_version_selector": "FIX Version",
-		"copy":"Copy",
+		"copy": "Copy",
 		"edit": "Edit"
 	},
 	"settings": {
@@ -44,13 +45,15 @@
 		"lancher": "Welcome",
 		"msg_connection_failed_title": "Connection Failure",
 		"msg_connection_failed_desc": "Failed to connect to fix session",
-		"message_viewer": "Message Viewer"
+		"message_viewer": "Message Viewer",
+		"message_diff_viewer": "Message Diff Viewer"
 	},
 	"launcher_tab": {
 		"title": "FIXYL",
 		"sub_title": "FIXYL is a FIX test tool support creation of FIX sessions and the exchange of FIX messages. It supports standard and custom FIX dictionaries. This tool is based on Electron and can support cross-platform builds.",
 		"action_title": "Create a new profile or select an existing one",
-		"create_profile": "Create New Profile"
+		"create_profile": "Create New Profile",
+		"filter": "Filter Profiles"
 	},
 	"session_tab": {},
 	"session_management": {
@@ -122,6 +125,7 @@
 		"diff_title": "Message Diff Viewer",
 		"diff": "View Diff",
 		"scroll_lock": "Scroll lock",
+		"side_by_side": "Side By Side Viewer",
 		"clear": "Clear"
 	},
 	"working_dir_selector": {
@@ -182,7 +186,6 @@
 		"msg_saving_failed": "Error occurred while saving the data",
 		"fav_name": "Favorite Name",
 		"fav_msg": "Message Type"
-
 	},
 	"scenario_state": {
 		"msg_timeout": "Response timedout. Expected output not received within { time } seconds",
@@ -194,7 +197,7 @@
 		"ignored_msg": "<-- Field Ignored -->"
 	},
 	"message_viewer": {
-		"title":  "Message Viewer",
+		"title": "Message Viewer",
 		"profile_selection": "Select Dictionary From Profile",
 		"msg_invalid_message": "Given message is not recognized as a fix message. Please enter a valid message.",
 		"msg_invalid_message_title": "Invalid Message",
@@ -202,7 +205,21 @@
 		"raw_msg_desc": "Please note that the SOH character should be '^A' instead of the traditional one. You can add multiple messages with a new line to separate them.",
 		"field_separator": "Field Separator",
 		"view": "View",
-		"fix_definition":"Fix definition",
+		"fix_definition": "Fix definition",
+		"message_title": "Decoded Message"
+	},
+	"message_diff_viewer": {
+		"title": "Message Diff Viewer",
+		"profile_selection": "Select Dictionary From Profile",
+		"msg_invalid_message": "Given message is not recognized as a fix message. Please enter a valid message for { msg }",
+		"msg_invalid_message_title": "Invalid Message",
+		"raw_msg_1": "Expected Message",
+		"raw_msg_2": "Received Message",
+		"raw_msg_desc": "You can compare two messages using this window. The expected message supports regular expressions (Javascript Type) for the fields and you can define a regular expression using ${<reg exp>} notation. Please note that the SOH character should be '^A' instead of the traditional.",
+		"field_separator": "Field Separator",
+		"view": "Compare",
+		"fix_definition": "Fix definition",
+		"viewer_title": "Message Diff",
 		"message_title": "Decoded Message"
 	}
 }

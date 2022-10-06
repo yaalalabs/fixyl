@@ -9,6 +9,7 @@ import { GlobalServiceRegistry } from 'src/services/GlobalServiceRegistry';
 import { IntraTabCommunicator } from '../../common/IntraTabCommunicator';
 import { Toast } from 'src/common/Toast/Toast';
 import { MessageViewerTab } from './MessageViewerTab/MessageViewerTab';
+import { MessageDiffViewerTab } from './MessageDiffViewerTab/MessageDiffViewerTab';
 
 export const Title: FC<{ node: any }> = ({ node }) => {
   const config: { session: FixSession } | undefined = node.getConfig();
@@ -31,7 +32,7 @@ export const Title: FC<{ node: any }> = ({ node }) => {
 
   return (<div className="tab-title">
     <div className="name">{name}</div>
-    {(component !== "launcher" && component !== "message_viewer") && <div className={connected ? "connected" : "disconnected"}></div>}
+    {(!["launcher", "message_viewer", "message_diff_viewer"].includes(component)) && <div className={connected ? "connected" : "disconnected"}></div>}
   </div>)
 }
 
@@ -115,12 +116,12 @@ export class SessionWindow extends React.Component<any, SessionWindowState> {
         } else {
           this.state.model?.doAction(FlexLayout.Actions.selectTab(session.getProfile().name));
         }
-      } else if (action.type === "message_viewer") {
+      } else if (action.type === "message_viewer" || action.type === "message_diff_viewer") {
         const communicator = new IntraTabCommunicator();
 
         this.layoutRef.current?.addTabToTabSet("MAIN", {
-          type: "tab", component: "message_viewer", enableClose: true,
-          name: getIntlMessage("message_viewer"), config: { communicator }
+          type: "tab", component: action.type, enableClose: true,
+          name: getIntlMessage(action.type), config: { communicator }
         })
       }
     })
@@ -136,6 +137,13 @@ export class SessionWindow extends React.Component<any, SessionWindowState> {
       const config: { communicator: IntraTabCommunicator } | undefined = node.getConfig();
       if (config) {
         return <MessageViewerTab communicator={config.communicator} />
+      }
+    }
+
+    if (component === "message_diff_viewer") {
+      const config: { communicator: IntraTabCommunicator } | undefined = node.getConfig();
+      if (config) {
+        return <MessageDiffViewerTab communicator={config.communicator} />
       }
     }
 

@@ -3,12 +3,13 @@ import React, { FC, ReactComponentElement } from 'react';
 import { ActionPanelType } from 'src/common/CommonDefs';
 import './SideMenu.scss';
 import { SidePanelContainer } from './SidePanelContainer/SidePanelContainer';
-import { ProfileOutlined, SettingOutlined, EyeOutlined } from '@ant-design/icons';
+import { ProfileOutlined, SettingOutlined, EyeOutlined, DiffOutlined } from '@ant-design/icons';
 import { LM } from 'src/translations/language-manager';
 import { GlobalServiceRegistry } from 'src/services/GlobalServiceRegistry';
 import { Subscription } from 'rxjs';
 import { NavigationPathAction } from 'src/services/navigation/NevigationService';
 import ReactJoyride, { CallBackProps } from "react-joyride";
+import { SessionActionType } from 'src/services/app-management/AppManagementService';
 
 
 export interface MenuItemProps {
@@ -22,7 +23,7 @@ export interface MenuItemProps {
 export const MenuItem: FC<MenuItemProps> = ({ icon, name, isActive, id, onSelected }) => {
   return (<Tooltip placement="right" title={name} overlayClassName="menu-item-tooltip">
     <div onClick={() => { onSelected(id) }} id={id}>
-      <div className={`menu-item ${isActive ? 'active' : ''} menu-${id.toLowerCase().replace(" ", "-")}`} >
+      <div className={`menu-item ${isActive ? 'active' : ''} menu-${id.toLowerCase().replaceAll(" ", "-")}`} >
         <div className="icon">{icon}</div>
         <div className="name">{name}</div>
       </div>
@@ -67,8 +68,12 @@ export class SideMenu extends React.Component<any, SideMenuState> {
           content: <DemoContent title="Message Viewer" text={'The section of the app lets you import a raw message and view its content in a tabular format.'} />,
         },
         {
+          target: '.menu-message-diff-viewer',
+          content: <DemoContent title="Message Diff Viewer" text={'The section of the app lets you compare raw messages.'} />,
+        },
+        {
           target: '.menu-settings',
-          content: <DemoContent title="Settings" text={'You can control settings such as themes, language and workign directory using settings'} />,
+          content: <DemoContent title="Settings" text={'You can control settings such as themes, language and workign directory using settings.'} />,
         },
       ],
       run: localStorage.getItem(SHOW_DEMO_KEY) !== "done",
@@ -91,9 +96,9 @@ export class SideMenu extends React.Component<any, SideMenuState> {
     this.setState({ activePanel })
   }
 
-  onMessageViwer = () => {
+  onMessageViwer = (type: SessionActionType) => {
     this.ref?.current?.onDrawerToggle();
-    GlobalServiceRegistry.appManager.onSessionAction({ type: "message_viewer" })
+    GlobalServiceRegistry.appManager.onSessionAction({ type })
   }
 
   handleClickStart = (event: React.MouseEvent<HTMLElement>) => {
@@ -164,7 +169,9 @@ export class SideMenu extends React.Component<any, SideMenuState> {
         <MenuItem icon={<ProfileOutlined />} name={getIntlMessage("profile")} id={ActionPanelType.PROFILE}
           isActive={activePanel === ActionPanelType.PROFILE} onSelected={this.onSelected} />
         <MenuItem icon={<EyeOutlined />} name={getIntlMessage("message_viewer")} id={ActionPanelType.MESSAGE_VIEWER}
-          isActive={activePanel === ActionPanelType.MESSAGE_VIEWER} onSelected={this.onMessageViwer} />
+          isActive={activePanel === ActionPanelType.MESSAGE_VIEWER} onSelected={() => this.onMessageViwer("message_viewer")} />
+        <MenuItem icon={<DiffOutlined />} name={getIntlMessage("message_diff_viewer")} id={ActionPanelType.MESSAGE_DIFF_VIEWER}
+          isActive={activePanel === ActionPanelType.MESSAGE_DIFF_VIEWER} onSelected={() => this.onMessageViwer("message_diff_viewer")} />
         <MenuItem icon={<SettingOutlined />} name={getIntlMessage("settings")} id={ActionPanelType.SETTINGS}
           isActive={activePanel === ActionPanelType.SETTINGS} onSelected={this.onSelected} />
       </div>

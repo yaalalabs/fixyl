@@ -47,7 +47,7 @@ export class LauncherTab extends React.Component<any, LauncherTabState> {
 
   render() {
     const { profiles, filter } = this.state;
-    const filteredProfiles = profiles.filter(inst => !filter || inst.name.includes(filter))
+    const filteredProfiles = profiles.filter(inst => !filter || (inst.name.toLowerCase()).includes(filter.toLowerCase()))
 
     return <div className="launcher-tab-wrapper">
       <div className="title-section">

@@ -23,6 +23,10 @@
                 background-color: var(--accent-2-hover);
             }
         }
+
+        .selected-message {
+            background-color: var(--shade-375) !important;
+        }
     }
 
     .header {

@@ -18,6 +18,7 @@ const getIntlMessage = (msg: string) => {
 
 interface MessageViewerManagementState {
     messages?: { msg: FixComplexType, rawMsg: string }[],
+    selectedMessage?: FixComplexType;
     session?: FixSession,
     dictionaryLocation?: string,
 }
@@ -71,7 +72,7 @@ export class MessageViewerManagement extends React.Component<any, MessageViewerM
 
     render() {
         const { communicator } = this.props;
-        const { messages, session, dictionaryLocation, } = this.state;
+        const { messages, session, dictionaryLocation, selectedMessage } = this.state;
 
         return <div className="message-viewer-man-wrapper">
             <div className="header">
@@ -107,7 +108,8 @@ export class MessageViewerManagement extends React.Component<any, MessageViewerM
                 </Form>
                 {messages && <div className="message-list-wrapper">
                     <div className="message-title">{getIntlMessage("message_title")}</div>
-                    {messages.map((inst, i) => <div className="message" key={i} onClick={() => {
+                    {messages.map((inst, i) => <div className={`message ${inst.msg === selectedMessage ? "selected-message" : ""}`} key={i} onClick={() => {
+                        this.setState({ selectedMessage: inst.msg })
                         communicator.onMessageSelected({ def: inst.msg, session: this.state.session, rawMsg: inst.rawMsg })
                     }}>{inst.msg.name}</div>)}
                 </div>}

@@ -8,12 +8,14 @@ interface FileSelectProps {
     label: string;
     value?: string;
     options?: any;
+    filters?: any;
 }
 
-export const FileSelect = ({ onChange, label, value, options }: FileSelectProps) => {
+export const FileSelect = ({ onChange, label, value, options, filters }: FileSelectProps) => {
 
     const handleClick = () => {
-        CommonServiceFactory.instance.createNewFileManagementService().selectFile(options ?? ['openFile']).then((data) => {
+        CommonServiceFactory.instance.createNewFileManagementService().selectFile(options ?? ['openFile'],
+         filters ?? [{name: 'All Files', extensions: ['*']}]).then((data) => {
             onChange?.(data?.path);
         })
     }

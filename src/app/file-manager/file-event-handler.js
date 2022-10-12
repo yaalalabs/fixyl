@@ -16,7 +16,7 @@ module.exports = (mainWindow) => {
         response = await FileManager.deleteFile(args[2]);
         break;
       case "Select":
-        response = await FileManager.selectFile(args[2]);
+        response = await FileManager.selectFile(args[2], args[3]);
         break;
       case "mkdir":
         response = await FileManager.mkdir(args[2]);

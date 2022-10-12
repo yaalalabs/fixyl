@@ -71,6 +71,11 @@ Once this form is opened, you should enter the following information of the targ
 |Password            |Password of the above user to use for login             |
 |TargetCompId        |Target system/firm identification                       |
 |Dictionary Location |Location of the FIX dictionary definition XML file      |
+|SSL Enabled         |Whether SSL is enabled or not                           |
+|SSL Server Name     |SSL Server Name (for SNI) if different from host        |
+|SSL CA Certificate  |CA certificate to be used for the handshake (.pem)      |
+|SSL Certificate     |Self-signed certificate if not using a public one (.pfx)|
+|Certificate Password|Password to decipher self-signed certificate            |
 
 Pressing `Save` will create a new profile with the entered information.
 

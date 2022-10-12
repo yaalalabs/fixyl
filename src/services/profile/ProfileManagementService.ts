@@ -34,6 +34,11 @@ export class ProfileManagementService {
                 profile.password = credentials.password;
             }
 
+            const certCredentials = await this.secureKeyManager.findKeyForService(`${APP_NAME}.${inst.name}.certificate_credentials`);
+            if (certCredentials) {
+                profile.sslCertificatePassword = certCredentials.password;
+            }
+
             this.profiles.set(profile.name, profile);
         })
     }
@@ -69,7 +74,7 @@ export class ProfileManagementService {
     addOrEditProfile(profile: ProfileWithCredentials): boolean {
         this.profiles.set(profile.name, profile);
         this.saveAllProfilesInDevice();
-        this.addCredentialsToDevice(profile.name, { username: profile.username, password: profile.password });
+        this.addCredentialsToDevice(profile.name, { username: profile.username, password: profile.password, certPassword: profile.sslCertificatePassword });
 
 
         this.profileUpdateSubject.next();
@@ -87,13 +92,17 @@ export class ProfileManagementService {
             const temp = { ...profile };
             delete (temp as any).username;
             delete (temp as any).password;
+            delete (temp as any).sslCertificatePassword;
             return temp;
         })
 
         this.fileManager.writeFile(this.appManager.getProfilesFile(), JSON.stringify(data));
     }
 
-    private addCredentialsToDevice(name: string, credentials: { username: string, password: string }) {
+    private addCredentialsToDevice(name: string, credentials: { username: string, password: string, certPassword?: string }) {
         this.secureKeyManager.addKey(`${APP_NAME}.${name}.credentials`, credentials.username, credentials.password);
+        if (credentials.certPassword) {
+            this.secureKeyManager.addKey(`${APP_NAME}.${name}.certificate_credentials`, credentials.username, credentials.certPassword);
+        }
     }
 }

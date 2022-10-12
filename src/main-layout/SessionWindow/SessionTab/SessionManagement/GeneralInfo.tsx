@@ -67,8 +67,9 @@ export class GeneralInfo extends React.Component<GeneralInfoProps, GeneralInfoSt
                     {!connected && <Button loading={connecting} icon={<SendOutlined />} type="primary" onClick={() => {
                         this.setState({ connecting: true })
                         
-                        session.connect().catch(() => {
+                        session.connect().catch((err) => {
                             this.setState({ connecting: false })
+                            console.log(err);
                             Toast.error(getIntlMessage("msg_connection_failed_title"), getIntlMessage("msg_connection_failed_desc"))
                         })
                     }}>{getIntlMessage("connect")}</Button>}

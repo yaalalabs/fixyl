@@ -43,9 +43,9 @@ module.exports = class FileManager {
     }
   };
 
-  static selectFile = async (properties) => {
+  static selectFile = async (properties, filters) => {
     return new Promise((resolve) => {
-      dialog.showOpenDialog({ properties }).then((response) => {
+      dialog.showOpenDialog({ properties: properties, filters: filters }).then((response) => {
         if (!response.canceled) {
           resolve({ path: response.filePaths[0] });
         } else {

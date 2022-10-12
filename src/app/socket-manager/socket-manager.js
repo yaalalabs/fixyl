@@ -1,16 +1,22 @@
+const Tls = require('tls');
 const Net = require('net');
+const crypto = require("crypto");
+const fs = require('fs');
+
+const { SSL_OP_NO_SSLv2, SSL_OP_NO_SSLv3, SSL_OP_NO_TLSv1, SSL_OP_NO_TLSv1_1, SSL_OP_NO_TLSv1_2 } = require('constants');
 
 module.exports = class SocketManager {
   static allSockets = {}
 
-  static createSocket = async (id, ip, port, mainWindow) => {
+  static createSocket = async (id, ip, port, sslConfigs, mainWindow) => {
     try {
       this.disconnectSocket(id, mainWindow);
       
-      const socket = await this.connect(id, ip, port, mainWindow)
+      const socket = await this.connect(id, ip, port, sslConfigs, mainWindow)
       this.allSockets[id] = socket
       return { id, type: 'connect' }
     } catch (err) {
+      console.log(err);
       return err
     }
   }
@@ -36,18 +42,70 @@ module.exports = class SocketManager {
     return !mainWindow || mainWindow.isDestroyed() || !mainWindow.webContents
   }
 
-  static async  connect(id, host, port, mainWindow) {
-    return new Promise(async (resolve, reject) => {
-      const socket = new Net.Socket()
+  static configureSSL = (sslConfigs, options) => {
+    if (sslConfigs.sslServerName !== undefined && sslConfigs.sslServerName != "") {
+      options.servername = sslConfigs.sslServerName
+    }
+
+    if (sslConfigs.sslCACertificate !== undefined && sslConfigs.sslCACertificate != "") {
+      options.ca = [ fs.readFileSync(sslConfigs.sslCACertificate) ]
+    }
+
+    if (sslConfigs.sslCertificate !== undefined && sslConfigs.sslCertificate != "") {
+      options.pfx = [ fs.readFileSync(sslConfigs.sslCertificate) ]
+    }
+
+    if (sslConfigs.sslCertificatePassword !== undefined && sslConfigs.sslCertificatePassword != "") {
+      options.passphrase = sslConfigs.sslCertificatePassword
+    }
+
+    if (sslConfigs.sslProtocol !== undefined && sslConfigs.sslProtocol != "") {
+      var cipherProtocols = [SSL_OP_NO_SSLv2, SSL_OP_NO_SSLv3, SSL_OP_NO_TLSv1, SSL_OP_NO_TLSv1_1, SSL_OP_NO_TLSv1_2]
+      if (sslConfigs.sslProtocol == "SSLv2") {
+        cipherProtocols = cipherProtocols.filter(item => item !== SSL_OP_NO_SSLv2)
+      }
+      if (sslConfigs.sslProtocol == "SSLv3") {
+        cipherProtocols = cipherProtocols.filter(item => item !== SSL_OP_NO_SSLv3)
+      }
+      if (sslConfigs.sslProtocol == "TLSv1") {
+        cipherProtocols = cipherProtocols.filter(item => item !== SSL_OP_NO_TLSv1)
+      }
+      if (sslConfigs.sslProtocol == "TLSv1_1") {
+        cipherProtocols = cipherProtocols.filter(item => item !== SSL_OP_NO_TLSv1_1)
+      }
+      if (sslConfigs.sslProtocol == "TLSv1_2") {
+        cipherProtocols = cipherProtocols.filter(item => item !== SSL_OP_NO_TLSv1_2)
+      }
+      options.secureOptions = cipherProtocols.reduce((a, b) => a | b)
+    }
+    
+    return options
+  }
+
+  static async  connect(id, host, port, sslConfigs, mainWindow) {
+    return new Promise(async (resolve, reject) => { 
+      var socket = undefined;     
       try {
         await new Promise((resolve, reject) => {
           try {
-            socket
-              .connect(port, host, () => {
-                console.log("==> connected", port, host)
-                resolve()
-              })
-              .setEncoding('utf8')
+            var protocol = Net;
+            var options = {
+              host: host,
+              port: port
+            };
+
+            if (sslConfigs.sslEnabled !== undefined && sslConfigs.sslEnabled) {
+              console.log("==> attempting ssl connect", port, host)
+              protocol = Tls;
+              options = this.configureSSL(sslConfigs, options)
+            } else {
+              console.log("==> attempting to connect", port, host)
+            }
+
+            socket = protocol.connect(options, () => {
+              console.log("==> connected", port, host)
+              resolve()
+            }).setEncoding('utf8')
               .on('data', (data) => {                
                 if (this.isWinDestroyed(mainWindow)) {
                   return;
@@ -76,19 +134,23 @@ module.exports = class SocketManager {
                 }
                 
                 console.log("==> error")
+                console.log(error)
                 mainWindow.webContents.send(
                   'socketManagerIn',
                   JSON.stringify({ type: 'error', error, id }),
                 )
               })
+
+              //resolve(socket)
           } catch (err) {
-            reject({ error, type: 'error' })
+            console.log("==> error")
+            console.log(err)
+            reject({ err, type: 'error' })
           }
         })
       } catch (error) {
         reject({ error, type: 'error' })
       }
-
       resolve(socket)
     })
   }

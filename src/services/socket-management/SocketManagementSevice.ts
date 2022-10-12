@@ -8,6 +8,15 @@ export interface SocketEvent {
   result?: any;
 }
 
+export interface SocketSSLConfigs {
+  sslEnabled?: boolean;
+  sslServerName?: string;
+  sslCACertificate?: string;
+  sslCertificate?: string;
+  sslCertificatePassword?: string;
+  sslProtocol?: string;
+}
+
 export class SocketInst {
   private socketEventSubject = new Subject<SocketEvent>()
   private api = (window as any).api;
@@ -50,12 +59,12 @@ export class SocketManagementSevice {
     });
   }
 
-  public createSocket(ip: string, port: number): SocketInst {
+  public createSocket(ip: string, port: number, sslConfigs: SocketSSLConfigs): SocketInst {
     const id = this.currentSocketId++;
     const socket = new SocketInst(ip, port, id);
     this.socketMap.set(id, socket);
 
-    this.api.send("socketManagerOut", ["connect", id, ip, port]);
+    this.api.send("socketManagerOut", ["connect", id, ip, port, sslConfigs]);
     return socket;
   }
 

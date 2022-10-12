@@ -53,6 +53,7 @@ module.exports = class SocketManager {
 
     if (sslConfigs.sslCertificate !== undefined && sslConfigs.sslCertificate != "") {
       options.pfx = [ fs.readFileSync(sslConfigs.sslCertificate) ]
+      options.rejectUnauthorized = false
     }
 
     if (sslConfigs.sslCertificatePassword !== undefined && sslConfigs.sslCertificatePassword != "") {

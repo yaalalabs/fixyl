@@ -33,15 +33,17 @@
             }
         }
 
-        .sub-title {
-            font-size: 14px;
-            padding: 10px 0px;
-            background-color: var(--shade-400);
-            color: var(--shade-250);
+        .ssl-config-wrapper {
+            margin-top: 18px;
 
-            .anticon {
-                margin-right: 10px;
-                color: var(--shade-250);
+            .ant-collapse-header {
+                font-size: 12px;
+                padding: 6px 10px;
+
+                .anticon {
+                    margin-right: 10px;
+                    color: var(--shade-250);
+                }
             }
         }
 

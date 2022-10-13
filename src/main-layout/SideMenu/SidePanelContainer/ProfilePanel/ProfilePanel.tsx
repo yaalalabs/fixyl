@@ -1,5 +1,5 @@
 import { PlusOutlined, ApiOutlined } from '@ant-design/icons';
-import { Button, Empty, FormInstance, Input, InputNumber, Select, Tooltip } from 'antd';
+import { Button, Collapse, Empty, FormInstance, Input, InputNumber, Select, Tooltip } from 'antd';
 import React from 'react';
 import { LM } from 'src/translations/language-manager';
 import { BasePanel } from '../BasePanel';
@@ -16,6 +16,7 @@ import { deepCopyObject } from 'src/utils/utils';
 import Checkbox from 'antd/lib/checkbox/Checkbox';
 
 const { Option } = Select;
+const { Panel } = Collapse;
 interface ProfilePanelState {
     showNewForm: boolean;
     isNewForm: boolean,
@@ -102,7 +103,7 @@ export class ProfilePanel extends React.Component<any, ProfilePanelState> {
                         val["fixVersion"] && this.setState({ requireTransportDic: val["fixVersion"] === FixVersion.FIX_5 })
                     }}>
                     <Form.Item name="name" label={getIntlMessage("name")} rules={[{ required: true }]}>
-                        <Input disabled={!isNewForm}/>
+                        <Input disabled={!isNewForm} />
                     </Form.Item>
                     <Form.Item name="ip" label={getIntlMessage("ip")} rules={[{ required: true }]}>
                         <Input />
@@ -134,29 +135,36 @@ export class ProfilePanel extends React.Component<any, ProfilePanelState> {
                     {requireTransportDic && <Form.Item name="transportDictionaryLocation" label={getIntlMessage("transport_dictionary_location")} rules={[{ required: true }]}>
                         <FileSelect label={"Browse"} />
                     </Form.Item>}
-                    <div className="sub-title"><ApiOutlined />{getIntlMessage("ssl_configuration")}</div>
-                    <Form.Item name="sslEnabled" valuePropName="checked" label={getIntlMessage("ssl_enabled")}>
-                        <Checkbox />
-                    </Form.Item>
-                    <Form.Item name="sslProtocol" label={getIntlMessage("ssl_protocol")}>
-                        <Select >
-                            <Option value="">-Any-</Option>
-                            <Option value="TLSv1_2">Tls1.2</Option>
-                            <Option value="TLSv1_3">Tls1.3</Option>
-                        </Select>
-                    </Form.Item>
-                    <Form.Item name="sslServerName" label={getIntlMessage("ssl_server_name")}>
-                        <Input />
-                    </Form.Item>
-                    <Form.Item name="sslCACertificate" label={getIntlMessage("ssl_ca_certificate")}>
-                        <FileSelect label={"Browse"} filters={[{ name: 'PEM Files', extensions: ['pem'] }]} />
-                    </Form.Item>
-                    <Form.Item name="sslCertificate" label={getIntlMessage("ssl_certificate")}>
-                        <FileSelect label={"Browse"} filters={[{ name: 'PFX Files', extensions: ['pfx'] }]} />
-                    </Form.Item>
-                    <Form.Item name="sslCertificatePassword" label={getIntlMessage("ssl_certificate_password")}>
-                        <Password />
-                    </Form.Item>
+                    <Collapse className='ssl-config-wrapper'
+                        expandIconPosition={'right'}
+                    >
+                        <Panel header={<><ApiOutlined />{getIntlMessage("ssl_configuration")}</>} key="1">
+                            <Form.Item name="sslEnabled" valuePropName="checked" label={getIntlMessage("ssl_enabled")}>
+                                <Checkbox />
+                            </Form.Item>
+                            <Form.Item name="sslProtocol" label={getIntlMessage("ssl_protocol")}>
+                                <Select >
+                                    <Option value="">-Any-</Option>
+                                    <Option value="TLSv1_2">Tls1.2</Option>
+                                    <Option value="TLSv1_3">Tls1.3</Option>
+                                </Select>
+                            </Form.Item>
+                            <Form.Item name="sslServerName" label={getIntlMessage("ssl_server_name")}>
+                                <Input />
+                            </Form.Item>
+                            <Form.Item name="sslCACertificate" label={getIntlMessage("ssl_ca_certificate")}>
+                                <FileSelect label={"Browse"} filters={[{ name: 'PEM Files', extensions: ['pem'] }]} />
+                            </Form.Item>
+                            <Form.Item name="sslCertificate" label={getIntlMessage("ssl_certificate")}>
+                                <FileSelect label={"Browse"} filters={[{ name: 'PFX Files', extensions: ['pfx'] }]} />
+                            </Form.Item>
+                            <Form.Item name="sslCertificatePassword" label={getIntlMessage("ssl_certificate_password")}>
+                                <Password />
+                            </Form.Item>
+                        </Panel>
+                    </Collapse>
+                    {/* <div className="sub-title"><ApiOutlined />{getIntlMessage("ssl_configuration")}</div> */}
+
                     <div className="footer">
                         <Button type="ghost" onClick={this.onCloseNewPanel}>{getIntlMessage("cancel")}</Button>
                         <Button type="primary" htmlType="submit">{getIntlMessage("save")}</Button>

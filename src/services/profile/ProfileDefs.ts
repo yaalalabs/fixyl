@@ -13,9 +13,15 @@ export interface Profile {
     dictionaryLocation: string;
     fixVersion: FixVersion;
     transportDictionaryLocation?: string;
+    sslEnabled?: boolean;
+    sslServerName?: string;
+    sslCACertificate?: string;
+    sslCertificate?: string;
+    sslProtocol?: string;
 }
 
 export interface ProfileWithCredentials extends Profile {    
     username: string;
     password: string;
+    sslCertificatePassword?: string;
 }

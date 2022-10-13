@@ -33,6 +33,18 @@
             }
         }
 
+        .sub-title {
+            font-size: 14px;
+            padding: 10px 0px;
+            background-color: var(--shade-400);
+            color: var(--shade-250);
+
+            .anticon {
+                margin-right: 10px;
+                color: var(--shade-250);
+            }
+        }
+
         .footer {
             display: flex;
             flex-direction: row;

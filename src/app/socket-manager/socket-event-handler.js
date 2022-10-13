@@ -7,7 +7,7 @@ module.exports = (mainWindow) => {
     let response;
     switch (args[0]) {
       case 'connect':
-        response = await SocketManager.createSocket(id, args[2], args[3], mainWindow)
+        response = await SocketManager.createSocket(id, args[2], args[3], args[4], mainWindow)
         break
       case 'disconnect':
         response = await SocketManager.disconnectSocket(id, mainWindow)

@@ -4,7 +4,7 @@ import { Toast } from 'src/common/Toast/Toast';
 import { LM } from 'src/translations/language-manager';
 import { GlobalServiceRegistry } from '../GlobalServiceRegistry';
 import { ProfileWithCredentials } from '../profile/ProfileDefs';
-import { SocketInst } from '../socket-management/SocketManagementSevice';
+import { SocketInst, SocketSSLConfigs } from '../socket-management/SocketManagementSevice';
 import { FixDefinitionParser, FixMessageDef } from './FixDefinitionParser';
 import { DEFAULT_HB_INTERVAL, FixFieldDef, HBMonitor } from './FixDefs';
 
@@ -75,6 +75,7 @@ export class FixSession {
     }
 
     destroy() {
+        console.log("Session destroyed");
         this.parser.destroy();
         this.socket?.end();
         this.isDestroyed = true;
@@ -181,7 +182,10 @@ export class FixSession {
 
     async connect(): Promise<void> {
         const { ip, port } = this.profile;
-        this.socket = GlobalServiceRegistry.socket.createSocket(ip, port);
+        const sslConfigs : SocketSSLConfigs = { sslEnabled:this.profile.sslEnabled, sslProtocol:this.profile.sslProtocol
+            , sslCACertificate:this.profile.sslCACertificate, sslServerName:this.profile.sslServerName
+            , sslCertificate:this.profile.sslCertificate, sslCertificatePassword:this.profile.sslCertificatePassword };
+        this.socket = GlobalServiceRegistry.socket.createSocket(ip, port, sslConfigs);
 
         return new Promise(async (resolve, reject) => {
             try {

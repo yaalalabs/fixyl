@@ -51,9 +51,9 @@ export class FileManagementService {
     return this.createFilePromise(requestId);
   }
 
-  public selectFile(options?: any): Promise<any> {
+  public selectFile(options?: any, filters?: any): Promise<any> {
     const requestId = this.requestId++;
-    this.fileApi.send("fileManagerOut", ["Select", requestId, options]);
+    this.fileApi.send("fileManagerOut", ["Select", requestId, options, filters]);
     return this.createFilePromise(requestId);
   }
 

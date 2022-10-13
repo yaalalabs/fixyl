@@ -101,7 +101,8 @@ export class SessionWindow extends React.Component<any, SessionWindowState> {
         }
 
         if (!hasSession) {
-          session.connect().catch(() => {
+          session.connect().catch((err) => {
+            console.log(err);
             Toast.error(getIntlMessage("msg_connection_failed_title"), getIntlMessage("msg_connection_failed_desc"))
             console.log("Failed to connect to fix session", action.profile)
           })

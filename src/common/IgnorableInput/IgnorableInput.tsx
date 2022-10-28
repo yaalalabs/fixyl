@@ -4,7 +4,7 @@ import "./IgnorableInput.scss";
 import { LM } from 'src/translations/language-manager';
 import { LogoutOutlined, RollbackOutlined } from '@ant-design/icons';
 import { FixField } from 'src/services/fix/FixDefs';
-import { Select, Input, Switch, DatePicker, } from 'antd';
+import { Select, Input, DatePicker, } from 'antd';
 import { ListInput } from '../ListInput/ListInput';
 
 const { Option } = Select
@@ -19,7 +19,7 @@ const FieldRenderEx = ({ value, field, required, parent, fieldIterationIndex, on
     }
 
     const { def } = field;
-    if (def.options) {
+    if (def.options && def.type.toLowerCase() !== "multiplecharvalue") {
         return <Select onChange={onChangeEx} value={inputValue}>
             {def.options.map((option, i) => {
                 return <Option value={option.value} key={i}>{option.displayValue}</Option>
@@ -30,12 +30,17 @@ const FieldRenderEx = ({ value, field, required, parent, fieldIterationIndex, on
 
     switch (def.type.toLowerCase()) {
         case "boolean":
-            return <Switch onChange={onChangeEx} checked={inputValue} />
+            return <Select onChange={onChangeEx} value={inputValue} >
+                <Option key={"1"} value={""}>{""}</Option>
+                <Option key={"Y"} value="Y">Y</Option>
+                <Option key={"N"} value="N">N</Option>
+            </Select>
         case "utctimestamp":
             return <DatePicker onChange={onChangeEx} showTime format="YYYY-MM-DD hh:mm:ss:ms" value={inputValue} />
         case "multiplecharvalue":
         case "multiplevaluestring":
-            return <ListInput onChange={onChangeEx} name={def.name} parent={parent} required={required} fieldIterationIndex={fieldIterationIndex} value={inputValue} />
+            return <ListInput onChange={onChangeEx} name={def.name} parent={parent} options={def.options}
+                required={required} fieldIterationIndex={fieldIterationIndex} value={inputValue} />
         case "monthyear":
             return <DatePicker onChange={onChangeEx} picker="month" value={inputValue} />
         case "utcdateonly":

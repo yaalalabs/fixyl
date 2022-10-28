@@ -18,11 +18,16 @@ export enum FixFieldValueFiller {
     AUTO_GEN = "{auto-gen}",
 }
 
+export interface FixFieldOption {
+    value: string,
+    displayValue: string
+}
+
 export class FixFieldDef {
     type: string;
     name: string;
     number: string;
-    options?: { value: string, displayValue: string }[];
+    options?: FixFieldOption[];
     isGroupField: boolean;
 
     constructor(private xmNode: FixXmlNode) {
@@ -81,8 +86,6 @@ export class FixFieldDef {
             case "multiplevaluestring":
             case "multiplecharvalue":
                 return Array.isArray(inputValue) ? inputValue.join(" ") : inputValue;
-            case "boolean":
-                return inputValue ? "Y" : "N";
             case "utctimestamp":
                 return moment(inputValue).utc().format("YYYYMMDD-HH:mm:ss.000");
             case 'monthyear':
@@ -116,6 +119,7 @@ export class FixComplexType {
     name: string;
     required?: boolean;
     fields: FixField[] = [];
+    requiredFields: FixField[] = [];
     components: FixComplexType[] = [];
     group?: FixComplexType;
     groupInstances: any = {};
@@ -134,7 +138,12 @@ export class FixComplexType {
                 case "field":
                     const def = this.fieldDefMap.get(child.attributes.name);
                     if (def) {
-                        this.fields.push(new FixField(def, child.attributes.required === "Y"))
+                        const field = new FixField(def, child.attributes.required === "Y");
+                        this.fields.push(field);
+                        
+                        if (field.required) {
+                            this.requiredFields.push(field);
+                        }                        
                     }
                     break;
                 case "group":
@@ -158,7 +167,7 @@ export class FixComplexType {
     getValue() {
         return this.value;
     }
-    
+
     getValueWithHeaders() {
         return this.valueWithHeaders;
     }

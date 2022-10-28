@@ -1,7 +1,7 @@
 import { removeFalsyKeys } from "src/utils/utils";
 import { GlobalServiceRegistry } from "../GlobalServiceRegistry";
 import { FixVersion } from "../profile/ProfileDefs";
-import { FixXmlNode, FixFieldDef, FixComplexType } from "./FixDefs";
+import { FixXmlNode, FixFieldDef, FixComplexType, FixField } from "./FixDefs";
 const parser = require('xml-reader');
 
 export type FixMessageDef = FixComplexType;
@@ -152,23 +152,6 @@ export class FixDefinitionParser {
         return usedLen;
     }
 
-    private getTagValue(message: string, tag: string, iterationIndex: number = 0): string | undefined {
-        let fields = message.split(SOH);
-        let index = -1;
-
-        for (let i = 0; i < fields.length; i++) {
-            let temp = fields[i].split('=');
-            if (tag === temp[0]) {
-                index++;
-                if (index === iterationIndex) {
-                    return temp[1];
-                }
-            }
-        }
-
-        return undefined
-    }
-
     private checksum(data: string): string {
         let total: number = 0;
         for (let index = 0; index < data.length; index++) {
@@ -230,10 +213,38 @@ export class FixDefinitionParser {
         return message;
     }
 
+    private getTagValue(message: string, tag: string, iterationIndex: number = 0, requiredField?: FixField): string | undefined {
+        let fields = message.split(SOH);
+        let index = -1;
+        let requiredIndex = -1;
+        const requiredFieldNum = requiredField?.def.number;
+
+        for (let i = 0; i < fields.length; i++) {
+            let temp = fields[i].split('=');
+
+            if (requiredFieldNum !== undefined && requiredFieldNum === temp[0]) {
+                requiredIndex++;
+            }
+
+            if (tag === temp[0]) {
+                index++;
+
+                if ((requiredIndex === iterationIndex) ||
+                    (requiredFieldNum === undefined && index === iterationIndex)) {
+                    return temp[1];
+                }
+            }
+        }
+
+        return undefined
+    }
+
     private getFieldValues = (def: FixComplexType, inputData: string, fieldIterationIndex: number, withHeaders: boolean) => {
         const ret: any = {};
+        const requiredField = def.requiredFields[0];
+
         def.fields.forEach(field => {
-            const fieldValue = this.getTagValue(inputData, field.def.number, fieldIterationIndex);
+            const fieldValue = this.getTagValue(inputData, field.def.number, fieldIterationIndex, requiredField);
             ret[`${field.def.name}${withHeaders ? `[${field.def.number}]` : ""}`] = fieldValue;
         })
 
@@ -250,6 +261,7 @@ export class FixDefinitionParser {
 
         for (let i = 0; i < Number(interationLen); i++) {
             const fieldData = this.getFieldValues(def, inputData, i, withHeaders)
+
             let groupData: any = {};
             if (def.group) {
                 groupData[def.group.name] = this.getGroupValues(def.group, inputData, withHeaders);
@@ -318,7 +330,7 @@ export class FixDefinitionParser {
             const def = msgDef.clone();
             (def as FixComplexType).setValue(ret);
             (def as FixComplexType).setValueWithHeaders(headerRet);
-            
+
             return { msg: def, header: this.decodeHeader(msg) }
         }
 

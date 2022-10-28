@@ -475,7 +475,7 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
                         this.markInstance?.unmark();
                     }} />
                 </div>}
-                {initialized && <Form ref={this.formRef} layout="horizontal" initialValues={this.getInitialValues()} labelCol={{ span: 10 }} labelAlign="left" onFinish={this.onFinished}>
+                {initialized && <Form ref={this.formRef} layout="horizontal" initialValues={this.getInitialValues()} onValuesChange={(e) => {console.log("=====>", e)}} labelCol={{ span: 10 }} labelAlign="left" onFinish={this.onFinished}>
                     <div className="form-body" id={`search-node${name}`}>
 
                         {this.renderFields(message, 0, 0, "root")}

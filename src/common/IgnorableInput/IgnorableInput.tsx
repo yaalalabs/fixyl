@@ -30,7 +30,12 @@ const FieldRenderEx = ({ value, field, required, parent, fieldIterationIndex, on
 
     switch (def.type.toLowerCase()) {
         case "boolean":
-            return <Select onChange={onChangeEx} value={inputValue} >
+            let ret = inputValue;
+            if (typeof inputValue === "boolean") {
+                ret = inputValue ? "Y" : "N"
+            }
+
+            return <Select onChange={onChangeEx} value={ret} >
                 <Option key={"1"} value={""}>{""}</Option>
                 <Option key={"Y"} value="Y">Y</Option>
                 <Option key={"N"} value="N">N</Option>

@@ -94,6 +94,12 @@ export class FixFieldDef {
                 return moment(inputValue).utc().format("YYYYMMDD-HH")
             case 'utctimeonly':
                 return moment(inputValue).utc().format("mm:ss.000")
+            case 'boolean':
+                let ret = inputValue;
+                if (typeof inputValue === "boolean") {
+                    ret = inputValue ? "Y" : "N"
+                }
+                return ret
             default:
                 return inputValue;
         }
@@ -140,10 +146,10 @@ export class FixComplexType {
                     if (def) {
                         const field = new FixField(def, child.attributes.required === "Y");
                         this.fields.push(field);
-                        
+
                         if (field.required) {
                             this.requiredFields.push(field);
-                        }                        
+                        }
                     }
                     break;
                 case "group":

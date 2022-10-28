@@ -6,6 +6,7 @@ import { LanguageCodes, LM } from 'src/translations/language-manager';
 import { BasePanel } from '../BasePanel';
 import './SettingsPanel.scss';
 import { WorkingDirSelector } from './WorkingDirSelector';
+var pjson = require('../../../../../package.json');
 
 const { Option } = Select;
 const getIntlMessage = (msg: string) => {
@@ -59,6 +60,10 @@ export class SettingsPanel extends React.Component<any, any> {
             this.setState({ workingDir: GlobalServiceRegistry.appManager.getWorkingDir() })
           }} />
         </div>
+      </div>
+      <div className="field-container">
+        <div className="field-name">{getIntlMessage("version")}</div>
+        <div className="field-value" style={{ marginRight: 15 }}>{pjson.version}</div>
       </div>
     </BasePanel>
   }

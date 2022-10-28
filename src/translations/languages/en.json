@@ -46,7 +46,8 @@
 		"green": "Green",
 		"dark": "Dark",
 		"en": "English",
-		"si": "සිංහල"
+		"si": "සිංහල",
+		"version": "Version"
 	},
 	"session_window": {
 		"lancher": "Welcome",

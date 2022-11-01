@@ -213,7 +213,7 @@ export class FixDefinitionParser {
         return message;
     }
 
-    private getTagValue(message: string, tag: string, iterationIndex: number = 0, requiredField?: FixField): string | undefined {
+    private getTagValueFormGroups(message: string, tag: string, iterationIndex: number = 0, requiredField?: FixField): string | undefined {
         let fields = message.split(SOH);
         let index = -1;
         let requiredIndex = -1;
@@ -239,12 +239,37 @@ export class FixDefinitionParser {
         return undefined
     }
 
-    private getFieldValues = (def: FixComplexType, inputData: string, fieldIterationIndex: number, withHeaders: boolean) => {
+    private getTagValue(message: string, tag: string, iterationIndex: number = 0): string | undefined {
+        let fields = message.split(SOH);
+        let index = -1;
+
+        for (let i = 0; i < fields.length; i++) {
+            let temp = fields[i].split('=');
+            if (tag === temp[0]) {
+                index++;
+                if (index === iterationIndex) {
+                    return temp[1];
+                }
+            }
+        }
+
+        return undefined
+    }
+    
+    private getFieldValues = (def: FixComplexType, inputData: string, fieldIterationIndex: number, withHeaders: boolean, isGroup?: boolean) => {
         const ret: any = {};
         const requiredField = def.requiredFields[0];
 
         def.fields.forEach(field => {
-            const fieldValue = this.getTagValue(inputData, field.def.number, fieldIterationIndex, requiredField);
+            let fieldValue;
+
+            if (!isGroup) {
+                fieldValue = this.getTagValue(inputData, field.def.number, fieldIterationIndex);
+            } else {
+                fieldValue = this.getTagValueFormGroups(inputData, field.def.number, fieldIterationIndex, requiredField);
+            }
+
+            this.getTagValueFormGroups(inputData, field.def.number, fieldIterationIndex, requiredField);
             ret[`${field.def.name}${withHeaders ? `[${field.def.number}]` : ""}`] = fieldValue;
         })
 
@@ -260,7 +285,7 @@ export class FixDefinitionParser {
         }
 
         for (let i = 0; i < Number(interationLen); i++) {
-            const fieldData = this.getFieldValues(def, inputData, i, withHeaders)
+            const fieldData = this.getFieldValues(def, inputData, i, withHeaders, true)
 
             let groupData: any = {};
             if (def.group) {

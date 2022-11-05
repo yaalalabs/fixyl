@@ -223,7 +223,7 @@
 		"msg_invalid_message_title": "Invalid Message",
 		"raw_msg_1": "Expected Message",
 		"raw_msg_2": "Received Message",
-		"raw_msg_desc": "You can compare two messages using this window. The expected message supports regular expressions (Javascript Type) for the fields and you can define a regular expression using ${<reg exp>} notation. Please note that the field separator should be defined as a printable character instead of the SOH character.",
+		"raw_msg_desc": "You can compare two messages using this window. The expected message supports regular expressions (Javascript Type) for the fields and you can define a regular expression using $'{<reg exp>} notation. Please note that the field separator should be defined as a printable character instead of the SOH character.",
 		"field_separator": "Field Separator",
 		"view": "Compare",
 		"fix_definition": "Fix definition",

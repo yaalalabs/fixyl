@@ -16,8 +16,8 @@ export class GlobalServiceRegistry {
     // Note There shouldn't be constructor level dependancies in these services
     // If there is some dependent logic move it to GlobalInitializer
     public static fileManger: FileManagementService = CommonServiceFactory.instance.createNewFileManagementService();
-    public static appManager: AppManagementService = CommonServiceFactory.instance.createNewAppManagementService(this.fileManger);
     public static network: NetworkService = CommonServiceFactory.instance.createNetworkService();
+    public static appManager: AppManagementService = CommonServiceFactory.instance.createNewAppManagementService(this.fileManger, this.network);
     public static profile: ProfileManagementService = CommonServiceFactory.instance.createNewProfileManagerService(this.appManager, this.fileManger);
     public static fix: FixSessionManagementService = CommonServiceFactory.instance.createNewFixSessionManagementService();
     public static navigation: NavigationService = CommonServiceFactory.instance.createNewNavigationService();

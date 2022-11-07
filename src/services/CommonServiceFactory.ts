@@ -19,8 +19,8 @@ export class CommonServiceFactory {
     return new FixSessionManagementService();
   }
 
-  createNewAppManagementService(fileManager: FileManagementService): AppManagementService {
-    return new AppManagementService(fileManager);
+  createNewAppManagementService(fileManager: FileManagementService, network: NetworkService): AppManagementService {
+    return new AppManagementService(fileManager, network);
   }
 
   createNewNavigationService(): NavigationService {

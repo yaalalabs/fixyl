@@ -6,6 +6,7 @@ import { FileManagementService } from "./file-management/FileManagementService";
 import { SocketManagementSevice } from "./socket-management/SocketManagementSevice";
 import { FavoriteManagementService } from "./favorite-management/FavoriteManagementService";
 import { ScenarioManagementService } from "./scenario-management/ScenarioManagementService";
+import { NetworkService } from "./network/NetworkService";
 
 export class CommonServiceFactory {
   public static instance = new CommonServiceFactory();
@@ -40,5 +41,9 @@ export class CommonServiceFactory {
 
   createScenarioManagementService(appManager: AppManagementService, fileManager: FileManagementService): ScenarioManagementService {
     return new ScenarioManagementService(appManager, fileManager);
+  }
+
+  createNetworkService(): NetworkService {
+    return new NetworkService();
   }
 }

@@ -5,6 +5,7 @@ import { GlobalServiceRegistry } from 'src/services/GlobalServiceRegistry';
 import { LanguageCodes, LM } from 'src/translations/language-manager';
 import { BasePanel } from '../BasePanel';
 import './SettingsPanel.scss';
+import { VersionAlert } from './VersionAlert';
 import { WorkingDirSelector } from './WorkingDirSelector';
 var pjson = require('../../../../../package.json');
 
@@ -18,11 +19,13 @@ export class SettingsPanel extends React.Component<any, any> {
     lang: GlobalServiceRegistry.appManager.getPreferredLanguage(),
     theme: GlobalServiceRegistry.appManager.getPreferredTheme(),
     workingDir: GlobalServiceRegistry.appManager.getWorkingDir(),
-    showDialog: false
+    showDialog: false,
+    latestVersion: GlobalServiceRegistry.appManager.getLatestVersion(),
   }
 
   render() {
-    const { theme, lang, workingDir, showDialog } = this.state;
+    const { theme, lang, workingDir, showDialog, latestVersion } = this.state;
+    const currentVersion = pjson.version;
 
     return <BasePanel className="settings-management" title={getIntlMessage("title")}>
       <div className="field-container">
@@ -63,7 +66,10 @@ export class SettingsPanel extends React.Component<any, any> {
       </div>
       <div className="field-container">
         <div className="field-name">{getIntlMessage("version")}</div>
-        <div className="field-value" style={{ marginRight: 15 }}>{pjson.version}</div>
+        <div className="field-value" style={{ marginRight: 15 }}>{currentVersion}</div>
+      </div>
+      <div className="footer">
+        <VersionAlert currentVersion={currentVersion} latestVersion={latestVersion} />
       </div>
     </BasePanel>
   }

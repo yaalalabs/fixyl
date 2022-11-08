@@ -85,8 +85,8 @@ export class MessageViewerManagement extends React.Component<any, MessageViewerM
                             const prof = GlobalServiceRegistry.profile.getProfile(inst);
                             this.onNewSession(prof!.dictionaryLocation, prof?.fixVersion, prof?.transportDictionaryLocation);
                         }}>
-                            {GlobalServiceRegistry.profile.getAllProfiles().map(inst => {
-                                return <Option value={inst.name} >{inst.name}</Option>
+                            {GlobalServiceRegistry.profile.getAllProfiles().map((inst, i) => {
+                                return <Option value={inst.name} key={i}>{inst.name}</Option>
                             })}
                         </Select>
                     </Form.Item>

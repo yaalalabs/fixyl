@@ -20,17 +20,21 @@ export class NetworkService {
 
   private initNetworkEventHandler() {
     this.networkApi.receive("networkManagerIn", (data: string) => {
-      const parsedResponse = JSON.parse(data) as NetworkResponse;
+      try {
+        const parsedResponse = JSON.parse(data) as NetworkResponse;
 
-      if (parsedResponse.payload) {
-        parsedResponse.payload = JSON.parse(parsedResponse.payload);
-        this.requestMap.get(parsedResponse.requestId)?.resolve(parsedResponse);
-      }
-      else if (parsedResponse.error) {
-        this.requestMap.get(parsedResponse.requestId)?.reject(parsedResponse);
-      }
-      else {
-        console.log('Unsupported response in network service.', parsedResponse);
+        if (parsedResponse.payload) {
+          parsedResponse.payload = JSON.parse(parsedResponse.payload);
+          this.requestMap.get(parsedResponse.requestId)?.resolve(parsedResponse);
+        }
+        else if (parsedResponse.error) {
+          this.requestMap.get(parsedResponse.requestId)?.reject(parsedResponse);
+        }
+        else {
+          console.log('Unsupported response in network service.', parsedResponse);
+        }
+      } catch (error) {
+        console.log('Failed to parse response in network service.', error);
       }
     });
   }

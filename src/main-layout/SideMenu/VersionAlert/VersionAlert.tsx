@@ -6,7 +6,7 @@ import { GlobalServiceRegistry } from "src/services/GlobalServiceRegistry";
 import { LM } from "src/translations/language-manager";
 import "./VersionAlert.scss";
 
-const pjson = require('../../../../../package.json');
+const pjson = require('../../../../package.json');
 
 const RELEASES_URL = 'https://github.com/yaalalabs/fixyl/releases';
 const TOAST_KEY = '__update__';

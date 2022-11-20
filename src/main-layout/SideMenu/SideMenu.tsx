@@ -10,7 +10,7 @@ import { Subscription } from 'rxjs';
 import { NavigationPathAction } from 'src/services/navigation/NevigationService';
 import ReactJoyride, { CallBackProps } from "react-joyride";
 import { SessionActionType } from 'src/services/app-management/AppManagementService';
-import { VersionAlert } from './SidePanelContainer/SettingsPanel/VersionAlert';
+import { VersionAlert } from './VersionAlert/VersionAlert';
 
 
 export interface MenuItemProps {

@@ -229,7 +229,8 @@
 		"message_title": "විකේතනය කළ පණිවිඩය"
 	},
 	"version_alert": {
-		"version_available": "{ latestVersion } අනුවාදය ලබාගත හැකියි!",
+		"fixyl_update": "FIXYL යාවත්කාලීන කිරීම",
+		"version_available": "{ latestVersion } අනුවාදය ලබාගත හැකියි.",
 		"download": "ලබාගන්න"
 	}
 }

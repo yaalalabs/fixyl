@@ -1,13 +1,19 @@
 .version-alert {
-    background-color: var(--info-bg);
-    border: 1px solid var(--info-border);
+    display: flex;
+    justify-content: space-between;
 
-    .ant-alert-message {
+    .message {
         color: var(--text-color);
     }
 
-    .ant-btn:hover {
-        color: var(--text-color);
-        background: rgba(255, 255, 255, 0.03);
+    .action {
+        .ant-btn {
+            border: 1px solid var(--row-select-border);
+
+            &:hover {
+                color: var(--text-color);
+                background: rgba(255, 255, 255, 0.1);
+            }
+        }
     }
 }

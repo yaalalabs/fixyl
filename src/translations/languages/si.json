@@ -227,5 +227,10 @@
 		"fix_definition":"Fix අර්ථ දැක්වීම",
 		"viewer_title": "Diff View",
 		"message_title": "විකේතනය කළ පණිවිඩය"
+	},
+	"version_alert": {
+		"fixyl_update": "FIXYL යාවත්කාලීන කිරීම",
+		"version_available": "{ latestVersion } අනුවාදය ලබාගත හැකියි.",
+		"download": "ලබාගන්න"
 	}
 }

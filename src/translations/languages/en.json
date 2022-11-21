@@ -229,5 +229,10 @@
 		"fix_definition": "Fix definition",
 		"viewer_title": "Message Diff",
 		"message_title": "Decoded Message"
+	},
+	"version_alert": {
+		"fixyl_update": "FIXYL Update",
+		"version_available": "Version { latestVersion } is available.",
+		"download": "Download"
 	}
 }

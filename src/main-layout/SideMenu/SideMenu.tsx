@@ -10,6 +10,7 @@ import { Subscription } from 'rxjs';
 import { NavigationPathAction } from 'src/services/navigation/NevigationService';
 import ReactJoyride, { CallBackProps } from "react-joyride";
 import { SessionActionType } from 'src/services/app-management/AppManagementService';
+import { VersionAlert } from './VersionAlert/VersionAlert';
 
 
 export interface MenuItemProps {
@@ -176,6 +177,7 @@ export class SideMenu extends React.Component<any, SideMenuState> {
           isActive={activePanel === ActionPanelType.SETTINGS} onSelected={this.onSelected} />
       </div>
       <SidePanelContainer ref={this.ref} onDrawerClosed={this.onDrawerClosed} activePanel={activePanel} />
+      <VersionAlert />
     </React.Fragment>
   }
 }

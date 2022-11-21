@@ -1,0 +1,19 @@
+.version-alert {
+    display: flex;
+    justify-content: space-between;
+
+    .message {
+        color: var(--text-color);
+    }
+
+    .action {
+        .ant-btn {
+            border: 1px solid var(--row-select-border);
+
+            &:hover {
+                color: var(--text-color);
+                background: rgba(255, 255, 255, 0.1);
+            }
+        }
+    }
+}

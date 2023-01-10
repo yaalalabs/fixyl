@@ -279,6 +279,7 @@ export class Stage {
     stop(reset?: boolean) {
         if (reset) {
             this.state = "PENDING";
+            this.waitingState = false;
             this.stageWaitTimerPrmise?.cancel();
         }
 

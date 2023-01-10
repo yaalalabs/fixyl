@@ -286,7 +286,9 @@ export class FixSession {
             case "logout":
                 this.disconnect(true);
                 const data = msg.getValue();
-                Toast.error(data.Text);
+                if (data.Text) {
+                    Toast.error(data.Text);
+                }
                 break;
 
         }

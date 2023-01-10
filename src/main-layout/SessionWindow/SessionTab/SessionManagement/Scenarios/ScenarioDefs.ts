@@ -2,7 +2,7 @@ import { Subject, Subscription } from "rxjs";
 import { FixComplexType } from "src/services/fix/FixDefs";
 import { FixSession, FixSessionEventType } from "src/services/fix/FixSession";
 import { LM } from "src/translations/language-manager";
-import { makeCancelable, removeFalsyKeys } from "src/utils/utils";
+import { CancelablePromise, makeCancelable, removeFalsyKeys } from "src/utils/utils";
 
 const DEFAULT_WAIT_TIME = 30000;
 const getIntlMessage = (msg: string, opts?: any) => {
@@ -17,16 +17,20 @@ export class Stage {
     private outputMsgs = new Map<string, { msg: FixComplexType, state: ValidationState }>();
     private startListening = false;
     private waitTimer: any;
+    private stageWaitTimerPrmise?: CancelablePromise;
     private waitTime = DEFAULT_WAIT_TIME;
+    private stageWaitTime = 0;
     private failedReason?: string;
     private sessionSub?: Subscription;
     private eventSubject = new Subject<"UPDATE" | "DONE">();
     private doneCB?: () => void;
     private skipped = false;
+    private waitingState = false;
 
-    constructor(public name: string, private session: FixSession, private onCaptureParam: (param: string, value: any) => void, waitTime?: number) {
+    constructor(public name: string, private session: FixSession, private onCaptureParam: (param: string, value: any) => void, waitTime?: number, stageWaitTime?: number) {
         this.subscribeToSession();
-        this.setWaitTime(waitTime)
+        this.setWaitTime(waitTime);
+        this.setStageWaitTime(stageWaitTime);
     }
 
     getEventObservable() {
@@ -43,6 +47,14 @@ export class Stage {
 
     isSkipped() {
         return this.skipped;
+    }
+
+    setStageWaitTime(time?: number) {
+        if (time === undefined) {
+            this.stageWaitTime = 0;
+        } else {
+            this.stageWaitTime = time * 1000;
+        }
     }
 
     setWaitTime(time?: number) {
@@ -118,7 +130,7 @@ export class Stage {
             if (typeof expectedValues[p] === "string" && expectedValues[p].trim() === "{ignore}") {
                 continue;
             }
-            
+
             const getRegex = /{get:(.*?)}/g;
             const match = getRegex.exec(expectedValues[p]);
             if (match) {
@@ -197,7 +209,7 @@ export class Stage {
 
             this.reset();
             this.state = "EXECUTING";
-            this.session.send(this.inputMsg, parameters).then(() => {
+            this.session.send(this.inputMsg, parameters).then(async () => {
                 if (this.outputMsgs.size === 0) {
                     this.state = "SUCCESS";
                     resolve();
@@ -207,6 +219,8 @@ export class Stage {
                 this.doneCB = resolve;
                 this.startListening = true;
                 this.state = "PENDING";
+
+                this.startStageWaitTimer();
                 this.startTimer();
             }).catch((error: Error) => {
                 this.state = "FAILED";
@@ -243,37 +257,68 @@ export class Stage {
         return {
             name: this.name,
             waitTime: (this.waitTime / 1000),
+            stageWaitTime: (this.stageWaitTime / 1000),
             skipped: this.skipped,
             inputMsg: { name: this.inputMsg.name, data: JSON.stringify(this.inputMsg.getValue()) },
             outputMsgs: Array.from(this.outputMsgs.values()).map(inst => ({ name: inst.msg.name, data: JSON.stringify(inst.msg.getValue()) }))
         }
     }
 
+    isWaiting() {
+        return this.waitingState;
+    }
+
     getWaitTime() {
         return this.waitTime / 1000
+    }
+
+    getStageWaitTime() {
+        return this.stageWaitTime / 1000
     }
 
     stop(reset?: boolean) {
         if (reset) {
             this.state = "PENDING";
+            this.stageWaitTimerPrmise?.cancel();
         }
 
-        clearTimeout(this.waitTimer);
-        this.startListening = false;
-        this.eventSubject.next("DONE");
-        this.doneCB?.();
+        const clean = () => {
+            clearTimeout(this.waitTimer);
+            this.startListening = false;
+
+            this.eventSubject.next("DONE");
+            this.doneCB?.();
+        }
+
+        this.stageWaitTimerPrmise?.promise.then(() => clean()).catch(() => clean())
     }
 
     private startTimer() {
         this.waitTimer = setTimeout(() => {
             this.state = "FAILED";
-            this.failedReason = getIntlMessage("msg_timeout", this.waitTime / 1000)
+            this.failedReason = getIntlMessage("msg_timeout", { time: this.waitTime / 1000 })
         }, this.waitTime)
+    }
+
+    private setWaitingState(state: boolean) {
+        this.waitingState = state;
+        this.eventSubject.next("UPDATE");
+    }
+
+    private startStageWaitTimer() {
+        this.stageWaitTimerPrmise = makeCancelable(new Promise((resolve, reject) => {
+            this.setWaitingState(true);
+
+            setTimeout(() => {
+                this.setWaitingState(false);
+                resolve(undefined);
+            }, this.stageWaitTime)
+        }))
     }
 }
 
 interface SaveFileStageStructure {
-    name: string, waitTime: number, skipped: boolean,
+    name: string, waitTime: number, skipped: boolean, stageWaitTime?: number,
     inputMsg: { name: string, data: string }, outputMsgs: { name: string, data: string }[]
 }
 interface SaveFileStructure {
@@ -302,15 +347,15 @@ export class Scenario {
     loadFromFile(data: string) {
         const obj: SaveFileStructure = JSON.parse(data);
         obj.stages.forEach(inst => {
-            const stage = this.addStage(inst.name, inst.waitTime, true);
+            const stage = this.addStage(inst.name, inst.waitTime, true, inst.stageWaitTime);
             stage.loadFromFile(inst);
         })
     }
 
-    addStage(name: string, waitTime: number, mute = false) {
+    addStage(name: string, waitTime: number, mute = false, stageWaitTime?: number) {
         const stage = new Stage(name, this.session, (param: string, value: any) => {
             this.parameters[param] = value;
-        }, waitTime);
+        }, waitTime, stageWaitTime);
         this.stages.push({ stage, sub: stage.getEventObservable().subscribe(() => this.stageUpdatedSubject.next()) });
         if (!mute) {
             this.stageUpdatedSubject.next();

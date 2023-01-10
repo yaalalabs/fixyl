@@ -54,9 +54,10 @@ const AddStageForm = ({ togglePopover, onAdded, value }: {
                 }]} label={getIntlMessage("stage_name")}>
                     <Input />
                 </Form.Item>
-                <Form.Item name="waitTime" rules={[{
-                    required: true,
-                }]} label={getIntlMessage("wait_time")}>
+                <Form.Item name="waitTime" label={getIntlMessage("wait_time")}>
+                    <InputNumber />
+                </Form.Item>
+                <Form.Item name="stageWaitTime" label={getIntlMessage("stage_wait_time")}>
                     <InputNumber />
                 </Form.Item>
             </div>
@@ -131,6 +132,7 @@ export class ScenarioInstance extends React.Component<ScenarioInstanceProps, Sce
         const { editStageVisible } = this.state;
 
         return <div className="stage-extra-header">
+            {stage.isWaiting() && <div className="waiting-stage-state">{getIntlMessage("waiting_state")}</div>}
             {!stage.isSkipped() && <div className={`stage-state ${stage.getState().toLowerCase()}-label`}>{stage.getState()}</div>}
             <div className="skip-stage">{<Checkbox disabled={this.isDisabled()} checked={stage.isSkipped()} onChange={e => {
                 stage.setSkipped(e.target.checked);
@@ -138,8 +140,11 @@ export class ScenarioInstance extends React.Component<ScenarioInstanceProps, Sce
             }}>{getIntlMessage("skip")}</Checkbox>
             }</div>
             <Popover
-                content={<AddStageForm togglePopover={() => this.toggleEditPopover("")} value={{ name: stage.name, waitTime: stage.getWaitTime() }}
-                    onAdded={(data) => { this.onEditStage(stage, data.name, data.waitTime) }} />}
+                content={<AddStageForm togglePopover={() => this.toggleEditPopover("")} value={{
+                    name: stage.name, waitTime: stage.getWaitTime(),
+                    stageWaitTime: stage.getStageWaitTime()
+                }}
+                    onAdded={(data) => { this.onEditStage(stage, data.name, data.waitTime, data.stageWaitTime) }} />}
                 title={getIntlMessage("edit_stage").toUpperCase()}
                 placement="top"
                 visible={editStageVisible === stage.name}
@@ -165,9 +170,10 @@ export class ScenarioInstance extends React.Component<ScenarioInstanceProps, Sce
         </div>
     }
 
-    private onEditStage = (stage: Stage, name: string, waitTime: number) => {
+    private onEditStage = (stage: Stage, name: string, waitTime?: number, stageWaitTime?: number) => {
         stage.name = name;
         stage.setWaitTime(waitTime)
+        stage.setStageWaitTime(stageWaitTime)
         this.forceUpdate();
     }
 
@@ -187,8 +193,8 @@ export class ScenarioInstance extends React.Component<ScenarioInstanceProps, Sce
         </Menu>
     }
 
-    getStage(stage: Stage) {        
-        return <Panel header={stage.name} key={stage.name} className={stage.getState() === "EXECUTING"? "executing" : ""} extra={this.genExtraHeader(stage)}>
+    getStage(stage: Stage) {
+        return <Panel header={stage.name} key={stage.name} className={stage.getState() === "EXECUTING" ? "executing" : ""} extra={this.genExtraHeader(stage)}>
             {stage.isSkipped() && <div className="skipped"></div>}
             <div className="stage">
                 <div className="input">
@@ -257,8 +263,8 @@ export class ScenarioInstance extends React.Component<ScenarioInstanceProps, Sce
         this.setState({ addStageVisible: state })
     }
 
-    private onAddNewStage = (name: string, waitTime: number) => {
-        this.props.scenario.addStage(name, waitTime);
+    private onAddNewStage = (name: string, waitTime: number, stageWaitTime: number) => {
+        this.props.scenario.addStage(name, waitTime, false, stageWaitTime);
         this.setState({ addMsgVisible: false })
         this.forceUpdate();
     }
@@ -270,7 +276,7 @@ export class ScenarioInstance extends React.Component<ScenarioInstanceProps, Sce
         return <React.Fragment>
             <div className="add-btn">
                 <Popover
-                    content={<AddStageForm togglePopover={this.togglePopover} onAdded={(data) => { this.onAddNewStage(data.name, data.waitTime) }} />}
+                    content={<AddStageForm togglePopover={this.togglePopover} onAdded={(data) => { this.onAddNewStage(data.name, data.waitTime, data.stageWaitTime) }} />}
                     title={getIntlMessage("add_new_stage").toUpperCase()}
                     placement="top"
                     visible={addStageVisible}

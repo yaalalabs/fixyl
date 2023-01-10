@@ -22,6 +22,30 @@
         border-radius: 3px;
     }
 
+    .waiting-stage-state {
+        font-size: 10px;
+        padding: 0 5px;
+        color: var(--text-color-accent-2);
+        background-color: var(--accent-2);
+        margin-right: 3px;
+        border-radius: 3px;
+        animation: blink 1s infinite;
+
+        @keyframes blink {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+    }
+
     .skip-stage {
         margin-left: 5px;
         margin-right: -10px;
@@ -50,7 +74,6 @@
     }
 }
 
-
 .executing {
     &-label {
         background-color: var(--accent-2-hover);
@@ -75,8 +98,6 @@
         background: var(--accent-2-hover) !important;
     }
 }
-
-
 
 .skipped {
     width: 100%;

@@ -120,14 +120,18 @@ export class FixField {
     }
 }
 
+type FieldTypes = "group" | "component" | "field";
+type FieldOrderEntry = { name: string, type: FieldTypes };
+
 export class FixComplexType {
     type: "group" | "component" | "message";
     name: string;
     required?: boolean;
-    fields: FixField[] = [];
+    fields = new Map<string, FixField>();
     requiredFields: FixField[] = [];
-    components: FixComplexType[] = [];
-    group?: FixComplexType;
+    components = new Map<string, FixComplexType>();
+    groups = new Map<string, FixComplexType>();
+    fieldOrder: FieldOrderEntry[] = [];
     groupInstances: any = {};
     id: string;
     private value: any;
@@ -140,12 +144,14 @@ export class FixComplexType {
         this.id = xmlNode.attributes.msgtype ?? fieldDefMap.get(this.name)?.number;
 
         xmlNode.children.forEach(child => {
+            this.fieldOrder.push({ name: child.attributes.name, type: child.name as any })
+
             switch (child.name) {
                 case "field":
                     const def = this.fieldDefMap.get(child.attributes.name);
                     if (def) {
                         const field = new FixField(def, child.attributes.required === "Y");
-                        this.fields.push(field);
+                        this.fields.set(field.def.name, field);
 
                         if (field.required) {
                             this.requiredFields.push(field);
@@ -153,10 +159,12 @@ export class FixComplexType {
                     }
                     break;
                 case "group":
-                    this.group = new FixComplexType(child, this.fieldDefMap);
+                    const groupInst = new FixComplexType(child, this.fieldDefMap);
+                    this.groups.set(groupInst.name, groupInst)
                     break;
                 case "component":
-                    this.components.push(new FixComplexType(child, this.fieldDefMap))
+                    const compInst = new FixComplexType(child, this.fieldDefMap);
+                    this.components.set(compInst.name, compInst)
                     break;
             }
         })
@@ -170,6 +178,14 @@ export class FixComplexType {
         this.valueWithHeaders = value;
     }
 
+    getFieldOrder(): FieldOrderEntry[] {
+        return this.fieldOrder;
+    }
+
+    getField() {
+
+    }
+
     getValue() {
         return this.value;
     }
@@ -180,23 +196,29 @@ export class FixComplexType {
 
     clone(): FixComplexType {
         const ret = new FixComplexType(this.xmlNode, this.fieldDefMap);
-        ret.fields = this.fields.map(field => field.clone())
-        ret.components = this.components.map(comp => comp.clone())
-        ret.group = this.group?.clone();
+        ret.fields = new Map(Array.from(this.fields.values()).map(field => field.clone()).map(i => [i.def.name, i]))
+        ret.components = new Map(Array.from(this.components.values()).map(comp => comp.clone()).map(i => [i.name, i]));
+        ret.groups = new Map(Array.from(this.groups.values()).map(comp => comp.clone()).map(i => [i.name, i]));
+        ret.requiredFields = this.requiredFields.map(comp => comp.clone());
+        ret.fieldOrder = this.fieldOrder;
         return ret;
     }
 
     resolveFields(componentMap: Map<string, FixComplexType>) {
-        this.components = this.components.map(inst => {
+        this.components.forEach(inst => {
             const ref = componentMap.get(inst.name);
             if (ref) {
-                return ref;
+                inst.fields = new Map(Array.from(ref.fields.values()).map(field => field.clone()).map(i => [i.def.name, i]));
+                inst.components = new Map(Array.from(ref.components.values()).map(comp => comp.clone()).map(i => [i.name, i]));
+                inst.groups = new Map(Array.from(ref.groups.values()).map(comp => comp.clone()).map(i => [i.name, i]));
+                inst.requiredFields = ref.requiredFields.map(comp => comp.clone());
+                inst.fieldOrder = ref.fieldOrder;
             }
+        });
 
-            return undefined;
-        }).filter(inst => !!inst) as FixComplexType[];
-
-        this.group?.resolveFields(componentMap);
+        this.groups.forEach(inst => {
+            inst?.resolveFields(componentMap);
+        });
     }
 }
 

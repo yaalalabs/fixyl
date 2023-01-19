@@ -93,6 +93,37 @@ export class ProfilePanel extends React.Component<any, ProfilePanelState> {
         this.setState({ showNewForm: false })
     }
 
+    private getSSLForm = () => {
+        return <Collapse className='ssl-config-wrapper'
+            expandIconPosition={'right'}
+        >
+            <Panel header={<><ApiOutlined />{getIntlMessage("ssl_configuration")}</>} key="1">
+                <Form.Item name="sslEnabled" valuePropName="checked" label={getIntlMessage("ssl_enabled")}>
+                    <Checkbox />
+                </Form.Item>
+                <Form.Item name="sslProtocol" label={getIntlMessage("ssl_protocol")}>
+                    <Select >
+                        <Option value="">-Any-</Option>
+                        <Option value="TLSv1_2">Tls1.2</Option>
+                        <Option value="TLSv1_3">Tls1.3</Option>
+                    </Select>
+                </Form.Item>
+                <Form.Item name="sslServerName" label={getIntlMessage("ssl_server_name")}>
+                    <Input />
+                </Form.Item>
+                <Form.Item name="sslCACertificate" label={getIntlMessage("ssl_ca_certificate")}>
+                    <FileSelect label={"Browse"} filters={[{ name: 'PEM Files', extensions: ['pem'] }]} />
+                </Form.Item>
+                <Form.Item name="sslCertificate" label={getIntlMessage("ssl_certificate")}>
+                    <FileSelect label={"Browse"} filters={[{ name: 'PFX Files', extensions: ['pfx'] }]} />
+                </Form.Item>
+                <Form.Item name="sslCertificatePassword" label={getIntlMessage("ssl_certificate_password")}>
+                    <Password />
+                </Form.Item>
+            </Panel>
+        </Collapse>
+    }
+
     private getNewProfileForm = () => {
         const { showNewForm, currentProfile, isNewForm, requireTransportDic } = this.state;
         return <div className={`new-profile-form-wrapper-${showNewForm ? "open" : "close"}`}>
@@ -135,34 +166,7 @@ export class ProfilePanel extends React.Component<any, ProfilePanelState> {
                     {requireTransportDic && <Form.Item name="transportDictionaryLocation" label={getIntlMessage("transport_dictionary_location")} rules={[{ required: true }]}>
                         <FileSelect label={"Browse"} />
                     </Form.Item>}
-                    <Collapse className='ssl-config-wrapper'
-                        expandIconPosition={'right'}
-                    >
-                        <Panel header={<><ApiOutlined />{getIntlMessage("ssl_configuration")}</>} key="1">
-                            <Form.Item name="sslEnabled" valuePropName="checked" label={getIntlMessage("ssl_enabled")}>
-                                <Checkbox />
-                            </Form.Item>
-                            <Form.Item name="sslProtocol" label={getIntlMessage("ssl_protocol")}>
-                                <Select >
-                                    <Option value="">-Any-</Option>
-                                    <Option value="TLSv1_2">Tls1.2</Option>
-                                    <Option value="TLSv1_3">Tls1.3</Option>
-                                </Select>
-                            </Form.Item>
-                            <Form.Item name="sslServerName" label={getIntlMessage("ssl_server_name")}>
-                                <Input />
-                            </Form.Item>
-                            <Form.Item name="sslCACertificate" label={getIntlMessage("ssl_ca_certificate")}>
-                                <FileSelect label={"Browse"} filters={[{ name: 'PEM Files', extensions: ['pem'] }]} />
-                            </Form.Item>
-                            <Form.Item name="sslCertificate" label={getIntlMessage("ssl_certificate")}>
-                                <FileSelect label={"Browse"} filters={[{ name: 'PFX Files', extensions: ['pfx'] }]} />
-                            </Form.Item>
-                            <Form.Item name="sslCertificatePassword" label={getIntlMessage("ssl_certificate_password")}>
-                                <Password />
-                            </Form.Item>
-                        </Panel>
-                    </Collapse>
+                    {this.getSSLForm()}
                     {/* <div className="sub-title"><ApiOutlined />{getIntlMessage("ssl_configuration")}</div> */}
 
                     <div className="footer">

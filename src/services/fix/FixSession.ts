@@ -182,9 +182,11 @@ export class FixSession {
 
     async connect(): Promise<void> {
         const { ip, port } = this.profile;
-        const sslConfigs : SocketSSLConfigs = { sslEnabled:this.profile.sslEnabled, sslProtocol:this.profile.sslProtocol
-            , sslCACertificate:this.profile.sslCACertificate, sslServerName:this.profile.sslServerName
-            , sslCertificate:this.profile.sslCertificate, sslCertificatePassword:this.profile.sslCertificatePassword };
+        const sslConfigs: SocketSSLConfigs = {
+            sslEnabled: this.profile.sslEnabled, sslProtocol: this.profile.sslProtocol
+            , sslCACertificate: this.profile.sslCACertificate, sslServerName: this.profile.sslServerName
+            , sslCertificate: this.profile.sslCertificate, sslCertificatePassword: this.profile.sslCertificatePassword
+        };
         this.socket = GlobalServiceRegistry.socket.createSocket(ip, port, sslConfigs);
 
         return new Promise(async (resolve, reject) => {
@@ -335,6 +337,10 @@ export class FixSession {
         }
     }
 
+    public getHeaderFields = () => {
+        return this.parser.getHeaderFields();
+    }
+
     public disconnect = async (dontSendMsg?: boolean) => {
         const msg = this.createNewMessageInst("Logout");
         if (!dontSendMsg && msg) {
@@ -356,7 +362,7 @@ export class FixSession {
             targetCompId: this.profile.targetCompId,
             sequence: this.tx,
             time: moment(new Date()).utc().format("YYYYMMDD-HH:mm:ss.000")
-        }, parameters)
+        }, parameters, this.profile.headerFields)
     }
 
     public decodeFixMessage = (msg: string) => {

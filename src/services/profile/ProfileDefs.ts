@@ -18,9 +18,10 @@ export interface Profile {
     sslCACertificate?: string;
     sslCertificate?: string;
     sslProtocol?: string;
+    headerFields?: any;
 }
 
-export interface ProfileWithCredentials extends Profile {    
+export interface ProfileWithCredentials extends Profile {
     username: string;
     password: string;
     sslCertificatePassword?: string;

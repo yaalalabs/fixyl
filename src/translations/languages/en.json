@@ -92,6 +92,8 @@
 		"send": "Send",
 		"save": "Save",
 		"edit_msg": "Edit: { msg }",
+		"header_fields": "Header Fields",
+		"fix_session_connectivity": "Session: {name}",
 		"remove_non_filled_fields": "Remove Non-Filled",
 		"msg_connection_failed_title": "Connection Failure",
 		"msg_connection_failed_desc": "Failed to connect to fix session",
@@ -154,6 +156,10 @@
 		"msg_saving_success": "{ name } successfully added to favorites ",
 		"msg_saving_failed_title": "Add To Favorite",
 		"msg_saving_failed": "Error occurred while saving the data",
+		"profile_saving_success_title": "Saving Header Fields",
+		"profile_saving_success": "Header fields saved successfully",
+		"profile_saving_failed_title": "Saving Header Fields",
+		"profile_saving_failed": "Error occurred while saving the data",
 		"search": "Search"
 	},
 	"fix_session": {
@@ -199,7 +205,11 @@
 	},
 	"scenario_state": {
 		"msg_timeout": "Response timedout. Expected output not received within { time } seconds",
-		"msg_connection_error": "Session disconnected"
+		"msg_connection_error": "Session disconnected",
+		"input_output_validation_failed_object": "Invalid object type received as expected: { exp } | received: { recv }",
+		"input_output_validation_failed_constructor": "Expected and received objects are different. Expected: { exp } | Received: { recv }",
+		"input_output_validation_failed_property": "Expected property is missing in the response. Expected: { exp }",
+		"input_output_validation_failed_expected": "Invalid expected value: Expected: { exp }"
 	},
 	"ignore_input": {
 		"ignore": "Ignore",

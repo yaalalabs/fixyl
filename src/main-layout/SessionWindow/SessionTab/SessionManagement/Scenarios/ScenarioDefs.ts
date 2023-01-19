@@ -101,18 +101,26 @@ export class Stage {
         return this.failedReason;
     }
 
-    private validateInputValues(expectedValues: any, receviedValues: any): boolean {
-        if (expectedValues === receviedValues) return true;
+    private validateInputValues(expectedValues: any, receviedValues: any): { state: boolean, failedReason?: string } {
+        if (expectedValues === receviedValues) return { state: true };
 
-        if (!(expectedValues instanceof Object) || !(receviedValues instanceof Object)) return false;
+        if (!(expectedValues instanceof Object) || !(receviedValues instanceof Object)) return {
+            state: false,
+            failedReason: getIntlMessage("input_output_validation_failed_object", { exp: !(expectedValues instanceof Object), recv: !(receviedValues instanceof Object) })
+        };
 
-        if (expectedValues.constructor !== receviedValues.constructor) return false;
-
+        if (expectedValues.constructor !== receviedValues.constructor) return {
+            state: false,
+            failedReason: getIntlMessage("input_output_validation_failed_constructor", { exp: expectedValues.constructor.name, recv: receviedValues.constructor.name })
+        };;
 
         for (var p in expectedValues) {
             if (!expectedValues.hasOwnProperty(p)) continue;
 
-            if (!receviedValues.hasOwnProperty(p)) return false;
+            if (!receviedValues.hasOwnProperty(p)) return {
+                state: false,
+                failedReason: getIntlMessage("input_output_validation_failed_property", { exp: p })
+            };
 
             // eslint-disable-next-line
             if (expectedValues[p] == receviedValues[p]) continue;
@@ -138,13 +146,17 @@ export class Stage {
                 continue;
             }
 
-            if (typeof (expectedValues[p]) !== "object") return false;
+            if (typeof (expectedValues[p]) !== "object") return {
+                state: false,
+                failedReason: getIntlMessage("input_output_validation_failed_expected", { exp: p })
+            };
 
-            if (!this.validateInputValues(expectedValues[p], receviedValues[p])) return false;
+            const ret = this.validateInputValues(expectedValues[p], receviedValues[p]);
+            if (!ret.state) return ret;
         }
 
 
-        return true;
+        return { state: true };
     }
 
     private subscribeToSession() {
@@ -164,8 +176,10 @@ export class Stage {
 
                             removeFalsyKeys(expectedValues)
 
-                            if (this.validateInputValues(expectedValues, receviedValues)) {
+                            const ret = this.validateInputValues(expectedValues, receviedValues);
+                            if (ret.state) {
                                 expectedMsg.state = "SUCCESS";
+                                this.failedReason = "";
                                 let isDone = true;
                                 this.outputMsgs.forEach(inst => {
                                     if (isDone) {
@@ -182,6 +196,7 @@ export class Stage {
                             } else {
                                 expectedMsg.state = "FAILED";
                                 this.state = "FAILED";
+                                this.failedReason = ret.failedReason;
                                 this.stop();
                             }
                         }

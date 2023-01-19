@@ -1,10 +1,10 @@
-import { SendOutlined, StopOutlined } from '@ant-design/icons';
-import { Button, Switch } from 'antd';
+import { Switch } from 'antd';
+import { RightOutlined } from '@ant-design/icons';
 import React from 'react';
 import { Subscription } from 'rxjs';
-import { Toast } from 'src/common/Toast/Toast';
 import { FixSession, FixSessionEventType } from 'src/services/fix/FixSession';
 import { LM } from 'src/translations/language-manager';
+import { FixHeaderForm } from './FixHeaderForm';
 import './GeneralInfo.scss';
 
 const getIntlMessage = (msg: string) => {
@@ -20,6 +20,7 @@ interface GeneralInfoState {
     hbEnabled: boolean;
     testRequestEnabled: boolean;
     connecting: boolean;
+    showHeaderFields: boolean;
 }
 
 
@@ -33,6 +34,7 @@ export class GeneralInfo extends React.Component<GeneralInfoProps, GeneralInfoSt
             connected: session.isReady(),
             hbEnabled: session.isHBEnabled(),
             connecting: false,
+            showHeaderFields: false,
             testRequestEnabled: session.isTestRequestEnabled()
         }
 
@@ -56,27 +58,17 @@ export class GeneralInfo extends React.Component<GeneralInfoProps, GeneralInfoSt
         </div>
     }
 
+    private toggleHeaderFields = () => {
+        this.setState({ showHeaderFields: !this.state.showHeaderFields })
+    }
+
     render() {
         const { session } = this.props;
         const { name, ip, port, senderCompId, targetCompId, } = session.profile;
-        const { connected, hbEnabled, testRequestEnabled, connecting } = this.state;
+        const { connected, hbEnabled, testRequestEnabled, showHeaderFields } = this.state;
         return <div className="general-info">
             <div className="header">
                 {getIntlMessage("general_info_title")}
-                <div className="connect-btn-wrapper">
-                    {!connected && <Button loading={connecting} icon={<SendOutlined />} type="primary" onClick={() => {
-                        this.setState({ connecting: true })
-                        
-                        session.connect().catch((err) => {
-                            this.setState({ connecting: false })
-                            console.log(err);
-                            Toast.error(getIntlMessage("msg_connection_failed_title"), getIntlMessage("msg_connection_failed_desc"))
-                        })
-                    }}>{getIntlMessage("connect")}</Button>}
-                    {connected && <Button className="disconnect-btn" icon={<StopOutlined />} type="ghost" onClick={() => {
-                        session.disconnect();
-                    }}>{getIntlMessage("disconnect")}</Button>}
-                </div>
             </div>
             <div className="body">
                 {this.getFieldValue(getIntlMessage("name"), name)}
@@ -105,6 +97,15 @@ export class GeneralInfo extends React.Component<GeneralInfoProps, GeneralInfoSt
                         }} />)}
 
                 </div>
+            </div>
+            <div className='header-field-title' onClick={this.toggleHeaderFields}>
+                <span>{getIntlMessage("header_fields")} </span>
+                <div className="icon-container">
+                    <RightOutlined className={showHeaderFields ? "rotate-90" : "rotate-0"} />
+                </div>
+            </div>
+            <div className={`header-field-body vivify ${showHeaderFields ? "fadeIn" : "fadeOut header-body-hide"}`}>
+                {<FixHeaderForm session={session} />}
             </div>
         </div>
     }

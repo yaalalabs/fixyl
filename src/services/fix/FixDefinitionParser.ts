@@ -6,7 +6,7 @@ const parser = require('xml-reader');
 
 export type FixMessageDef = FixComplexType;
 export const SOH = String.fromCharCode(1);
-
+const EXCLUDED_HEADERS = ["BeginString", "BodyLength", "MsgType", "SenderCompID", "TargetCompID", "MsgSeqNum", "SendingTime"];
 export interface FixMsgHeader {
     msgType: string;
     sequence: number;
@@ -23,7 +23,7 @@ export class FixDefinitionParser {
     private messageTypeMap = new Map<string, FixComplexType>();
     private fieldMap = new Map<string, FixFieldDef>();
     private componentMap = new Map<string, FixComplexType>();
-    private headerFields = new Set<string>();
+    private headerFields = new Map<string, { field: FixComplexType | FixField, type: "field" | "component" | "group" }>();
 
     constructor(private readonly dictionaryInfo: {
         path: string,
@@ -71,10 +71,6 @@ export class FixDefinitionParser {
                 const components: FixXmlNode = xmlObj.children.find(inst => inst.name === "components") as any;
                 const header: FixXmlNode = xmlObj.children.find(inst => inst.name === "header") as any;
 
-                header.children.forEach((inst) => [
-                    this.headerFields.add(inst.attributes.name)
-                ])
-
                 fields.children.forEach((inst) => {
                     const field = new FixFieldDef(inst)
                     this.fieldMap.set(field.name, field);
@@ -83,7 +79,7 @@ export class FixDefinitionParser {
                 components.children.forEach((inst) => {
                     const comp = new FixComplexType(inst, this.fieldMap)
                     this.componentMap.set(comp.name, comp);
-                }, {})
+                })
 
                 this.componentMap.forEach(comp => {
                     comp.resolveFields(this.componentMap)
@@ -102,6 +98,32 @@ export class FixDefinitionParser {
                     comp.resolveFields(this.componentMap)
                 })
 
+                header.children.forEach((inst) => {
+                    if (inst.name === "field") {
+                        const fieldDef = this.fieldMap.get(inst.attributes.name)
+                        if (fieldDef) {
+                            if (EXCLUDED_HEADERS.includes(inst.attributes.name)) {
+                                return;
+                            }
+
+                            const field = new FixField(fieldDef, inst.attributes.required === "Y")
+                            this.headerFields.set(field.def.name, { field, type: "field" });
+                        }
+                    } else if (inst.name === "group") {
+                        const field = new FixComplexType(inst, this.fieldMap)
+                        this.headerFields.set(field.name, { field, type: "group" });
+                    } else if (inst.name === "component") {
+                        const field = new FixComplexType(inst, this.fieldMap)
+                        this.headerFields.set(field.name, { field, type: "component" });
+                    }
+                })
+
+                this.headerFields.forEach((comp) => {
+                    if (comp.type === "component" || comp.type === "group") {
+                        (comp.field as FixComplexType).resolveFields(this.componentMap)
+                    }
+                })
+
                 done();
             }
         });
@@ -109,6 +131,10 @@ export class FixDefinitionParser {
 
     destroy() {
 
+    }
+
+    getHeaderFields() {
+        return Array.from(this.headerFields.values());
     }
 
     getFieldDef(name: string): FixFieldDef | undefined {
@@ -196,18 +222,53 @@ export class FixDefinitionParser {
         return fixMsgBody;
     }
 
-    private encodeHeader(header: FixMsgHeader) {
-        return '35=' + header.msgType +
+    private encodeCustomHeaders(customHeaderData: any) {
+        removeFalsyKeys(customHeaderData);
+        const properties = Object.keys(customHeaderData);
+        let fixMsgHeader = "";
+
+        properties.forEach(property => {
+            let def: any = this.fieldMap.get(property);
+            if (def) {
+                if (def.isGroupField) {
+                    const arrayData = customHeaderData[property] as any[];
+                    fixMsgHeader += `${def.number}=${arrayData.length}${SOH}`;
+                    arrayData.forEach(inst => {
+                        fixMsgHeader += this.encodeToFixBody(inst)
+                    })
+                } else {
+                    const fielData = def.formatValueToPack(customHeaderData[property]);
+                    fixMsgHeader += `${def.number}=${fielData}${SOH}`
+                }
+            } else {
+                def = this.componentMap.get(property);
+                if (def) {
+                    fixMsgHeader += this.encodeToFixBody(customHeaderData[property]);
+                }
+            }
+        })
+
+        return fixMsgHeader;
+    }
+
+    private encodeHeader(header: FixMsgHeader, customHeaders?: any) {
+        let ret = '35=' + header.msgType +
             `${SOH}34=` + header.sequence +
             `${SOH}52=` + header.time +
             `${SOH}49=` + header.senderCompId +
-            `${SOH}56=` + header.targetCompId
+            `${SOH}56=` + header.targetCompId + SOH;
+
+        if (customHeaders) {
+            ret += this.encodeCustomHeaders(customHeaders)
+        }
+
+        return ret;
     }
 
-    encodeToFix(data: any, header: FixMsgHeader, parameters?: any): string {
+    encodeToFix(data: any, header: FixMsgHeader, parameters?: any, customHeaders?: any): string {
         const messageBody = this.encodeToFixBody(data, parameters);
-        const messageHeader = this.encodeHeader(header);
-        const msg = messageHeader + SOH + messageBody;
+        const messageHeader = this.encodeHeader(header, customHeaders);
+        const msg = messageHeader + messageBody;
         let message = this.BEGIN_STRING + SOH + '9=' + msg.length + SOH + msg;
         message += '10=' + this.checksum(message) + SOH;
         return message;
@@ -255,7 +316,7 @@ export class FixDefinitionParser {
 
         return undefined
     }
-    
+
     private getFieldValues = (def: FixComplexType, inputData: string, fieldIterationIndex: number, withHeaders: boolean, isGroup?: boolean) => {
         const ret: any = {};
         const requiredField = def.requiredFields[0];
@@ -276,7 +337,7 @@ export class FixDefinitionParser {
         return ret;
     }
 
-    private getGroupValues = (def: FixComplexType, inputData: string, withHeaders: boolean) => {
+    private getGroupValues = (def: FixComplexType, inputData: string, fieldIterationIndex: number, withHeaders: boolean) => {
         const ret: any = [];
         const interationLen = this.getTagValue(inputData, def.id);
 
@@ -288,12 +349,13 @@ export class FixDefinitionParser {
             const fieldData = this.getFieldValues(def, inputData, i, withHeaders, true)
 
             let groupData: any = {};
-            if (def.group) {
-                groupData[def.group.name] = this.getGroupValues(def.group, inputData, withHeaders);
-            }
+            def.groups.forEach(group => {
+                groupData[group.name] = this.getGroupValues(group, inputData, i, withHeaders);
+            })
+
             let componentData: any = {};
             def.components.forEach(comp => {
-                componentData[comp.name] = this.getComponentValues(comp, inputData, withHeaders);
+                componentData[comp.name] = this.getComponentValues(comp, inputData, i, withHeaders);
             })
 
             ret.push({ ...fieldData, ...groupData, ...componentData })
@@ -302,15 +364,16 @@ export class FixDefinitionParser {
         return ret;
     }
 
-    private getComponentValues = (def: FixComplexType, inputData: string, withHeaders: boolean) => {
-        const fieldData = this.getFieldValues(def, inputData, 0, withHeaders)
+    private getComponentValues = (def: FixComplexType, inputData: string, fieldIterationIndex: number, withHeaders: boolean) => {
+        const fieldData = this.getFieldValues(def, inputData, fieldIterationIndex, withHeaders)
         let groupData: any = {};
-        if (def.group) {
-            groupData[def.group.name] = this.getGroupValues(def.group, inputData, withHeaders);
-        }
+        def.groups.forEach(group => {
+            groupData[group.name] = this.getGroupValues(group, inputData, fieldIterationIndex, withHeaders);
+        })
+
         let componentData: any = {};
         def.components.forEach(comp => {
-            componentData[comp.name] = this.getComponentValues(comp, inputData, withHeaders);
+            componentData[comp.name] = this.getComponentValues(comp, inputData, fieldIterationIndex, withHeaders);
         })
 
         return { ...fieldData, ...groupData, ...componentData };
@@ -329,12 +392,13 @@ export class FixDefinitionParser {
     private decodeInternals(msgDef: FixComplexType, msg: string, withHeaders = false) {
         const fieldData = this.getFieldValues(msgDef, msg, 0, withHeaders)
         let groupData: any = {};
-        if (msgDef.group) {
-            groupData[msgDef.group.name] = this.getGroupValues(msgDef.group, msg, withHeaders)
-        }
+        msgDef.groups.forEach(group => {
+            groupData[group.name] = this.getGroupValues(group, msg, 0, withHeaders);
+        })
+
         let componentData: any = {};
         msgDef.components.forEach(comp => {
-            componentData[comp.name] = this.getComponentValues(comp, msg, withHeaders)
+            componentData[comp.name] = this.getComponentValues(comp, msg, 0, withHeaders)
         })
 
         return { ...fieldData, ...groupData, ...componentData };

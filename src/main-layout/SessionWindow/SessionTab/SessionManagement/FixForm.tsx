@@ -45,7 +45,9 @@ const SaveAsForm = ({ togglePopover, onAddToFavorites, name }: {
             <div className="close" onClick={() => togglePopover(false)}>✕</div>
         </div>
         <Form ref={formRef} layout="vertical" initialValues={{ name }} className="save-as-form"
-            onFinish={(values) => { onAddToFavorites(values) }}>
+            onFinish={(values) => { 
+                onAddToFavorites(values)
+                 }}>
             <div className="form-item-container">
                 <Form.Item name="name" rules={[{
                     required: true,
@@ -121,88 +123,6 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
         }
     }
 
-
-    private getFieldRender = (field: FixField, required: boolean, parent: string, fieldIterationIndex: number) => {
-        const { enableIgnore } = this.props;
-        return <IgnorableInput enableIgnore={enableIgnore} componentProps={{ field, required, parent, fieldIterationIndex }} />
-    }
-
-    renderFields = (message: FixMessage, level: number, fieldIterationIndex: number, parent: string) => {
-
-        return <div className="fix-field-wrapper" style={{ marginLeft: level * 10 }}>
-            {message.fields.map((field, i) => {
-                const { def } = field;
-                const fieldName = `${parent}__${def.name}__${fieldIterationIndex}`;
-
-                if (this.props.removeNonFilledFields) {
-                    const initialValues = this.getInitialValues();
-                    if (initialValues[fieldName] === undefined) {
-                        return null
-                    }
-                }
-
-                return <Form.Item name={fieldName} label={<span>{def.name}<span className="field-number">[{def.number}]</span></span>}
-                    rules={[{ required: field.required, message: 'Please input valid value!' }]} key={i} >
-                    {this.getFieldRender(field, field.required, parent, fieldIterationIndex)}
-                </Form.Item>
-
-            })}
-        </div>
-    }
-
-    renderGroups = (group: FixComplexType, level: number, parent: string) => {
-        const newLevel = level++;
-        if (!group.groupInstances[parent]) {
-            if (group.required) {
-                group.groupInstances[parent] = [{}];
-            } else {
-                group.groupInstances[parent] = [];
-            }
-        }
-
-        const remove = (index: number) => {
-            const array = group.groupInstances[parent];
-            array.splice(index, 1);
-            group.groupInstances[parent] = [...array];
-            this.forceUpdate();
-        }
-
-        return <div className="fix-group" style={{ marginLeft: level * 10 }}>
-            <div className="fix-group-title">{getIntlMessage("group", { type: `${group.name} [${group.id}]` })}
-                <div className="fix-group-insert" onClick={() => {
-                    group.groupInstances[parent].push({})
-                    this.forceUpdate();
-                }}><PlusOutlined /></div></div>
-            <div className="fix-group-fields">
-                {(group.groupInstances[parent] as any[])?.map((val, i) => {
-                    return <div className="repitition-block" key={i}>
-                        <div className="repitition-block-content">
-                            {this.renderFields(group, newLevel, i, `${parent}|G:${group.name}:${i}`)}
-                            {group.group && this.renderGroups(group.group, newLevel, `${parent}|G:${group.name}:${i}`)}
-                            {group.components.map(comp => this.renderComponents(comp, newLevel, `${parent}|G:${group.name}:${i}`))}
-                        </div>
-                        <MinusCircleOutlined
-                            className="dynamic-delete-button"
-                            onClick={() => remove(i)}
-                        />
-                    </div>
-                })}
-            </div>
-        </div>
-    }
-
-    renderComponents = (component: FixComplexType, level: number, parent: string) => {
-        const newLevel = level++;
-        return <div className="fix-component" style={{ marginLeft: level * 10 }} key={component.name + newLevel}>
-            <div className="fix-component-title">{getIntlMessage("component", { type: component.name })}</div>
-            <div className="fix-component-fields">
-                {this.renderFields(component, newLevel, 0, `${parent}|C:${component.name}:0`)}
-                {component.group && this.renderGroups(component.group, newLevel, `${parent}|C:${component.name}:0`)}
-                {component.components.map(comp => this.renderComponents(comp, newLevel, `${parent}|C:${component.name}:0`))}
-            </div>
-        </div>
-    }
-
     private getFieldValues = (def: FixMessage, inputData: any, namePrefix: string, fieldIterationIndex: number) => {
         const ret: any = {};
         const properties = Object.keys(inputData)
@@ -232,9 +152,10 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
         (def.groupInstances[namePrefix] as any[])?.forEach((inst: any, index) => {
             const fieldData = this.getFieldValues(def, inputData, `${namePrefix}|G:${def.name}:${index}`, index)
             let groupData: any = {};
-            if (def.group) {
-                groupData[def.group.name] = this.getGroupValues(def.group, inputData, `${namePrefix}|G:${def.name}:${index}`);
-            }
+            def.groups.forEach(group => {
+                groupData[group.name] = this.getGroupValues(group, inputData, `${namePrefix}|G:${def.name}:${index}`);
+            })
+
             let componentData: any = {};
             def.components.forEach(comp => {
                 componentData[comp.name] = this.getComponentValues(comp, inputData, `${namePrefix}|G:${def.name}:${index}`);
@@ -250,9 +171,10 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
     private getComponentValues = (def: FixMessage, inputData: any, namePrefix: string) => {
         const fieldData = this.getFieldValues(def, inputData, `${namePrefix}|C:${def.name}:0`, 0)
         let groupData: any = {};
-        if (def.group) {
-            groupData[def.group.name] = this.getGroupValues(def.group, inputData, `${namePrefix}|C:${def.name}:0`);
-        }
+        def.groups.forEach(group => {
+            groupData[group.name] = this.getGroupValues(group, inputData, `${namePrefix}|C:${def.name}:0`);
+        })
+
         let componentData: any = {};
         def.components.forEach(comp => {
             componentData[comp.name] = this.getComponentValues(comp, inputData, `${namePrefix}|C:${def.name}:0`);
@@ -265,9 +187,10 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
         const { message } = this.props;
         const fieldData = this.getFieldValues(message, data, "root", 0)
         let groupData: any = {};
-        if (message.group) {
-            groupData[message.group.name] = this.getGroupValues(message.group, data, `root`)
-        }
+        message.groups.forEach(group => {
+            groupData[group.name] = this.getGroupValues(group, data, "root")
+        })
+
         let componentData: any = {};
         message.components.forEach(comp => {
             componentData[comp.name] = this.getComponentValues(comp, data, "root")
@@ -338,12 +261,13 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
 
             const fieldData = this.createFieldValues(def, inst, groupName, index)
             let groupData: any = {};
-            if (def.group) {
-                groupData = this.getGroupValues(def.group, inst?.[def.group.name], groupName);
-            }
+            def.groups.forEach(group => {
+                groupData = { ...groupData, ...this.createGroupValues(group, inst?.[group.name], groupName) };
+            })
+
             let componentData: any = {};
             def.components.forEach(comp => {
-                componentData = { ...componentData, ...this.getComponentValues(comp, inst?.[comp.name], groupName) };
+                componentData = { ...componentData, ...this.createComponentValues(comp, inst?.[comp.name], groupName) };
             })
 
             ret = { ...ret, ...fieldData, ...groupData, ...componentData }
@@ -357,9 +281,10 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
     private createComponentValues = (def: FixMessage, inputData: any, namePrefix: string) => {
         const fieldData = this.createFieldValues(def, inputData, `${namePrefix}|C:${def.name}:0`, 0)
         let groupData: any = {};
-        if (def.group) {
-            groupData = this.createGroupValues(def.group, inputData?.[def.group.name], `${namePrefix}|C:${def.name}:0`);
-        }
+        def.groups.forEach(group => {
+            groupData = { ...groupData, ...this.createGroupValues(group, inputData?.[group.name], `${namePrefix}|C:${def.name}:0`) };
+        })
+
         let componentData: any = {};
         def.components.forEach(comp => {
             componentData = { ...componentData, ...this.createComponentValues(comp, inputData?.[comp.name], `${namePrefix}|C:${def.name}:0`) };
@@ -372,9 +297,10 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
         const { message } = this.props;
         const fieldData = this.createFieldValues(message, data, "root", 0)
         let groupData: any = {};
-        if (message.group) {
-            groupData = this.createGroupValues(message.group, data[message.group.name], `root`)
-        }
+        message.groups.forEach(group => {
+            groupData = { ...groupData, ...this.createGroupValues(group, data[group.name], `root`) }
+        })
+
         let componentData: any = {};
         message.components.forEach(comp => {
             componentData = { ...componentData, ...this.createComponentValues(comp, data[comp.name], "root") }
@@ -409,6 +335,97 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
                 },
             },
         ];
+    }
+
+    private getFieldRender = (field: FixField, required: boolean, parent: string, fieldIterationIndex: number) => {
+        const { enableIgnore } = this.props;
+        return <IgnorableInput enableIgnore={enableIgnore} componentProps={{ field, required, parent, fieldIterationIndex }} />
+    }
+
+    renderField = (field: FixField, level: number, fieldIterationIndex: number, parent: string) => {
+        const { def } = field;
+        const fieldName = `${parent}__${def.name}__${fieldIterationIndex}`;
+
+        if (this.props.removeNonFilledFields) {
+            const initialValues = this.getInitialValues();
+            if (initialValues[fieldName] === undefined) {
+                return null
+            }
+        }
+
+        return <div className="fix-field-wrapper" style={{ marginLeft: level * 10 }}>
+            {<Form.Item name={fieldName} label={<span>{def.name}<span className="field-number">[{def.number}]</span></span>}
+                rules={[{ required: field.required, message: 'Please input valid value!' }]} >
+                {this.getFieldRender(field, field.required, parent, fieldIterationIndex)}
+            </Form.Item>}
+        </div>
+    }
+
+    renderGroups = (group: FixComplexType, level: number, parent: string) => {
+        const newLevel = level++;
+        if (!group.groupInstances[parent]) {
+            if (group.required) {
+                group.groupInstances[parent] = [{}];
+            } else {
+                group.groupInstances[parent] = [];
+            }
+        }
+
+        const remove = (index: number) => {
+            const array = group.groupInstances[parent];
+            array.splice(index, 1);
+            group.groupInstances[parent] = [...array];
+            this.forceUpdate();
+        }
+
+        return <div className="fix-group" style={{ marginLeft: level * 10 }}>
+            <div className="fix-group-title">{getIntlMessage("group", { type: `${group.name} [${group.id}]` })}
+                <div className="fix-group-insert" onClick={() => {
+                    group.groupInstances[parent].push({})
+                    this.forceUpdate();
+                }}><PlusOutlined /></div></div>
+            <div className="fix-group-fields">
+                {(group.groupInstances[parent] as any[])?.map((val, i) => {
+                    return <div className="repitition-block" key={i}>
+                        <div className="repitition-block-content">
+                            {this.renderFormFields(group, newLevel, i, `${parent}|G:${group.name}:${i}`)}
+                        </div>
+                        <MinusCircleOutlined
+                            className="dynamic-delete-button"
+                            onClick={() => remove(i)}
+                        />
+                    </div>
+                })}
+            </div>
+        </div>
+    }
+
+    renderComponents = (component: FixComplexType, level: number, parent: string) => {
+        const newLevel = level++;
+        return <div className="fix-component" style={{ marginLeft: level * 10 }} key={component.name + newLevel}>
+            <div className="fix-component-title">{getIntlMessage("component", { type: component.name })}</div>
+            <div className="fix-component-fields">
+                {this.renderFormFields(component, newLevel, 0, `${parent}|C:${component.name}:0`)}
+            </div>
+        </div>
+    }
+
+    private renderFormFields = (message: FixComplexType, level: number, fieldIterationIndex: number, parent: string) => {
+        return message.getFieldOrder().map(inst => {
+            switch (inst.type) {
+                case "field":
+                    const field = message.fields.get(inst.name);
+                    return field && this.renderField(field, level, fieldIterationIndex, parent)
+                case "component":
+                    const comp = message.components.get(inst.name);
+                    return comp && this.renderComponents(comp, level, parent)
+                case "group":
+                    const group = message.groups.get(inst.name);
+                    return group && this.renderGroups(group, level, parent)
+                default:
+                    return null;
+            }
+        })
     }
 
     render() {
@@ -475,19 +492,15 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
                         this.markInstance?.unmark();
                     }} />
                 </div>}
-                {initialized && <Form ref={this.formRef} layout="horizontal" initialValues={this.getInitialValues()} onValuesChange={(e) => {console.log("=====>", e)}} labelCol={{ span: 10 }} labelAlign="left" onFinish={this.onFinished}>
+                {initialized && <Form ref={this.formRef} layout="horizontal" initialValues={this.getInitialValues()} labelCol={{ span: 10 }} labelAlign="left" onFinish={this.onFinished}>
                     <div className="form-body" id={`search-node${name}`}>
-
-                        {this.renderFields(message, 0, 0, "root")}
-                        {message.group && this.renderGroups(message.group, 0, "root")}
-                        {message.components.map(comp => this.renderComponents(comp, 0, "root"))}
-
+                        {this.renderFormFields(message, 0, 0, "root")}
                     </div>
                     {!viewOnly && <div className="form-footer">
                         {!saveMode && <React.Fragment>
                             <Popover
                                 content={<SaveAsForm togglePopover={this.togglePopover} name={preferredFavName}
-                                    onAddToFavorites={(data) => { this.onAddToFavorites(data.name) }} />}
+                                    onAddToFavorites={(data) => { this.onAddToFavorites(data.name); }} />}
                                 title={getIntlMessage("save_as").toUpperCase()}
                                 placement="top"
                                 visible={confirmVisible}

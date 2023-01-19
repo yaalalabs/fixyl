@@ -130,10 +130,15 @@ export class ScenarioInstance extends React.Component<ScenarioInstanceProps, Sce
 
     private genExtraHeader = (stage: Stage) => {
         const { editStageVisible } = this.state;
+        const failedReason = stage.getFailedReason();
 
         return <div className="stage-extra-header">
             {stage.isWaiting() && <div className="waiting-stage-state">{getIntlMessage("waiting_state")}</div>}
-            {!stage.isSkipped() && <div className={`stage-state ${stage.getState().toLowerCase()}-label`}>{stage.getState()}</div>}
+            {!stage.isSkipped() && <div className={`stage-state ${stage.getState().toLowerCase()}-label`}>
+                <Tooltip title={failedReason}>
+                    <span>{stage.getState()}</span>
+                </Tooltip>
+            </div>}
             <div className="skip-stage">{<Checkbox disabled={this.isDisabled()} checked={stage.isSkipped()} onChange={e => {
                 stage.setSkipped(e.target.checked);
                 this.forceUpdate();

@@ -6,11 +6,14 @@
         padding: 10px 20px;
         display: flex;
         justify-content: space-between;
-        .add-btn {
-            margin-bottom: 5px;
+        align-items: center;
 
-            .ant-btn-ghost {
-                font-size: 12px !important;
+        .actions {
+            display: inline-flex;
+            gap: 5px;
+
+            .ant-btn {
+                min-width: unset;
             }
         }
 
@@ -41,17 +44,18 @@
                 border-radius: 20px;
                 border-color: transparent;
             }
+
             .ant-input-search-button {
                 border-radius: 0 20px 20px 0 !important;
             }
 
-            .ant-input-group > .ant-input:last-child,
+            .ant-input-group>.ant-input:last-child,
             .ant-input-group-addon:last-child {
                 border-top-left-radius: 0;
                 border-bottom-left-radius: 0;
             }
 
-            .ant-input-group > .ant-input:first-child,
+            .ant-input-group>.ant-input:first-child,
             .ant-input-group-addon:first-child {
                 border-top-right-radius: 0;
                 border-bottom-right-radius: 0;
@@ -67,6 +71,7 @@
 
         .msg-header {
             margin-bottom: 5px;
+
             .ant-btn-ghost {
                 font-size: 12px !important;
             }
@@ -101,7 +106,7 @@
                 flex-direction: row;
                 height: 28px;
 
-                & > span {
+                &>span {
                     padding: 0 5px;
                 }
             }
@@ -158,7 +163,7 @@
         padding: 0 10px;
         margin-right: 10px;
         background: var(--accent-2);
-        
+
         &:focus,
         &:active,
         &:hover {

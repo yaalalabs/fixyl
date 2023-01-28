@@ -8,7 +8,7 @@ import { Scenario } from './ScenarioDefs';
 import './Scenarios.scss';
 import { Button, Collapse, Popover, Form, Input, Menu, Dropdown } from 'antd';
 import { ScenarioInstance } from './ScenarioInstance';
-import { PlusOutlined, SendOutlined, SettingOutlined } from '@ant-design/icons';
+import { DownloadOutlined, PlusOutlined, SendOutlined, SettingOutlined } from '@ant-design/icons';
 import { Toast } from 'src/common/Toast/Toast';
 const { Panel } = Collapse;
 
@@ -80,6 +80,7 @@ export class Scenarios extends React.Component<ScenariosProps, ScenariosState> {
     private updateSub?: Subscription;
     private sessionSub?: Subscription;
     private scenarios = new Map<string, { scenario: Scenario, sub: Subscription }>();
+    private fileManager = GlobalServiceRegistry.fileManger;
 
     constructor(props: any) {
         super(props)
@@ -130,12 +131,65 @@ export class Scenarios extends React.Component<ScenariosProps, ScenariosState> {
         const scenario = new Scenario(name, this.props.session);
         this.scenarios.set(scenario.name, { scenario, sub: scenario.getStageUpdateObservable().subscribe(() => this.forceUpdate()) })
         this.forceUpdate();
+        return scenario;
+    }
+
+    private saveScenario = (inst: Scenario) => {
+        GlobalServiceRegistry.scenarioManager.saveScenario(this.props.session.getProfile(), inst).then(() => {
+            Toast.success(getIntlMessage("msg_saving_success_title"), getIntlMessage("msg_saving_success", { name: inst.name }));
+        }).catch(err => {
+            console.error("Failed to save scenario", err);
+            Toast.error(getIntlMessage("msg_saving_failed_title"), getIntlMessage("msg_saving_failed"));
+        });
     }
 
     private removeScenario = (name: string) => {
         this.scenarios.get(name)?.sub.unsubscribe();
         this.scenarios.delete(name);
         this.forceUpdate();
+    }
+
+    private exportScenario = (inst: Scenario) => {
+        this.fileManager.selectFile(["openDirectory"])
+            .then(async (data) => {
+                if (data?.path) {
+                    await this.fileManager.writeFile(`${data.path}/${inst.name}.json`, JSON.stringify(inst.getDataToSave()));
+                    Toast.success(getIntlMessage("msg_exporting_success_title"), getIntlMessage("msg_exporting_success", { name: inst.name }));
+                }
+            })
+            .catch(err => {
+                console.error("Failed to export scenario", err);
+                Toast.error(getIntlMessage("msg_exporting_failed_title"), getIntlMessage("msg_exporting_failed"));
+            })
+    }
+
+    private addScenarioViaImport(fileName: string, data: string, counter: number) {
+        const deduplicatedName = counter ? `${fileName}_${counter}` : fileName;
+        if (this.scenarios.has(deduplicatedName)) {
+            this.addScenarioViaImport(fileName, data, ++counter);
+        } else {
+            const inst = this.onAddNewScenario(deduplicatedName);
+            inst.loadFromFile(data);
+        }
+    }
+
+    private importScenario = () => {
+        this.fileManager.selectFile(['openFile'], [{ name: 'Scenario Files', extensions: ['json'] }])
+            .then(async (data) => {
+                if (data?.path) {
+                    const filePath = data.path as string;
+                    const inputFileData = await this.fileManager.readFile(`${filePath}`);
+                    if (inputFileData.fileData) {
+                        const directoryPath = filePath.lastIndexOf('/') + 1;
+                        const fileName = filePath.substring(directoryPath).replace('.json', '');
+                        this.addScenarioViaImport(fileName, inputFileData.fileData.data, 0);
+                    }
+                }
+            })
+            .catch(err => {
+                console.error("Failed to import scenario", err);
+                Toast.error(getIntlMessage("scenario_import_failed_title"), getIntlMessage("scenario_import_failed"));
+            })
     }
 
     private genExtraHeader = (inst: Scenario) => {
@@ -165,17 +219,9 @@ export class Scenarios extends React.Component<ScenariosProps, ScenariosState> {
 
     private getMenu = (inst: Scenario) => {
         return <Menu>
-            <Menu.Item key="1" onClick={() => {
-                GlobalServiceRegistry.scenarioManager.saveScenario(this.props.session.getProfile(), inst).then(() => {
-                    Toast.success(getIntlMessage("msg_saving_success_title"), getIntlMessage("msg_saving_success", { name: inst.name }))
-                }).catch(err => {
-                    Toast.error(getIntlMessage("msg_saving_failed_title"), getIntlMessage("msg_saving_failed"))
-                })
-            }}>{getIntlMessage("save")}</Menu.Item>
-            <Menu.Item key="2"
-                onClick={() => {
-                    this.removeScenario(inst.name)
-                }}>{getIntlMessage("delete")}</Menu.Item>
+            <Menu.Item key="1" onClick={() => { this.saveScenario(inst) }}>{getIntlMessage("save")}</Menu.Item>
+            <Menu.Item key="2" onClick={() => { this.removeScenario(inst.name) }}>{getIntlMessage("delete")}</Menu.Item>
+            <Menu.Item key="3" onClick={() => { this.exportScenario(inst) }}>{getIntlMessage("export")}</Menu.Item>
         </Menu>
     }
 
@@ -188,7 +234,7 @@ export class Scenarios extends React.Component<ScenariosProps, ScenariosState> {
         return <div className="scenarios-wrapper">
             <div className="header">
                 {getIntlMessage("title")}
-                <div className="add-btn">
+                <div className="actions">
                     <Popover
                         content={<AddScenarioForm togglePopover={this.togglePopover} onAdded={(data) => { this.onAddNewScenario(data.name) }} />}
                         title={getIntlMessage("add_new_scenario").toUpperCase()}
@@ -197,6 +243,8 @@ export class Scenarios extends React.Component<ScenariosProps, ScenariosState> {
                     >
                         <Button type="ghost" icon={<PlusOutlined />} onClick={() => this.togglePopover(true)}>{getIntlMessage("add_new_scenario")}</Button>
                     </Popover>
+
+                    <Button type="ghost" icon={<DownloadOutlined />} onClick={() => { this.importScenario() }}>{getIntlMessage("import")}</Button>
                 </div>
             </div>
             <div className="body">

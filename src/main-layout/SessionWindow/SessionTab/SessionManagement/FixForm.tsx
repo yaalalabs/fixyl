@@ -6,7 +6,6 @@ import { Form, Input, Button, Popover } from 'antd';
 import moment from 'moment';
 import React, { useRef } from 'react';
 import { IgnorableInput } from 'src/common/IgnorableInput/IgnorableInput';
-import { KeyboardEventDispatcher } from 'src/common/KeyboardEventDispatcher/KeyboardEventDispatcher';
 import { Toast } from 'src/common/Toast/Toast';
 import { FixComplexType, FixField } from 'src/services/fix/FixDefs';
 import { FixMessage, FixSession } from 'src/services/fix/FixSession';
@@ -45,9 +44,9 @@ const SaveAsForm = ({ togglePopover, onAddToFavorites, name }: {
             <div className="close" onClick={() => togglePopover(false)}>✕</div>
         </div>
         <Form ref={formRef} layout="vertical" initialValues={{ name }} className="save-as-form"
-            onFinish={(values) => { 
+            onFinish={(values) => {
                 onAddToFavorites(values)
-                 }}>
+            }}>
             <div className="form-item-container">
                 <Form.Item name="name" rules={[{
                     required: true,
@@ -91,7 +90,6 @@ interface FixFormState {
     saving: boolean;
     confirmVisible: boolean;
     searchText?: string;
-    showSearch: boolean;
     markedItems: any[];
     currentMarkedIndex?: any;
 }
@@ -99,6 +97,7 @@ interface FixFormState {
 export class FixForm extends React.Component<FixFormProps, FixFormState> {
     fieldIterationIndex = 0;
     private formRef: any = React.createRef();
+    private searchFormRef: any = React.createRef();
     private markInstance: any;
     private martkUpdateTimeout: any;
 
@@ -108,7 +107,6 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
             initialized: true,
             saving: false,
             confirmVisible: false,
-            showSearch: false,
             markedItems: []
         }
     }
@@ -326,17 +324,6 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
         this.setState({ confirmVisible: state })
     }
 
-    private getGetKeyEvents = () => {
-        return [
-            {
-                keys: "Ctrl+f",
-                event: () => {
-                    this.setState({ showSearch: true })
-                },
-            },
-        ];
-    }
-
     private getFieldRender = (field: FixField, required: boolean, parent: string, fieldIterationIndex: number) => {
         const { enableIgnore } = this.props;
         return <IgnorableInput enableIgnore={enableIgnore} componentProps={{ field, required, parent, fieldIterationIndex }} />
@@ -428,20 +415,14 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
         })
     }
 
-    render() {
-        const { hideTitle, message, viewOnly, disabled, name, saveMode, preferredFavName } = this.props;
-        const { initialized, confirmVisible, saving, showSearch, currentMarkedIndex, markedItems } = this.state;
+    private renderSearchForm = () => {
+        const { name } = this.props;
+        const { currentMarkedIndex, markedItems } = this.state;
 
-        return <KeyboardEventDispatcher events={this.getGetKeyEvents()}>
-            <div className="fix-form-container">
-
-                {!hideTitle && <div className="form-header">
-                    <div className="title">
-                        {getIntlMessage("title", { type: message.name })}
-                    </div>
-                </div>}
-                {showSearch && <div className="search-wrapper vivify fadeInTop">
-                    <Input autoFocus={true} placeholder={getIntlMessage("search")} onChange={(e) => {
+        return <div className="search-wrapper">
+            <Form ref={this.searchFormRef}>
+                <Form.Item name="search">
+                    <Input placeholder={getIntlMessage("search")} onChange={(e) => {
                         this.setState({ searchText: e.target.value, markedItems: [], currentMarkedIndex: undefined }, () => {
                             clearTimeout(this.martkUpdateTimeout);
                             const itemArray: any[] = [];
@@ -470,51 +451,67 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
                         });
 
                     }} />
-                    {currentMarkedIndex !== undefined && <div className="search-selector">
-                        <DownOutlined onClick={() => {
-                            const markedIndex = currentMarkedIndex + 1;
-                            if (markedIndex < markedItems.length) {
-                                markedItems[markedIndex]?.scrollIntoView();
-                                this.setState({ currentMarkedIndex: markedIndex })
-                            }
-                        }} />
-                        <UpOutlined onClick={() => {
-                            const markedIndex = currentMarkedIndex - 1;
-                            if (markedIndex > -1) {
-                                markedItems[markedIndex]?.scrollIntoView();
-                                this.setState({ currentMarkedIndex: markedIndex })
-                            }
-                        }} />
-                        <span className="search-selector-text">{(currentMarkedIndex + 1)}/{markedItems.length}  </span>
-                    </div>}
-                    <CloseOutlined onClick={() => {
-                        this.setState({ showSearch: false, markedItems: [], currentMarkedIndex: undefined })
-                        this.markInstance?.unmark();
-                    }} />
-                </div>}
-                {initialized && <Form ref={this.formRef} layout="horizontal" initialValues={this.getInitialValues()} labelCol={{ span: 10 }} labelAlign="left" onFinish={this.onFinished}>
-                    <div className="form-body" id={`search-node${name}`}>
-                        {this.renderFormFields(message, 0, 0, "root")}
-                    </div>
-                    {!viewOnly && <div className="form-footer">
-                        {!saveMode && <React.Fragment>
-                            <Popover
-                                content={<SaveAsForm togglePopover={this.togglePopover} name={preferredFavName}
-                                    onAddToFavorites={(data) => { this.onAddToFavorites(data.name); }} />}
-                                title={getIntlMessage("save_as").toUpperCase()}
-                                placement="top"
-                                visible={confirmVisible}
-                            >
-                                <Button type="ghost" loading={saving} icon={<StarOutlined />} onClick={() => this.togglePopover(true)}>{getIntlMessage("add_to_fav")}</Button>
-                            </Popover>
+                </Form.Item>
+            </Form>
+            {currentMarkedIndex !== undefined && <div className="search-selector">
+                <DownOutlined onClick={() => {
+                    const markedIndex = currentMarkedIndex + 1;
+                    if (markedIndex < markedItems.length) {
+                        markedItems[markedIndex]?.scrollIntoView();
+                        this.setState({ currentMarkedIndex: markedIndex })
+                    }
+                }} />
+                <UpOutlined onClick={() => {
+                    const markedIndex = currentMarkedIndex - 1;
+                    if (markedIndex > -1) {
+                        markedItems[markedIndex]?.scrollIntoView();
+                        this.setState({ currentMarkedIndex: markedIndex })
+                    }
+                }} />
+                <span className="search-selector-text">{(currentMarkedIndex + 1)}/{markedItems.length}  </span>
+            </div>}
+            <CloseOutlined onClick={() => {
+                this.setState({ markedItems: [], currentMarkedIndex: undefined })
+                this.markInstance?.unmark();
+                this.searchFormRef?.current.resetFields();
+            }} />
+        </div>
+    }
 
-                            <Button disabled={disabled} htmlType="submit" type="primary" icon={<SendOutlined />}>{getIntlMessage("send")}</Button>
-                        </React.Fragment>}
-                        {saveMode && <Button disabled={disabled} htmlType="submit" type="primary" className="save-btn" icon={<SendOutlined />}>{getIntlMessage("save")}</Button>}
-                    </div>}
-                </Form>}
-            </div>
-        </KeyboardEventDispatcher>
+    render() {
+        const { hideTitle, message, viewOnly, disabled, name, saveMode, preferredFavName } = this.props;
+        const { initialized, confirmVisible, saving } = this.state;
+
+        return <div className="fix-form-container">
+
+            {!hideTitle && <div className="form-header">
+                <div className="title">
+                    {getIntlMessage("title", { type: message.name })}
+                </div>
+            </div>}
+            {this.renderSearchForm()}
+            {initialized && <Form ref={this.formRef} layout="horizontal" initialValues={this.getInitialValues()} labelCol={{ span: 10 }} labelAlign="left" onFinish={this.onFinished}>
+                <div className="form-body" id={`search-node${name}`}>
+                    {this.renderFormFields(message, 0, 0, "root")}
+                </div>
+                {!viewOnly && <div className="form-footer">
+                    {!saveMode && <React.Fragment>
+                        <Popover
+                            content={<SaveAsForm togglePopover={this.togglePopover} name={preferredFavName}
+                                onAddToFavorites={(data) => { this.onAddToFavorites(data.name); }} />}
+                            title={getIntlMessage("save_as").toUpperCase()}
+                            placement="top"
+                            visible={confirmVisible}
+                        >
+                            <Button type="ghost" loading={saving} icon={<StarOutlined />} onClick={() => this.togglePopover(true)}>{getIntlMessage("add_to_fav")}</Button>
+                        </Popover>
+
+                        <Button disabled={disabled} htmlType="submit" type="primary" icon={<SendOutlined />}>{getIntlMessage("send")}</Button>
+                    </React.Fragment>}
+                    {saveMode && <Button disabled={disabled} htmlType="submit" type="primary" className="save-btn" icon={<SendOutlined />}>{getIntlMessage("save")}</Button>}
+                </div>}
+            </Form>}
+        </div>
 
     }
 

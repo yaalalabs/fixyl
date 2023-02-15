@@ -83,6 +83,10 @@
 		"disconnect": "විසන්ධි කරන්න",
 		"enable_hb": "HB සබල කරන්න",
 		"enable_test_request": "පරීක්ෂණ ඉල්ලීම් සබල කරන්න",
+		"enable_seq_rest_request": "අනුපිළිවෙල යළි පිහිටුවීමේ ඉල්ලීම් සබල කරන්න",
+		"enable_resend_request": "නැවත යැවීමේ ඉල්ලීම් සබල කරන්න",
+		"enable_auto_login": "Enable auto login",
+		"auto_login_msg": "Preffered login message",
 		"favorites_title": "මගේ ප්‍රියතම",
 		"message": "පණිවුඩය: { msg }",
 		"edit": "Edit",
@@ -195,6 +199,12 @@
 		"fav_name": "කැමතිම නම",
 		"fav_msg": "පණිවිඩ වර්ගයe"
 
+	},
+	"field_input_wrapper": {
+		"auto_gen": "Auto generate",
+		"get": "Capture a value",
+		"set": "Set a captured value",
+		"clear": "Clear"
 	},
 	"scenario_state": {
 		"msg_timeout": "ප්‍රතිචාර කල් ඉකුත්වීම. අපේක්ෂිත ප්‍රතිදානය තත්පර { time }ක් ඇතුළත ලැබී නැත",

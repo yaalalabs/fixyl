@@ -19,6 +19,10 @@ export interface Profile {
     sslCertificate?: string;
     sslProtocol?: string;
     headerFields?: any;
+    autoLoginEnabled?: boolean;
+    autoLoginMsg?: any;
+    sequenceResetRequestEnabled?: boolean;
+    resendRequestEnabled?: boolean;
 }
 
 export interface ProfileWithCredentials extends Profile {

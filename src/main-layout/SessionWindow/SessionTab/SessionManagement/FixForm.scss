@@ -42,6 +42,7 @@
         .fix-component {
             display: flex;
             flex-direction: column;
+            margin-bottom: 10px;
 
             &-title {
                 font-weight: 500;
@@ -96,29 +97,48 @@
     }
 
     .search-wrapper {
-        position: absolute;
-        right: 15px;
-        margin-top: 5px;
-        top: 0;
         display: flex;
         align-items: center;
         padding: 3px;
-        border: 1px solid var(--separator-color);
+        // border: 1px solid var(--separator-color);
         background: var(--shade-375);
         z-index: 1000;
-        width: 200px;
+        margin: 0 18px 4px;
+    
         
+        .ant-form {
+            height: 24px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+
+            .ant-form-item-control-input {
+                min-height: 22px;   
+            }
+
+            .ant-form-item {
+                margin-bottom: 0;
+                height: 22px;   
+            }
+        }
+
         input {
             height: 22px;
-            font-size: 10px;
-            background: var(--shade-350);
+            font-size: 12px;
+            color: var(--shade-250);
             border: none;
             margin-right: 5px;
+            color:va
         }
 
         .anticon {
             font-size: 10px;
             cursor: pointer;
+            width: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .search-selector {
@@ -133,6 +153,11 @@
             .anticon {
                 margin-right: 3px;
             }
+        }
+
+        .ant-input:focus, .ant-input-focused {
+            border: none;
+            box-shadow: none;
         }
     }
 

@@ -85,6 +85,10 @@
 		"disconnect": "Disconnect",
 		"enable_hb": "Enable HB",
 		"enable_test_request": "Enable test requests",
+		"enable_seq_rest_request": "Enable sequence reset requests",
+		"enable_resend_request": "Enable resend requests",
+		"enable_auto_login": "Enable auto login",
+		"auto_login_msg": "Preffered login message",
 		"favorites_title": "My Favorites",
 		"message": "Message: { msg }",
 		"edit": "Edit",
@@ -160,7 +164,13 @@
 		"profile_saving_success": "Header fields saved successfully",
 		"profile_saving_failed_title": "Saving Header Fields",
 		"profile_saving_failed": "Error occurred while saving the data",
-		"search": "Search"
+		"search": "Search Field"
+	},
+	"field_input_wrapper": {
+		"auto_gen": "Auto generate",
+		"get": "Capture a value",
+		"set": "Set a captured value",
+		"clear": "Clear"
 	},
 	"fix_session": {
 		"msg_disconnect": "Session disconnected { name } : { ip }",

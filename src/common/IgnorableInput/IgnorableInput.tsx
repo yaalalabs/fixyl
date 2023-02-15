@@ -4,10 +4,14 @@ import "./IgnorableInput.scss";
 import { LM } from 'src/translations/language-manager';
 import { LogoutOutlined, RollbackOutlined } from '@ant-design/icons';
 import { FixField } from 'src/services/fix/FixDefs';
-import { Select, Input, DatePicker, } from 'antd';
+import { Select, Input, } from 'antd';
 import { ListInput } from '../ListInput/ListInput';
+import { FieldWrapper } from './FieldWrapper/FieldWrapper';
+import { DatePicker, } from 'antd';
+
 
 const { Option } = Select
+
 
 const FieldRenderEx = ({ value, field, required, parent, fieldIterationIndex, onChange, }:
     { value: any, field: FixField, required: boolean, parent: string, fieldIterationIndex: number, onChange: (value: any) => void }) => {
@@ -20,11 +24,12 @@ const FieldRenderEx = ({ value, field, required, parent, fieldIterationIndex, on
 
     const { def } = field;
     if (def.options && def.type.toLowerCase() !== "multiplecharvalue") {
-        return <Select onChange={onChangeEx} value={inputValue}>
+        return <FieldWrapper onChange={onChangeEx} value={inputValue} disableAutogen ><Select onChange={onChangeEx} value={inputValue}>
             {def.options.map((option, i) => {
                 return <Option value={option.value} key={i}>{option.displayValue}</Option>
             })}
         </Select>
+        </FieldWrapper>
     }
 
 
@@ -35,26 +40,37 @@ const FieldRenderEx = ({ value, field, required, parent, fieldIterationIndex, on
                 ret = inputValue ? "Y" : "N"
             }
 
-            return <Select onChange={onChangeEx} value={ret} >
+            return <FieldWrapper onChange={onChangeEx} value={inputValue} disableAutogen > <Select onChange={onChangeEx} value={ret} >
                 <Option key={"1"} value={""}>{""}</Option>
                 <Option key={"Y"} value="Y">Y</Option>
                 <Option key={"N"} value="N">N</Option>
             </Select>
+            </FieldWrapper>
         case "utctimestamp":
-            return <DatePicker onChange={onChangeEx} showTime format="YYYY-MM-DD hh:mm:ss:ms" value={inputValue} />
+            return <FieldWrapper onChange={onChangeEx} value={inputValue} >
+                <DatePicker onChange={onChangeEx} showTime format="YYYY-MM-DD hh:mm:ss:ms" value={inputValue} />
+            </FieldWrapper>
         case "multiplecharvalue":
         case "multiplevaluestring":
             return <ListInput onChange={onChangeEx} name={def.name} parent={parent} options={def.options}
                 required={required} fieldIterationIndex={fieldIterationIndex} value={inputValue} />
         case "monthyear":
-            return <DatePicker onChange={onChangeEx} picker="month" value={inputValue} />
+            return <FieldWrapper onChange={onChangeEx} value={inputValue} >
+                <DatePicker onChange={onChangeEx} picker="month" value={inputValue} />
+            </FieldWrapper>
         case "utcdateonly":
-            return <DatePicker onChange={onChangeEx} format="YYYY-MM-DD" value={inputValue} />
+            return <FieldWrapper onChange={onChangeEx} value={inputValue} >
+                <DatePicker onChange={onChangeEx} format="YYYY-MM-DD" value={inputValue} />
+            </FieldWrapper>
         case "utctimeonly":
-            return <DatePicker picker="time" onChange={onChangeEx} value={inputValue} />
+            return <FieldWrapper onChange={onChangeEx} value={inputValue} >
+                <DatePicker picker="time" onChange={onChangeEx} value={inputValue} />
+            </FieldWrapper>
     }
 
-    return <Input onChange={(event) => onChangeEx(event.target.value)} value={inputValue} />
+    return <FieldWrapper onChange={onChangeEx} value={inputValue} >
+        <Input onChange={(event) => onChangeEx(event.target.value)} value={inputValue} />
+    </FieldWrapper>
 }
 
 const getIntlMessage = (msg: string, options?: any) => {

@@ -134,6 +134,8 @@ export class FixComplexType {
     fieldOrder: FieldOrderEntry[] = [];
     groupInstances: any = {};
     id: string;
+    msgcat?: "admin" | "app";
+
     private value: any;
     private valueWithHeaders: any;
 
@@ -141,6 +143,7 @@ export class FixComplexType {
         this.name = xmlNode.attributes.name;
         this.required = xmlNode.attributes.required === "Y";
         this.type = xmlNode.name as any;
+        this.msgcat = xmlNode.attributes.msgcat as any;
         this.id = xmlNode.attributes.msgtype ?? fieldDefMap.get(this.name)?.number;
 
         xmlNode.children.forEach(child => {
@@ -182,8 +185,8 @@ export class FixComplexType {
         return this.fieldOrder;
     }
 
-    getField() {
-
+    getFieldValue(name: string): any {
+        return this.value?.[name];
     }
 
     getValue() {

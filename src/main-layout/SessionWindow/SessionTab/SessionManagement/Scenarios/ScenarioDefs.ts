@@ -218,13 +218,20 @@ export class Stage {
 
     run(parameters: any): Promise<void> {
         return new Promise((resolve, reject) => {
-            if (!this.inputMsg || this.skipped) {
+            if (this.skipped) {
                 return resolve();
             }
 
             this.reset();
             this.state = "EXECUTING";
-            this.session.send(this.inputMsg, parameters).then(async () => {
+
+            let defaultPromise = new Promise<void>((resolve) => resolve(undefined));
+
+            if (this.inputMsg) {
+                defaultPromise = this.session.send(this.inputMsg, parameters);
+            }
+
+            defaultPromise.then(async () => {
                 if (this.outputMsgs.size === 0) {
                     this.state = "SUCCESS";
                     resolve();
@@ -247,10 +254,12 @@ export class Stage {
     }
 
     loadFromFile(structure: SaveFileStageStructure) {
-        const inputMsg = this.session.createNewMessageInst(structure.inputMsg.name);
-        if (inputMsg) {
-            inputMsg.setValue(JSON.parse(structure.inputMsg.data));
-            this.setInput(inputMsg)
+        if (structure.inputMsg) {
+            const inputMsg = this.session.createNewMessageInst(structure.inputMsg.name);
+            if (inputMsg) {
+                inputMsg.setValue(JSON.parse(structure.inputMsg.data));
+                this.setInput(inputMsg)
+            }
         }
 
         structure.outputMsgs.forEach(inst => {
@@ -265,16 +274,12 @@ export class Stage {
     }
 
     getDataToSave(): SaveFileStageStructure | undefined {
-        if (!this.inputMsg) {
-            return undefined;
-        }
-
         return {
             name: this.name,
             waitTime: (this.waitTime / 1000),
             stageWaitTime: (this.stageWaitTime / 1000),
             skipped: this.skipped,
-            inputMsg: { name: this.inputMsg.name, data: JSON.stringify(this.inputMsg.getValue()) },
+            inputMsg: this.inputMsg ? { name: this.inputMsg.name, data: JSON.stringify(this.inputMsg.getValue()) } : undefined,
             outputMsgs: Array.from(this.outputMsgs.values()).map(inst => ({ name: inst.msg.name, data: JSON.stringify(inst.msg.getValue()) }))
         }
     }
@@ -294,9 +299,10 @@ export class Stage {
     stop(reset?: boolean) {
         if (reset) {
             this.state = "PENDING";
-            this.waitingState = false;
-            this.stageWaitTimerPrmise?.cancel();
         }
+        
+        this.waitingState = false;
+        this.stageWaitTimerPrmise?.cancel();
 
         const clean = () => {
             clearTimeout(this.waitTimer);
@@ -335,7 +341,7 @@ export class Stage {
 
 interface SaveFileStageStructure {
     name: string, waitTime: number, skipped: boolean, stageWaitTime?: number,
-    inputMsg: { name: string, data: string }, outputMsgs: { name: string, data: string }[]
+    inputMsg?: { name: string, data: string }, outputMsgs: { name: string, data: string }[]
 }
 interface SaveFileStructure {
     stages: SaveFileStageStructure[]

@@ -283,7 +283,7 @@ export class FixHeaderForm extends React.Component<FixHeaderFormProps, FixHeader
         const { def } = field;
         const fieldName = `${parent}__${def.name}__${fieldIterationIndex}`;
 
-        return <div className="fix-field-wrapper" style={{ marginLeft: level * 10 }}>
+        return <div className="fix-field-wrapper" key={fieldName} style={{ marginLeft: level * 10 }}>
             {<Form.Item name={fieldName} label={<span>{def.name}<span className="field-number">[{def.number}]</span></span>}
                 rules={[{ required: field.required, message: 'Please input valid value!' }]} >
                 {this.getFieldRender(field, field.required, parent, fieldIterationIndex)}

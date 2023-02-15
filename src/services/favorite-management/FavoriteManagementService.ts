@@ -81,4 +81,37 @@ export class FavoriteManagementService {
         }
     }
 
+    async getFavorite(name: string, session: FixSession): Promise<FixComplexType> {
+        const dictionaryName = this.getDictionaryName(session.profile);
+        const dirPath = this.appManager.getWorkingDir() + "/" + dictionaryName;
+        try {
+            const data = await this.fileManager.listDirContent(dirPath);
+            if (data.error) {
+                throw data.error
+            }
+
+            const ret: { name: string, msg: FixComplexType }[] = [];
+            if (data.files) {
+                await Promise.all(data.files.map(async (file) => {
+                    const fileName = file.replace(/\.[^/.]+$/, "");
+                    const defName = fileName.split("___")[1]
+                    const name = fileName.split("___")[0]
+                    const msgInst = session.createNewMessageInst(defName);
+                    if (msgInst) {
+                        const inputFileData = await this.fileManager.readFile(`${dirPath}/${file}`);
+                        if (inputFileData.fileData) {
+                            const inst: FavoriteInstance = JSON.parse(inputFileData.fileData.data);
+                            msgInst.setValue(inst.data)
+                            ret.push({ name: name, msg: msgInst });
+                        }
+                    }
+                }));
+            }
+
+            return ret.filter((msg) => msg.name === name)[0]?.msg;
+        } catch (error) {
+            throw error
+        }
+    }
+
 }

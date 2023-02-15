@@ -27,13 +27,13 @@
 		"password": "මුරපදය",
 		"dictionary_location": "ශබ්දකෝෂ ස්ථානය",
 		"cancel": "අවලංගු කරන්න",
-		"save": "සුරකින්න",		
+		"save": "සුරකින්න",
 		"connect": "Connect",
 		"delete": "Delete",
 		"no_profiles": "ගිණුමක් නැත",
 		"sender_comp_id": "SenderCompId",
 		"target_comp_id": "TargetCompId",
-		"copy":"Copy",
+		"copy": "Copy",
 		"edit": "Edit"
 	},
 	"settings": {
@@ -165,7 +165,7 @@
 	},
 	"scenarios": {
 		"title": "අවස්ථා",
-		"add_new_scenario": "නව අවස්ථාවක් එක් කරන්න",
+		"add_new_scenario": "අලුතින් එක් කරන්න",
 		"add_new_stage": "නව අදියර එක් කරන්න",
 		"edit_stage": "අදියර සංස්කරණය කරන්න",
 		"add_msg_title": "පණිවිඩය එක් කරන්න",
@@ -196,9 +196,16 @@
 		"msg_saving_success": "{ name } සාර්ථකව සුරැකී ඇත ",
 		"msg_saving_failed_title": "අවස්ථාව සුරැකීම අසාර්ථක විය",
 		"msg_saving_failed": "දත්ත සුරැකීමේදී දෝෂයක් ඇති විය",
+		"msg_exporting_success_title": "අවස්ථාව අපනයනය විණි",
+		"msg_exporting_success": "{ name } සාර්ථකව අපනයනය වී ඇත",
+		"msg_exporting_failed_title": "අවස්ථාව අපනයනය අසාර්ථක විය",
+		"msg_exporting_failed": "දත්ත අපනයනය දෝෂයක් ඇති විය",
+		"scenario_import_failed_title": "අවස්ථාව ආනයනය අසාර්ථක විය",
+		"scenario_import_failed": "දත්ත ආනයනයේදී දෝෂයක් ඇති විය",
 		"fav_name": "කැමතිම නම",
-		"fav_msg": "පණිවිඩ වර්ගයe"
-
+		"fav_msg": "පණිවිඩ වර්ගය",
+		"export": "අපනයනය",
+		"import": "ආනයනය"
 	},
 	"field_input_wrapper": {
 		"auto_gen": "Auto generate",
@@ -216,7 +223,7 @@
 		"ignored_msg": "<-- ක්ෂේත්‍රය නොසලකා හැර ඇත -->"
 	},
 	"message_viewer": {
-		"title":  "පණිවිඩ පැනලය",
+		"title": "පණිවිඩ පැනලය",
 		"profile_selection": "ගිණුමෙන් ශබ්දකෝෂය තෝරන්න",
 		"msg_invalid_message": "ලබා දී ඇති පණිවිඩය Fix පණිවිඩයක් ලෙස හඳුනාගෙන නොමැත. කරුණාකර වලංගු පණිවිඩයක් ඇතුළු කරන්න.",
 		"msg_invalid_message_title": "වලංගු නොවන පණිවිඩයක්",
@@ -224,11 +231,11 @@
 		"raw_msg_desc": "සාම්ප්‍රදායික එක වෙනුවට SOH අක්ෂරය '^A' විය යුතු බව කරුණාවෙන් සලකන්න. ඔබට ඒවා වෙන් කිරීම සඳහා නව පේළියක් සමඟින් බහුවිධ පණිවිඩ එක් කළ හැක.",
 		"field_separator": "Field Separator",
 		"view": "View",
-		"fix_definition":"Fix අර්ථ දැක්වීම",
+		"fix_definition": "Fix අර්ථ දැක්වීම",
 		"message_title": "විකේතනය කළ පණිවිඩය"
 	},
 	"message_diff_viewer": {
-		"title":  "පණිවිඩ පැනලය",
+		"title": "පණිවිඩ පැනලය",
 		"profile_selection": "ගිණුමෙන් ශබ්දකෝෂය තෝරන්න",
 		"msg_invalid_message": "ලබා දී ඇති පණිවිඩය Fix පණිවිඩයක් ලෙස හඳුනාගෙන නොමැත. කරුණාකර වලංගු පණිවිඩයක් { msg }ට ඇතුළු කරන්න.",
 		"msg_invalid_message_title": "වලංගු නොවන පණිවිඩයක්",
@@ -236,7 +243,7 @@
 		"raw_msg_desc": "සාම්ප්‍රදායික එක වෙනුවට SOH අක්ෂරය '^A' විය යුතු බව කරුණාවෙන් සලකන්න. ඔබට ඒවා වෙන් කිරීම සඳහා නව පේළියක් සමඟින් බහුවිධ පණිවිඩ එක් කළ හැක.",
 		"field_separator": "Field Separator",
 		"view": "View",
-		"fix_definition":"Fix අර්ථ දැක්වීම",
+		"fix_definition": "Fix අර්ථ දැක්වීම",
 		"viewer_title": "Diff View",
 		"message_title": "විකේතනය කළ පණිවිඩය"
 	},

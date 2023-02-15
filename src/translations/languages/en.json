@@ -179,7 +179,7 @@
 	},
 	"scenarios": {
 		"title": "Scenarios",
-		"add_new_scenario": "Add New Scenario",
+		"add_new_scenario": "Add New",
 		"add_new_stage": "Add New Stage",
 		"edit_stage": "Edit Stage",
 		"add_msg_title": "Add Message",
@@ -210,8 +210,16 @@
 		"msg_saving_success": "{ name } has been successfully saved ",
 		"msg_saving_failed_title": "Scenario Save Failed",
 		"msg_saving_failed": "Error occurred while saving the data",
+		"msg_exporting_success_title": "Scenario Exported",
+		"msg_exporting_success": "{ name } has been successfully exported",
+		"msg_exporting_failed_title": "Scenario Export Failed",
+		"msg_exporting_failed": "Error occurred while exporting the data",
+		"scenario_import_failed_title": "Scenario Import Failed",
+		"scenario_import_failed": "Error occurred while importing the data",
 		"fav_name": "Favorite Name",
-		"fav_msg": "Message Type"
+		"fav_msg": "Message Type",
+		"export": "Export",
+		"import": "Import"
 	},
 	"scenario_state": {
 		"msg_timeout": "Response timedout. Expected output not received within { time } seconds",

@@ -10,6 +10,7 @@ import { Button, Collapse, Popover, Form, Input, Menu, Dropdown } from 'antd';
 import { ScenarioInstance } from './ScenarioInstance';
 import { DownloadOutlined, PlusOutlined, SendOutlined, SettingOutlined } from '@ant-design/icons';
 import { Toast } from 'src/common/Toast/Toast';
+
 const { Panel } = Collapse;
 
 const getIntlMessage = (msg: string, options?: any) => {
@@ -170,6 +171,7 @@ export class Scenarios extends React.Component<ScenariosProps, ScenariosState> {
         } else {
             const inst = this.onAddNewScenario(deduplicatedName);
             inst.loadFromFile(data);
+            GlobalServiceRegistry.scenarioManager.saveScenario(this.props.session.getProfile(), inst);
         }
     }
 
@@ -180,8 +182,7 @@ export class Scenarios extends React.Component<ScenariosProps, ScenariosState> {
                     const filePath = data.path as string;
                     const inputFileData = await this.fileManager.readFile(`${filePath}`);
                     if (inputFileData.fileData) {
-                        const directoryPath = filePath.lastIndexOf('/') + 1;
-                        const fileName = filePath.substring(directoryPath).replace('.json', '');
+                        const fileName = filePath.replace(/^.*[\\\/]/, '').replace('.json', '');
                         this.addScenarioViaImport(fileName, inputFileData.fileData.data, 0);
                     }
                 }

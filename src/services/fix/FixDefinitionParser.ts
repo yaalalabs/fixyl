@@ -193,7 +193,7 @@ export class FixDefinitionParser {
         return checksum;
     }
 
-    private encodeToFixBody(data: any, parameters?: any) {
+    private encodeToFixBody(data: any, parameters?: any) {        
         removeFalsyKeys(data);
         const properties = Object.keys(data);
         let fixMsgBody = "";

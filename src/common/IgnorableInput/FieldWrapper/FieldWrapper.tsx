@@ -81,7 +81,7 @@ export class FieldWrapper extends React.Component<DatePrickerProps, DatePrickerS
             }
         }
 
-        return value;
+        return "";
     }
 
     private getMenu = () => {

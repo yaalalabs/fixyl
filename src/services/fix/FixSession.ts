@@ -55,7 +55,7 @@ export class FixSession {
     private socketDataSubject = new Subject<FixSessionEvent>();
     private parser: FixDefinitionParser;
     private tx: number = 1;
-    private rx: number = 0;
+    private rx: number = 1;
     private inputStream: string = "";
     private hbMonitor?: HBMonitor;
     private testRequestid = 1;
@@ -193,10 +193,10 @@ export class FixSession {
         }
 
         messages.forEach(msg => {
-            const msgInst = this.parser.decodeFixMessage(msg);
-            this.rx++;
+            const msgInst = this.parser.decodeFixMessage(msg);            
 
             if (msgInst) {
+                this.rx++;
                 this.evaliateInputMesssage(msgInst.msg);
 
                 this.socketDataSubject.next({
@@ -212,6 +212,7 @@ export class FixSession {
             }
         });
     }
+    
 
     private onDisconnect() {
         log('(' + this.profile.name + ') disconnected');
@@ -382,8 +383,9 @@ export class FixSession {
         switch (msg.name.toLowerCase()) {
             case "logon":
                 const data = msg.getValue();
-                if (data.ResetSeqNumFlag) {
+                if (data.ResetSeqNumFlag === "Y") {
                     this.tx = 1;
+                    this.rx = 1;
                     this.testRequestid = 1;
                 }
 
@@ -427,7 +429,7 @@ export class FixSession {
 
     private resendMsg(msgDef: FixComplexType, prevHeader: FixMsgHeader, tx: number, parameters?: any) {
         const header = this.generateFixMessageHeaders(msgDef, tx);
-        this.sendInternal(header, msgDef, parameters, { PossDupFlag: "Y", OrigSendingTime: prevHeader.time });
+        this.sendInternal(header, msgDef, parameters, { PossDupFlag: "Y", OrigSendingTime: moment(prevHeader.time, "YYYYMMDD-HH:mm:ss.000").toISOString() });
     }
 
     private sendSeqReset(tx: number, end: number) {
@@ -486,7 +488,7 @@ export class FixSession {
             senderCompId: this.profile.senderCompId,
             targetCompId: this.profile.targetCompId,
             sequence: tx,
-            time: moment(new Date()).utc().format("YYYYMMDD-HH:mm:ss.000")
+            time: moment(new Date()).utc().format("YYYYMMDD-HH:mm:ss.000"),
         }
     }
 

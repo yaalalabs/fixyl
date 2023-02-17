@@ -158,7 +158,7 @@ export class GeneralInfo extends React.Component<GeneralInfoProps, GeneralInfoSt
     render() {
         const { session } = this.props;
         const { name, ip, port, senderCompId, targetCompId, } = session.profile;
-        const { connected, hbEnabled, testRequestEnabled, showHeaderFields, sequenceResetRequestEnabled,
+        const { connected, hbEnabled, testRequestEnabled, showHeaderFields, 
             resendRequestEnabled, autoLoginEnabled, autoLoginFormVisible } = this.state;
 
         return <div className="general-info">
@@ -210,8 +210,8 @@ export class GeneralInfo extends React.Component<GeneralInfoProps, GeneralInfoSt
                             placement="top"
                             visible={autoLoginFormVisible}
                         >
-                            <div onClick={() => connected && this.togglePopover(true)}>
-                                <Switch disabled={!connected} checked={autoLoginEnabled} />
+                            <div onClick={() => this.togglePopover(true)}>
+                                <Switch checked={autoLoginEnabled} />
                             </div>
                         </Popover>
                     )}

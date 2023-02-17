@@ -182,7 +182,7 @@ export class Scenarios extends React.Component<ScenariosProps, ScenariosState> {
                     const filePath = data.path as string;
                     const inputFileData = await this.fileManager.readFile(`${filePath}`);
                     if (inputFileData.fileData) {
-                        const fileName = filePath.replace(/^.*[\\\/]/, '').replace('.json', '');
+                        const fileName = filePath.split('\\').pop()!.split('/').pop()!.replace('.json', '');
                         this.addScenarioViaImport(fileName, inputFileData.fileData.data, 0);
                     }
                 }

@@ -57,13 +57,15 @@ export class FixHeaderForm extends React.Component<FixHeaderFormProps, FixHeader
         const properties = Object.keys(inputData)
         const filteredProperties = properties.filter(property => property.indexOf(`${namePrefix}__${name}__${fieldIterationIndex}`) > -1)
         filteredProperties.forEach(property => {
-            let value = inputData[property]
+            let value = inputData[property];
             switch (field.def.type.toLowerCase()) {
                 case "utctimestamp":
                 case 'monthyear':
                 case 'utcdateonly':
                 case 'utctimeonly':
-                    value = value?.toISOString();
+                    if (typeof value === "object") {
+                        value = value?.toISOString();
+                    }                        
                     break;
             }
 

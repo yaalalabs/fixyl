@@ -134,7 +134,9 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
                     case 'monthyear':
                     case 'utcdateonly':
                     case 'utctimeonly':
-                        value = value?.toISOString();
+                        if (typeof value === "object") {
+                            value = value?.toISOString();
+                        }
                         break;
                 }
 

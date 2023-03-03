@@ -97,6 +97,7 @@
 		"save": "Save",
 		"edit_msg": "Edit: { msg }",
 		"header_fields": "Header Fields",
+		"global_params": "Global Parameters",
 		"fix_session_connectivity": "Session: {name}",
 		"remove_non_filled_fields": "Remove Non-Filled",
 		"msg_connection_failed_title": "Connection Failure",
@@ -170,6 +171,7 @@
 		"auto_gen": "Auto generate",
 		"get": "Capture a value",
 		"set": "Set a captured value",
+		"incr": "Increament and set a captured value",
 		"clear": "Clear"
 	},
 	"fix_session": {
@@ -181,6 +183,7 @@
 		"title": "Scenarios",
 		"add_new_scenario": "Add New",
 		"add_new_stage": "Add New Stage",
+		"sort_stages": "Sort Stages",
 		"edit_stage": "Edit Stage",
 		"add_msg_title": "Add Message",
 		"edit_msg_title": "Edit Message",
@@ -200,6 +203,7 @@
 		"rename": "Rename",
 		"waiting_state": "WAITING",
 		"save": "Save",
+		"done": "Done",
 		"run": "Run",
 		"stop": "Stop",
 		"select": "Select",
@@ -264,5 +268,13 @@
 		"fixyl_update": "FIXYL Update",
 		"version_available": "Version { latestVersion } is available.",
 		"download": "Download"
+	},
+	"global_params": {
+		"add": "Add Parameter",
+		"key": "Parameter Name",
+		"value": "Parameter Value",
+		"select_type": "Data Type",
+		"save": "Save",
+		"counter": "Counter"
 	}
 }

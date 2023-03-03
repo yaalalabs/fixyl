@@ -237,3 +237,33 @@
         }
     }
 }
+
+.sortable-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.column-sort {
+    display: flex;
+    flex-direction: column;
+    padding: 0 5px 0;
+        
+    &-row {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between;
+
+        &-content-wrapper {
+            display: flex;
+            align-items: center;
+            color: var(--text-color);
+        }
+
+        &-handle {
+            margin-right: 5px;
+            cursor: row-resize;
+        }
+    }
+}

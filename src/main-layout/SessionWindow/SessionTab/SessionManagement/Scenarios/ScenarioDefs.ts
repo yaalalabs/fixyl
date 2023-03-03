@@ -1,6 +1,7 @@
+import { arrayMove } from "react-sortable-hoc";
 import { Subject, Subscription } from "rxjs";
 import { FixComplexType } from "src/services/fix/FixDefs";
-import { FixSession, FixSessionEventType } from "src/services/fix/FixSession";
+import { FixSession, FixSessionEventType, Parameters } from "src/services/fix/FixSession";
 import { LM } from "src/translations/language-manager";
 import { CancelablePromise, makeCancelable, removeFalsyKeys } from "src/utils/utils";
 
@@ -216,7 +217,7 @@ export class Stage {
         this.outputMsgs.forEach(inst => inst.state = "PENDING")
     }
 
-    run(parameters: any): Promise<void> {
+    run(parameters: Parameters): Promise<void> {
         return new Promise((resolve, reject) => {
             if (this.skipped) {
                 return resolve();
@@ -300,7 +301,7 @@ export class Stage {
         if (reset) {
             this.state = "PENDING";
         }
-        
+
         this.waitingState = false;
         this.stageWaitTimerPrmise?.cancel();
 
@@ -349,7 +350,7 @@ interface SaveFileStructure {
 
 export class Scenario {
     private stages: { stage: Stage, sub: Subscription }[] = [];
-    private parameters: any = {};
+    private parameters: Parameters = {};
     private stageUpdatedSubject = new Subject<void>();
     private state: ValidationState = "PENDING";
     private runPromise?: any;
@@ -364,6 +365,11 @@ export class Scenario {
 
     getAllStages() {
         return this.stages.map(({ stage }) => stage);
+    }
+
+    reArrangeStages(oldIndex: number, newIndex: number) {
+        this.stages = arrayMove(this.stages, oldIndex, newIndex)
+        this.stageUpdatedSubject.next();
     }
 
     loadFromFile(data: string) {
@@ -408,7 +414,7 @@ export class Scenario {
             for (let i = 0; i < this.stages.length; i++) {
                 if (skip) { continue; }
                 const stage = this.stages[i].stage
-                await stage.run(this.parameters);
+                await stage.run({ ...this.session.getGlobalParameters(), ...this.parameters });
                 if (stage.getState() === "FAILED") {
                     skip = true;
                 }

@@ -6,10 +6,16 @@ import { LM } from 'src/translations/language-manager';
 import { Scenario, Stage } from './ScenarioDefs';
 import './ScenarioInstance.scss';
 import { Button, Collapse, Popover, Form, Input, Tooltip, InputNumber, Checkbox, Dropdown, Menu } from 'antd';
-import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, PlusOutlined, SortAscendingOutlined } from '@ant-design/icons';
 import { AddMsgModal } from './AddMsgModal';
 import { FixComplexType } from 'src/services/fix/FixDefs';
 import { AddFavoriteModal } from './AddFavoriteModal';
+import {
+    SortableContainer,
+    SortableContainerProps,
+    SortableElement,
+    SortableHandle,
+} from 'react-sortable-hoc';
 
 const { Panel } = Collapse;
 
@@ -76,6 +82,41 @@ const AddStageForm = ({ togglePopover, onAdded, value }: {
         </Form>
     </div>);
 }
+
+const DragHandle = SortableHandle(() => <div className="column-sort-row-handle">::</div>);
+
+const SortableItem = SortableElement(({ stage }: {
+    stage: Stage,
+}) => (
+    <div className="column-sort-row">
+        <div className="column-sort-row-content-wrapper">
+            <DragHandle />
+            {stage.name}
+        </div>
+    </div>
+));
+
+interface CustomSortableContainerProps extends SortableContainerProps {
+    togglePopover: (stage: boolean) => void;
+}
+
+
+const ScenarioSortableContainer = SortableContainer<CustomSortableContainerProps>(({ children, togglePopover }: any) => {
+    return <div className="sortable-container">
+        <div className="sortable-body" id="sortable-body">
+            {children}
+        </div>
+        <div className="sortable-footer">
+            <Button className="button-v2" type="primary" htmlType="submit" onClick={() => {
+                togglePopover(false)
+            }}>
+                {getIntlMessage("done").toUpperCase()}
+            </Button>
+        </div>
+    </div >;
+});
+
+
 interface ScenarioInstanceProps {
     session: FixSession;
     scenario: Scenario;
@@ -84,6 +125,7 @@ interface ScenarioInstanceProps {
 interface ScenarioInstanceState {
     connected: boolean,
     addStageVisible: boolean,
+    sortStagesVisible: boolean,
     editStageVisible?: string,
     addMsgVisible: boolean,
     addFavoriteVisible: boolean,
@@ -99,6 +141,7 @@ export class ScenarioInstance extends React.Component<ScenarioInstanceProps, Sce
         this.state = {
             connected: this.props.session.isReady(),
             addStageVisible: false,
+            sortStagesVisible: false,
             addMsgVisible: false,
             addFavoriteVisible: false,
             activeStage: undefined,
@@ -198,6 +241,11 @@ export class ScenarioInstance extends React.Component<ScenarioInstanceProps, Sce
         </Menu>
     }
 
+    private onSortEnd = ({ oldIndex, newIndex }: any) => {
+        this.props.scenario.reArrangeStages(oldIndex, newIndex);
+        this.forceUpdate();
+    };
+
     getStage(stage: Stage) {
         return <Panel header={stage.name} key={stage.name} className={stage.getState() === "EXECUTING" ? "executing" : ""} extra={this.genExtraHeader(stage)}>
             {stage.isSkipped() && <div className="skipped"></div>}
@@ -264,8 +312,12 @@ export class ScenarioInstance extends React.Component<ScenarioInstanceProps, Sce
         </Panel>
     }
 
-    private togglePopover = (state: boolean) => {
+    private toggleNewStagePopover = (state: boolean) => {
         this.setState({ addStageVisible: state })
+    }
+
+    private toggleSortStagesPopover = (state: boolean) => {
+        this.setState({ sortStagesVisible: state })
     }
 
     private onAddNewStage = (name: string, waitTime: number, stageWaitTime: number) => {
@@ -274,20 +326,46 @@ export class ScenarioInstance extends React.Component<ScenarioInstanceProps, Sce
         this.forceUpdate();
     }
 
+    private getContainer = () => {
+        const scrollingContainer = document.getElementById('sortable-body');
+        return scrollingContainer ?? document.body;
+    }
+
     render() {
         const { scenario, session, } = this.props;
-        const { addStageVisible, addMsgVisible, activeStage, addFavoriteVisible } = this.state;
+        const { addStageVisible, sortStagesVisible, addMsgVisible, activeStage, addFavoriteVisible } = this.state;
 
         return <React.Fragment>
             <div className="add-btn">
                 <Popover
-                    content={<AddStageForm togglePopover={this.togglePopover} onAdded={(data) => { this.onAddNewStage(data.name, data.waitTime, data.stageWaitTime) }} />}
+                    content={<AddStageForm togglePopover={this.toggleNewStagePopover} onAdded={(data) => { this.onAddNewStage(data.name, data.waitTime, data.stageWaitTime) }} />}
                     title={getIntlMessage("add_new_stage").toUpperCase()}
                     placement="top"
                     visible={addStageVisible}
                 >
-                    <Button type="ghost" disabled={this.isDisabled()} icon={<PlusOutlined />} onClick={() => this.togglePopover(true)}>{getIntlMessage("add_new_stage")}</Button>
+                    <Button type="ghost" disabled={this.isDisabled()} icon={<PlusOutlined />} onClick={() => this.toggleNewStagePopover(true)}>{getIntlMessage("add_new_stage")}</Button>
                 </Popover>
+                <Popover
+                    content={
+                        <ScenarioSortableContainer onSortEnd={this.onSortEnd} togglePopover={this.toggleSortStagesPopover}
+                            useDragHandle getContainer={this.getContainer}>
+                            {scenario.getAllStages().map((stage, index) => (
+                                <SortableItem
+                                    index={index}
+                                    stage={stage}
+                                    key={`item-${stage.name}`}
+                                />
+                            ))}
+                        </ScenarioSortableContainer>
+                    }
+                    title={getIntlMessage("sort_stages").toUpperCase()}
+                    placement="top"
+                    visible={sortStagesVisible}
+                >
+                    <Button style={{ marginLeft: 5 }} type="ghost" disabled={this.isDisabled()} icon={<SortAscendingOutlined />}
+                        onClick={() => { this.toggleSortStagesPopover(true) }}>{getIntlMessage("sort_stages")}</Button>
+                </Popover>
+
             </div>
             <Collapse>
                 {scenario.getAllStages().map(stage => this.getStage(stage))}
@@ -328,7 +406,7 @@ export class ScenarioInstance extends React.Component<ScenarioInstanceProps, Sce
                     this.setState({ addFavoriteVisible: false })
                 }} />
             }
-        </React.Fragment>
+        </React.Fragment >
     }
 }
 

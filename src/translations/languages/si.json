@@ -167,6 +167,7 @@
 		"title": "අවස්ථා",
 		"add_new_scenario": "අලුතින් එක් කරන්න",
 		"add_new_stage": "නව අදියර එක් කරන්න",
+		"sort_stages": "Sort Stages",
 		"edit_stage": "අදියර සංස්කරණය කරන්න",
 		"add_msg_title": "පණිවිඩය එක් කරන්න",
 		"edit_msg_title": "පණිවිඩය සංස්කරණය කරන්න",
@@ -183,6 +184,7 @@
 		"add_msg": "පණිවිඩය එක් කරන්න",
 		"edit": "Edit",
 		"delete": "Delete",
+		"done": "Done",
 		"skip": "Skip",
 		"rename": "Rename",
 		"save": "Save",
@@ -211,6 +213,7 @@
 		"auto_gen": "Auto generate",
 		"get": "Capture a value",
 		"set": "Set a captured value",
+		"incr": "Increament and set a captured value",
 		"clear": "Clear"
 	},
 	"scenario_state": {
@@ -251,5 +254,13 @@
 		"fixyl_update": "FIXYL යාවත්කාලීන කිරීම",
 		"version_available": "{ latestVersion } අනුවාදය ලබාගත හැකියි.",
 		"download": "ලබාගන්න"
+	},
+	"global_params": {
+		"add": "Add Parameter",
+		"key": "Parameter Name",
+		"value": "Parameter Value",
+		"select_type": "Data Type",
+		"save": "Save",
+		"counter": "Counter"
 	}
 }

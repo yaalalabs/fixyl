@@ -8,6 +8,7 @@ import { FixHeaderForm } from './FixHeaderForm';
 import './GeneralInfo.scss';
 import { GlobalServiceRegistry } from 'src/services/GlobalServiceRegistry';
 import { makeCancelable } from 'src/utils/utils';
+import { GlobalParamsForm } from './GlobalParamsForm';
 
 const getIntlMessage = (msg: string) => {
     return LM.getMessage(`session_management.${msg}`);
@@ -102,6 +103,7 @@ interface GeneralInfoState {
     autoLoginEnabled: boolean;
     connecting: boolean;
     showHeaderFields: boolean;
+    showGlobalParams: boolean;
     autoLoginFormVisible: boolean;
 }
 
@@ -117,6 +119,7 @@ export class GeneralInfo extends React.Component<GeneralInfoProps, GeneralInfoSt
             hbEnabled: session.isHBEnabled(),
             connecting: false,
             showHeaderFields: false,
+            showGlobalParams: false,
             resendRequestEnabled: session.isResendRequestEnabled(),
             sequenceResetRequestEnabled: session.isSequenceResetRequestEnabled(),
             testRequestEnabled: session.isTestRequestEnabled(),
@@ -145,7 +148,11 @@ export class GeneralInfo extends React.Component<GeneralInfoProps, GeneralInfoSt
     }
 
     private toggleHeaderFields = () => {
-        this.setState({ showHeaderFields: !this.state.showHeaderFields })
+        this.setState({ showHeaderFields: !this.state.showHeaderFields, showGlobalParams: false })
+    }
+
+    private toggleGlobalParams = () => {
+        this.setState({ showGlobalParams: !this.state.showGlobalParams, showHeaderFields: false })
     }
 
     private autoLoginField = () => {
@@ -158,7 +165,7 @@ export class GeneralInfo extends React.Component<GeneralInfoProps, GeneralInfoSt
     render() {
         const { session } = this.props;
         const { name, ip, port, senderCompId, targetCompId, } = session.profile;
-        const { connected, hbEnabled, testRequestEnabled, showHeaderFields, 
+        const { connected, hbEnabled, testRequestEnabled, showHeaderFields, showGlobalParams,
             resendRequestEnabled, autoLoginEnabled, autoLoginFormVisible } = this.state;
 
         return <div className="general-info">
@@ -226,6 +233,15 @@ export class GeneralInfo extends React.Component<GeneralInfoProps, GeneralInfoSt
             </div>
             <div className={`header-field-body vivify ${showHeaderFields ? "fadeIn" : "fadeOut header-body-hide"}`}>
                 {<FixHeaderForm session={session} />}
+            </div>
+            <div className='header-field-title' onClick={this.toggleGlobalParams}>
+                <span>{getIntlMessage("global_params")} </span>
+                <div className="icon-container">
+                    <RightOutlined className={showGlobalParams ? "rotate-90" : "rotate-0"} />
+                </div>
+            </div>
+            <div className={`header-field-body vivify ${showGlobalParams ? "fadeIn" : "fadeOut header-body-hide"}`}>
+                {<GlobalParamsForm session={session} />}
             </div>
         </div>
     }

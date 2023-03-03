@@ -1,0 +1,104 @@
+.global-params-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    color: var(--text-color);
+    background-color: var(--shade-375);
+    border-top: 1px solid var(--shade-300);
+    padding: 10px;
+
+    .global-params-header {
+        display: flex;
+        flex-direction: row-reverse;
+        padding-bottom: 5px;
+    }
+
+    .global-params-table-wrapper {
+        margin-top: 5px;
+        overflow: auto;
+
+        .styled-table {
+            border-collapse: collapse;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+            color: var(--text-color);
+            width: 100%;
+            font-size: 12px;
+
+            th,
+            td {
+                border: 1px solid var(--separator-color);
+            }
+
+            th {
+                background-color: var(--shade-375);
+                color: var(--shade-250);
+                padding: 3px 5px;
+            }
+
+            td {
+                padding: 3px 5px;
+            }
+
+            tr:last-of-type {
+                border-bottom: none;
+            }
+        }
+    }
+}
+
+.global-params-form-container {
+    .header {
+        position: absolute;
+        top: 5px;
+        right: 8px;
+
+        .close {
+            cursor: pointer;
+            margin-left: auto;
+            font-size: 14px;
+            color: var(--text-color);
+            user-select: none;
+
+            &:hover {
+                color: var(--text-color);
+                cursor: pointer;
+            }
+        }
+    }
+
+    .data-type-selector {
+        .ant-form-item .ant-form-item-label {
+            padding-bottom: 3px;
+            line-height: 5px;
+            height: 28px;
+        }
+    }
+
+    .ant-form-item .ant-select:not(.ant-select-customize-input) .ant-select-selector {
+        color: var(--text-color);
+        height: 30px;
+        border-radius: 3px;
+        border-color: var(--shade-300);
+    }
+
+    .ant-picker {
+        background-color: transparent;
+        color: var(--text-color);
+        border: 1px solid var(--shade-300);
+        width: 100%;
+        border-radius: 2px;
+    }
+}
+
+.global-param-popper-overlay {
+    .ant-popover-content {
+        width: 250px;
+    }
+
+    .ant-picker .ant-picker-suffix {
+        color: var(--text-color);
+
+    }
+}

@@ -42,6 +42,13 @@ export interface FixSessionEvent {
     }
 }
 
+export interface Parameter {
+    value: any;
+    count?: number;
+}
+
+export type Parameters = { [key: string]: Parameter };
+
 export type FixMessage = FixMessageDef;
 
 const getIntlMessage = (msg: string, options?: any) => {
@@ -66,7 +73,9 @@ export class FixSession {
     private autoLoginEnabled = false;
     private sequenceResetRequestEnabled = false;
     private resendRequestEnabled = false;
-    private resendCache = new Map<number, { msgDef: FixComplexType, header: FixMsgHeader, parameters?: any }>();
+    private globalParams: Parameters = {};
+
+    private resendCache = new Map<number, { msgDef: FixComplexType, header: FixMsgHeader, parameters?: Parameters }>();
 
     constructor(public readonly profile: ProfileWithCredentials) {
         this.parser = new FixDefinitionParser({
@@ -85,6 +94,23 @@ export class FixSession {
         this.autoLoginEnabled = !!this.profile.autoLoginEnabled && !!this.profile.autoLoginMsg;
         this.sequenceResetRequestEnabled = !!this.profile.sequenceResetRequestEnabled;
         this.resendRequestEnabled = !!this.profile.resendRequestEnabled;
+        this.globalParams = this.profile.globalParams ? this.profile.globalParams : {};
+    }
+
+    getGlobalParameters(): Parameters {
+        return this.globalParams;
+    }
+
+    setGlobalParameter(param: string, value: any) {
+        this.globalParams[param] = { value };
+        this.profile.globalParams = this.globalParams;
+        this.updateProfile();
+    }
+
+    removeGlobalParameter(param: string) {
+        delete this.globalParams[param];
+        this.profile.globalParams = this.globalParams;
+        this.updateProfile();
     }
 
     destroy() {
@@ -193,7 +219,7 @@ export class FixSession {
         }
 
         messages.forEach(msg => {
-            const msgInst = this.parser.decodeFixMessage(msg);            
+            const msgInst = this.parser.decodeFixMessage(msg);
 
             if (msgInst) {
                 this.rx++;
@@ -212,7 +238,7 @@ export class FixSession {
             }
         });
     }
-    
+
 
     private onDisconnect() {
         log('(' + this.profile.name + ') disconnected');
@@ -291,7 +317,7 @@ export class FixSession {
         }
     }
 
-    public async send(msgDef: FixMessageDef, parameters?: any,): Promise<any> {
+    public async send(msgDef: FixMessageDef, parameters?: Parameters): Promise<any> {
         this.evaliateOutputMesssage(msgDef);
         try {
             const header = this.generateFixMessageHeaders(msgDef, this.tx);
@@ -311,7 +337,7 @@ export class FixSession {
         }
     }
 
-    private sendInternal(header: FixMsgHeader, msgDef: FixMessageDef, parameters?: any, additionalHeaders?: any): Promise<any> {
+    private sendInternal(header: FixMsgHeader, msgDef: FixMessageDef, parameters?: Parameters, additionalHeaders?: any): Promise<any> {
         const data = this.encodeToFix(header, msgDef, parameters, additionalHeaders);
 
         return new Promise(async (resolve, reject) => {
@@ -427,7 +453,7 @@ export class FixSession {
         }
     }
 
-    private resendMsg(msgDef: FixComplexType, prevHeader: FixMsgHeader, tx: number, parameters?: any) {
+    private resendMsg(msgDef: FixComplexType, prevHeader: FixMsgHeader, tx: number, parameters?: Parameters) {
         const header = this.generateFixMessageHeaders(msgDef, tx);
         this.sendInternal(header, msgDef, parameters, { PossDupFlag: "Y", OrigSendingTime: moment(prevHeader.time, "YYYYMMDD-HH:mm:ss.000").toISOString() });
     }
@@ -492,7 +518,7 @@ export class FixSession {
         }
     }
 
-    public encodeToFix = (header: FixMsgHeader, msgDef: FixMessageDef, parameters?: any, additionalHeaders?: any): string => {
+    public encodeToFix = (header: FixMsgHeader, msgDef: FixMessageDef, parameters?: Parameters, additionalHeaders?: any): string => {
         let newHeaders: any = {};
         if (this.profile.headerFields) {
             newHeaders = { ...this.profile.headerFields }

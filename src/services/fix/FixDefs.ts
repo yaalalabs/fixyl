@@ -1,4 +1,5 @@
 import moment from "moment";
+import { Parameters } from "./FixSession";
 const { v4: uuidv4 } = require('uuid');
 
 export interface FixXmlNode {
@@ -42,7 +43,7 @@ export class FixFieldDef {
         }
     }
 
-    private checkForFieldFillers(inputValue: any, parameters?: any) {
+    private checkForFieldFillers(inputValue: any, parameters?: Parameters) {
         if (inputValue === FixFieldValueFiller.AUTO_GEN) {
             switch (this.type.toLowerCase()) {
                 case "string":
@@ -69,14 +70,26 @@ export class FixFieldDef {
         const match = setRegex.exec(inputValue)
         if (match && parameters) {
             const param = match[1].trim();
-            return parameters[param]
+            return parameters[param].value
+        }
+
+        const setRegexInc = /{incr:(.*?)}/g;
+        const incMatch = setRegexInc.exec(inputValue)
+        if (incMatch && parameters) {
+            const param = incMatch[1].trim();
+            if (!parameters[param].count) {
+                parameters[param].count = 1
+            } else {
+                parameters[param].count!++;
+            }
+            return `${parameters[param].value}${parameters[param].count}`;
         }
 
 
         return undefined
     }
 
-    formatValueToPack(inputValue: any, parameters?: any) {
+    formatValueToPack(inputValue: any, parameters?: Parameters) {
         const alteredValue = this.checkForFieldFillers(inputValue, parameters);
         if (alteredValue !== undefined) {
             return alteredValue;

@@ -2,6 +2,7 @@ import { removeFalsyKeys } from "src/utils/utils";
 import { GlobalServiceRegistry } from "../GlobalServiceRegistry";
 import { FixVersion } from "../profile/ProfileDefs";
 import { FixXmlNode, FixFieldDef, FixComplexType, FixField } from "./FixDefs";
+import { Parameters } from "./FixSession";
 const parser = require('xml-reader');
 
 export type FixMessageDef = FixComplexType;
@@ -193,7 +194,7 @@ export class FixDefinitionParser {
         return checksum;
     }
 
-    private encodeToFixBody(data: any, parameters?: any) {        
+    private encodeToFixBody(data: any, parameters?: Parameters) {
         removeFalsyKeys(data);
         const properties = Object.keys(data);
         let fixMsgBody = "";
@@ -265,7 +266,7 @@ export class FixDefinitionParser {
         return ret;
     }
 
-    encodeToFix(data: any, header: FixMsgHeader, parameters?: any, customHeaders?: any): string {
+    encodeToFix(data: any, header: FixMsgHeader, parameters?: Parameters, customHeaders?: any): string {
         const messageBody = this.encodeToFixBody(data, parameters);
         const messageHeader = this.encodeHeader(header, customHeaders);
         const msg = messageHeader + messageBody;

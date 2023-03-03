@@ -85,6 +85,7 @@
         transition: all 0.3s, visibility 0s;
         padding: 5px 10px;
         display: flex;
+        border-top: 1px solid var(--shade-300);
 
         .icon-container {
             margin-left: auto;
@@ -95,7 +96,7 @@
             }
 
             .rotate-0 {
-                transform: rotate(9deg);                
+                transform: rotate(9deg);
                 transition: transform 0.4s;
             }
         }
@@ -109,6 +110,7 @@
 
     .header-body-hide {
         height: 0;
+        flex: 0;
 
         .fix-header-form-container {
             height: 0;

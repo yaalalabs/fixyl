@@ -40,6 +40,8 @@ const SET_REGEX = /{set:(.*?)}/g;
 const SET_PREFIX = "{set:";
 const GET_REGEX = /{get:(.*?)}/g;
 const GET_PREFIX = "{get:";
+const INCR_REGEX = /{incr:(.*?)}/g;
+const INCR_PREFIX = "{incr:";
 
 interface DatePrickerProps {
     onChange: (value: any) => void;
@@ -78,6 +80,8 @@ export class FieldWrapper extends React.Component<DatePrickerProps, DatePrickerS
                 return GET_PREFIX;
             } else if (value.startsWith(SET_PREFIX)) {
                 return SET_PREFIX;
+            } else if (value.startsWith(INCR_PREFIX)) {
+                return INCR_PREFIX;
             }
         }
 
@@ -102,6 +106,10 @@ export class FieldWrapper extends React.Component<DatePrickerProps, DatePrickerS
                         <PrefixedInput disabled={currentAction !== SET_PREFIX} title={getIntlMessage("set")}
                             prefix={SET_PREFIX} onChange={onChange} value={value} valueRegx={SET_REGEX} />
                     </Radio>
+                    <Radio value={INCR_PREFIX} onClick={() => onChange(undefined)}>
+                        <PrefixedInput disabled={currentAction !== INCR_PREFIX} title={getIntlMessage("incr")}
+                            prefix={INCR_PREFIX} onChange={onChange} value={value} valueRegx={INCR_REGEX} />
+                    </Radio>
                 </Space>
             </Radio.Group>
             <Button type="primary" disabled={!value} className="clear-btn" onClick={() => {
@@ -114,7 +122,8 @@ export class FieldWrapper extends React.Component<DatePrickerProps, DatePrickerS
 
     private isCustomValue = () => {
         const { value, } = this.props;
-        return value === FixFieldValueFiller.AUTO_GEN || (typeof value === "string" && (value.startsWith(SET_PREFIX) || value.startsWith(GET_PREFIX)));
+        return value === FixFieldValueFiller.AUTO_GEN || (typeof value === "string" && (value.startsWith(SET_PREFIX)
+            || value.startsWith(GET_PREFIX) || value.startsWith(INCR_PREFIX)));
     }
 
     render() {

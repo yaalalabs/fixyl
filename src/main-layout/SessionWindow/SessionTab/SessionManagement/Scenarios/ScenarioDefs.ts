@@ -382,7 +382,11 @@ export class Scenario {
 
     addStage(name: string, waitTime: number, mute = false, stageWaitTime?: number) {
         const stage = new Stage(name, this.session, (param: string, value: any) => {
-            this.parameters[param] = value;
+            if (!this.parameters[param]) {
+                this.parameters[param] = { value }
+            } else {
+                this.parameters[param].value = value;
+            }            
         }, waitTime, stageWaitTime);
         this.stages.push({ stage, sub: stage.getEventObservable().subscribe(() => this.stageUpdatedSubject.next()) });
         if (!mute) {

@@ -255,7 +255,7 @@
 		"version_available": "{ latestVersion } අනුවාදය ලබාගත හැකියි.",
 		"download": "ලබාගන්න"
 	},
-	"global_params": {
+	"session_params": {
 		"add": "Add Parameter",
 		"key": "Parameter Name",
 		"value": "Parameter Value",

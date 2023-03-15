@@ -73,7 +73,7 @@ export class FixSession {
     private autoLoginEnabled = false;
     private sequenceResetRequestEnabled = false;
     private resendRequestEnabled = false;
-    private globalParams: Parameters = {};
+    private sessionParams: Parameters = {};
 
     private resendCache = new Map<number, { msgDef: FixComplexType, header: FixMsgHeader, parameters?: Parameters }>();
 
@@ -94,22 +94,22 @@ export class FixSession {
         this.autoLoginEnabled = !!this.profile.autoLoginEnabled && !!this.profile.autoLoginMsg;
         this.sequenceResetRequestEnabled = !!this.profile.sequenceResetRequestEnabled;
         this.resendRequestEnabled = !!this.profile.resendRequestEnabled;
-        this.globalParams = this.profile.globalParams ? this.profile.globalParams : {};
+        this.sessionParams = this.profile.sessionParams ? this.profile.sessionParams : {};
     }
 
-    getGlobalParameters(): Parameters {
-        return this.globalParams;
+    getSessionParameters(): Parameters {
+        return this.sessionParams;
     }
 
-    setGlobalParameter(param: string, value: any) {
-        this.globalParams[param] = { value };
-        this.profile.globalParams = this.globalParams;
+    setSessionParameter(param: string, value: any) {
+        this.sessionParams[param] = { value };
+        this.profile.sessionParams = this.sessionParams;
         this.updateProfile();
     }
 
-    removeGlobalParameter(param: string) {
-        delete this.globalParams[param];
-        this.profile.globalParams = this.globalParams;
+    removeSessionParameter(param: string) {
+        delete this.sessionParams[param];
+        this.profile.sessionParams = this.sessionParams;
         this.updateProfile();
     }
 

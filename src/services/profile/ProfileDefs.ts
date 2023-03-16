@@ -23,7 +23,7 @@ export interface Profile {
     autoLoginMsg?: any;
     sequenceResetRequestEnabled?: boolean;
     resendRequestEnabled?: boolean;
-    globalParams?: any;
+    sessionParams?: any;
 }
 
 export interface ProfileWithCredentials extends Profile {

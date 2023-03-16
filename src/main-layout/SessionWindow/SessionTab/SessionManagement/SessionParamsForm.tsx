@@ -7,26 +7,26 @@ import DatePicker from 'antd/lib/date-picker';
 import React, { useRef, useState } from 'react';
 import { FixSession } from 'src/services/fix/FixSession';
 import { LM } from 'src/translations/language-manager';
-import "./GlobalParamsForm.scss";
+import "./ParamsForm.scss";
 
 const { Option } = Select;
 
 const getIntlMessage = (msg: string, options?: any) => {
-    return LM.getMessage(`global_params.${msg}`, options);
+    return LM.getMessage(`session_params.${msg}`, options);
 }
 
 
-interface GlobalParamsFormProps {
+interface SessionParamsFormProps {
     session: FixSession;
 }
 
-interface GlobalParamsFormState {
+interface SessionParamsFormState {
     initialized: boolean;
     addFormVisible: boolean;
 }
 
 
-const GlobalParameterForm = ({ onChange, session, togglePopover }: {
+const SessionParameterForm = ({ onChange, session, togglePopover }: {
     onChange: (key: string, value: any) => void,
     togglePopover: (state: boolean) => void,
     session: FixSession
@@ -73,7 +73,7 @@ const GlobalParameterForm = ({ onChange, session, togglePopover }: {
             input = <Input />;
     }
 
-    return (<div className="global-params-form-container">
+    return (<div className="params-form-container">
         <div className="header">
             <div className="close" onClick={() => togglePopover(false)}>✕</div>
         </div>
@@ -124,7 +124,7 @@ const GlobalParameterForm = ({ onChange, session, togglePopover }: {
 }
 
 
-export class GlobalParamsForm extends React.Component<GlobalParamsFormProps, GlobalParamsFormState> {
+export class SessionParamsForm extends React.Component<SessionParamsFormProps, SessionParamsFormState> {
     fieldIterationIndex = 0;
     private formRef: any = React.createRef();
     private initialRenderTimer: any;
@@ -154,7 +154,7 @@ export class GlobalParamsForm extends React.Component<GlobalParamsFormProps, Glo
     }
 
     private getInitialValues = () => {
-        return this.props.session.getGlobalParameters();
+        return this.props.session.getSessionParameters();
     }
 
     private togglePopover = (state: boolean) => {
@@ -164,25 +164,25 @@ export class GlobalParamsForm extends React.Component<GlobalParamsFormProps, Glo
     render() {
         const { initialized, addFormVisible } = this.state;
         const { session } = this.props;
-        const allParams = session.getGlobalParameters();
+        const allParams = session.getSessionParameters();
 
-        return <div className="global-params-container">
+        return <div className="params-container">
             {initialized && <React.Fragment>
-                <div className="global-params-header">
+                <div className="params-header">
                     <Popover
-                        content={addFormVisible ? <GlobalParameterForm togglePopover={this.togglePopover} session={session} onChange={(key, value) => {
-                            session.setGlobalParameter(key, value);
+                        content={addFormVisible ? <SessionParameterForm togglePopover={this.togglePopover} session={session} onChange={(key, value) => {
+                            session.setSessionParameter(key, value);
                             this.loadAll();
                         }} /> : null}
                         title={getIntlMessage("add").toUpperCase()}
                         placement="top"
                         visible={addFormVisible}
-                        overlayClassName="global-param-popper-overlay"
+                        overlayClassName="param-popper-overlay"
                     >
                         <Button type="primary" icon={<PlusOutlined />} onClick={() => this.togglePopover(true)}>{getIntlMessage("add")}</Button>
                     </Popover>
                 </div>
-                <div className="global-params-table-wrapper">
+                <div className="params-table-wrapper">
                     <table className="styled-table">
                         <thead>
                             <th>{getIntlMessage("key")}</th>
@@ -198,7 +198,7 @@ export class GlobalParamsForm extends React.Component<GlobalParamsFormProps, Glo
                                     <td>{param.value}</td>
                                     <td>{param.count ?? "-"}</td>
                                     <td><DeleteOutlined onClick={() => {
-                                        session.removeGlobalParameter(key)
+                                        session.removeSessionParameter(key)
                                         this.loadAll();
                                     }} /></td>
                                 </tr>

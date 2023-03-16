@@ -98,6 +98,7 @@
 		"edit_msg": "Edit: { msg }",
 		"header_fields": "Header Fields",
 		"global_params": "Global Parameters",
+		"session_params": "Session Parameters",
 		"fix_session_connectivity": "Session: {name}",
 		"remove_non_filled_fields": "Remove Non-Filled",
 		"msg_connection_failed_title": "Connection Failure",
@@ -269,7 +270,7 @@
 		"version_available": "Version { latestVersion } is available.",
 		"download": "Download"
 	},
-	"global_params": {
+	"session_params": {
 		"add": "Add Parameter",
 		"key": "Parameter Name",
 		"value": "Parameter Value",

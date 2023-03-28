@@ -3,7 +3,7 @@ import React, { FC, ReactComponentElement } from 'react';
 import { ActionPanelType } from 'src/common/CommonDefs';
 import './SideMenu.scss';
 import { SidePanelContainer } from './SidePanelContainer/SidePanelContainer';
-import { ProfileOutlined, SettingOutlined, EyeOutlined, DiffOutlined } from '@ant-design/icons';
+import { ProfileOutlined, SettingOutlined, EyeOutlined, DiffOutlined, GlobalOutlined } from '@ant-design/icons';
 import { LM } from 'src/translations/language-manager';
 import { GlobalServiceRegistry } from 'src/services/GlobalServiceRegistry';
 import { Subscription } from 'rxjs';
@@ -97,7 +97,7 @@ export class SideMenu extends React.Component<any, SideMenuState> {
     this.setState({ activePanel })
   }
 
-  onMessageViwer = (type: SessionActionType) => {
+  onMessageViewer = (type: SessionActionType) => {
     this.ref?.current?.onDrawerToggle();
     GlobalServiceRegistry.appManager.onSessionAction({ type })
   }
@@ -170,9 +170,11 @@ export class SideMenu extends React.Component<any, SideMenuState> {
         <MenuItem icon={<ProfileOutlined />} name={getIntlMessage("profile")} id={ActionPanelType.PROFILE}
           isActive={activePanel === ActionPanelType.PROFILE} onSelected={this.onSelected} />
         <MenuItem icon={<EyeOutlined />} name={getIntlMessage("message_viewer")} id={ActionPanelType.MESSAGE_VIEWER}
-          isActive={activePanel === ActionPanelType.MESSAGE_VIEWER} onSelected={() => this.onMessageViwer("message_viewer")} />
+          isActive={activePanel === ActionPanelType.MESSAGE_VIEWER} onSelected={() => this.onMessageViewer("message_viewer")} />
         <MenuItem icon={<DiffOutlined />} name={getIntlMessage("message_diff_viewer")} id={ActionPanelType.MESSAGE_DIFF_VIEWER}
-          isActive={activePanel === ActionPanelType.MESSAGE_DIFF_VIEWER} onSelected={() => this.onMessageViwer("message_diff_viewer")} />
+          isActive={activePanel === ActionPanelType.MESSAGE_DIFF_VIEWER} onSelected={() => this.onMessageViewer("message_diff_viewer")} />
+        <MenuItem icon={<GlobalOutlined />} name={getIntlMessage("global_params")} id={ActionPanelType.GLOBAL_PARAMS}
+                  isActive={activePanel === ActionPanelType.GLOBAL_PARAMS} onSelected={this.onSelected} />
         <MenuItem icon={<SettingOutlined />} name={getIntlMessage("settings")} id={ActionPanelType.SETTINGS}
           isActive={activePanel === ActionPanelType.SETTINGS} onSelected={this.onSelected} />
       </div>

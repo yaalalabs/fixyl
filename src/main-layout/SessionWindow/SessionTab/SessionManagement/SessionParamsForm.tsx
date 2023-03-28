@@ -26,10 +26,10 @@ interface SessionParamsFormState {
 }
 
 
-const SessionParameterForm = ({ onChange, session, togglePopover }: {
+export const ParameterForm = ({ onChange, session, togglePopover }: {
     onChange: (key: string, value: any) => void,
     togglePopover: (state: boolean) => void,
-    session: FixSession
+    session?: FixSession
 }) => {
     const formRef: any = useRef(null);
     const [variableType, setVariableType] = useState("string")
@@ -92,7 +92,7 @@ const SessionParameterForm = ({ onChange, session, togglePopover }: {
                 </Select>
             </Form.Item>
         </div>
-        <Form ref={formRef} initialValues={{ state: session.profile.autoLoginEnabled, loginMsg: session.profile.autoLoginMsg }} layout="vertical" className="save-as-form"
+        <Form ref={formRef} initialValues={{ state: session?.profile.autoLoginEnabled, loginMsg: session?.profile.autoLoginMsg }} layout="vertical" className="save-as-form"
             onFinish={(values) => { onChange(values.key, values.value) }}>
             <div className="form-item-container">
                 <Form.Item name="key" rules={[{
@@ -154,7 +154,7 @@ export class SessionParamsForm extends React.Component<SessionParamsFormProps, S
     }
 
     private getInitialValues = () => {
-        return this.props.session.getSessionParameters();
+        return this.props.session.getSessionParameters(false);
     }
 
     private togglePopover = (state: boolean) => {
@@ -164,13 +164,13 @@ export class SessionParamsForm extends React.Component<SessionParamsFormProps, S
     render() {
         const { initialized, addFormVisible } = this.state;
         const { session } = this.props;
-        const allParams = session.getSessionParameters();
+        const allParams = session.getSessionParameters(false);
 
         return <div className="params-container">
             {initialized && <React.Fragment>
                 <div className="params-header">
                     <Popover
-                        content={addFormVisible ? <SessionParameterForm togglePopover={this.togglePopover} session={session} onChange={(key, value) => {
+                        content={addFormVisible ? <ParameterForm togglePopover={this.togglePopover} session={session} onChange={(key, value) => {
                             session.setSessionParameter(key, value);
                             this.loadAll();
                         }} /> : null}

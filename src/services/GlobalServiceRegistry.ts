@@ -9,11 +9,12 @@ import { SocketManagementSevice } from "./socket-management/SocketManagementSevi
 import { FavoriteManagementService } from "./favorite-management/FavoriteManagementService";
 import { ScenarioManagementService } from "./scenario-management/ScenarioManagementService";
 import { NetworkService } from "./network/NetworkService";
+import { GlobalParameterService } from "./GlobalParameterService";
 
 
 export class GlobalServiceRegistry {
 
-    // Note There shouldn't be constructor level dependancies in these services
+    // Note There shouldn't be constructor level dependencies in these services
     // If there is some dependent logic move it to GlobalInitializer
     public static fileManger: FileManagementService = CommonServiceFactory.instance.createNewFileManagementService();
     public static network: NetworkService = CommonServiceFactory.instance.createNetworkService();
@@ -24,6 +25,7 @@ export class GlobalServiceRegistry {
     public static socket: SocketManagementSevice = CommonServiceFactory.instance.createSocketManagementService();
     public static favoriteManager: FavoriteManagementService = CommonServiceFactory.instance.createFavoriteManagementService(this.appManager, this.fileManger);
     public static scenarioManager: ScenarioManagementService = CommonServiceFactory.instance.createScenarioManagementService(this.appManager, this.fileManger);
+    public static globalParamsManager: GlobalParameterService = CommonServiceFactory.instance.createGlobalParameterService(this.appManager, this.fileManger);
 }
 
 

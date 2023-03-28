@@ -43,27 +43,63 @@ export class FixFieldDef {
         }
     }
 
+    private generateFillerValue()
+    {
+        switch (this.type.toLowerCase()) {
+            case "string":
+            case "char":
+                return uuidv4();
+            case "int":
+                return Math.floor(Math.random() * 100);
+            case "float":
+                return Math.random().toFixed(3);
+            case "utctimestamp":
+                return moment(Date.now()).utc().format("YYYYMMDD-HH:mm:ss.000")
+            case 'monthyear':
+                return moment(Date.now()).utc().format("YYYYMM")
+            case 'utcdateonly':
+                return moment(Date.now()).utc().format("YYYYMMDD-HH")
+            case 'utctimeonly':
+                return moment(Date.now()).utc().format("mm:ss.000")
+            default:
+                return undefined;
+        }
+    }
+
+    private formatFillerValue(val: any)
+    {
+        switch (this.type.toLowerCase()) {
+            case "string":
+                return val as string;
+            case "char":
+                return val;
+            case "int":
+                return Math.floor(val as number);
+            case "float":
+                return val;
+            case "utctimestamp":
+                return moment(val as number).utc().format("YYYYMMDD-HH:mm:ss.000")
+            case 'monthyear':
+                return moment(val as number).utc().format("YYYYMM")
+            case 'utcdateonly':
+                return moment(val as number).utc().format("YYYYMMDD-HH")
+            case 'utctimeonly':
+                return moment(val as number).utc().format("mm:ss.000")
+            default:
+                return undefined;
+        }
+    }
+
     private checkForFieldFillers(inputValue: any, parameters?: Parameters) {
         if (inputValue === FixFieldValueFiller.AUTO_GEN) {
-            switch (this.type.toLowerCase()) {
-                case "string":
-                case "char":
-                    return uuidv4();
-                case "int":
-                    return Math.floor(Math.random() * 100);
-                case "float":
-                    return Math.random().toFixed(3);
-                case "utctimestamp":
-                    return moment(Date.now()).utc().format("YYYYMMDD-HH:mm:ss.000")
-                case 'monthyear':
-                    return moment(Date.now()).utc().format("YYYYMM")
-                case 'utcdateonly':
-                    return moment(Date.now()).utc().format("YYYYMMDD-HH")
-                case 'utctimeonly':
-                    return moment(Date.now()).utc().format("mm:ss.000")
-                default:
-                    return undefined;
-            }
+            return this.generateFillerValue();
+        }
+
+        const input = inputValue.toString();
+        if (input.startsWith("{") && input.endsWith("}")) {
+            const varName = input.slice(1, -1);
+            if (parameters == null || parameters[varName] == null) return undefined;
+            return this.formatFillerValue(parameters[varName].value);
         }
 
         const setRegex = /{set:(.*?)}/g;
@@ -84,7 +120,6 @@ export class FixFieldDef {
             }
             return `${parameters[param].value}${parameters[param].count}`;
         }
-
 
         return undefined
     }
@@ -128,8 +163,7 @@ export class FixField {
     }
 
     clone() {
-        const ret = new FixField(this.def, this.required);
-        return ret;
+        return new FixField(this.def, this.required);
     }
 }
 

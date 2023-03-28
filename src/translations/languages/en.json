@@ -3,7 +3,8 @@
 		"profile": "Profile",
 		"settings": "Settings",
 		"message_viewer": "Msg. Viewer",
-		"message_diff_viewer": "Msg. Diff"
+		"message_diff_viewer": "Msg. Diff",
+		"global_params": "Parameters"
 	},
 	"profile_management": {
 		"title": "Profile Management",
@@ -37,6 +38,16 @@
 		"fix_version_selector": "FIX Version",
 		"copy": "Copy",
 		"edit": "Edit"
+	},
+	"global_params": {
+		"title": "Global Parameters",
+		"new_global_params": "Create New Global Parameters",
+		"add": "Add Parameter",
+		"key": "Parameter Name",
+		"value": "Parameter Value",
+		"select_type": "Data Type",
+		"save": "Save",
+		"counter": "Counter"
 	},
 	"settings": {
 		"title": "Settings",

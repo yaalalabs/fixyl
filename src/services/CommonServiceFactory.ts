@@ -7,6 +7,7 @@ import { SocketManagementSevice } from "./socket-management/SocketManagementSevi
 import { FavoriteManagementService } from "./favorite-management/FavoriteManagementService";
 import { ScenarioManagementService } from "./scenario-management/ScenarioManagementService";
 import { NetworkService } from "./network/NetworkService";
+import {GlobalParameterService} from "./GlobalParameterService";
 
 export class CommonServiceFactory {
   public static instance = new CommonServiceFactory();
@@ -45,5 +46,9 @@ export class CommonServiceFactory {
 
   createNetworkService(): NetworkService {
     return new NetworkService();
+  }
+
+  createGlobalParameterService(appManager: AppManagementService, fileManager: FileManagementService): GlobalParameterService {
+    return new GlobalParameterService(appManager, fileManager);
   }
 }

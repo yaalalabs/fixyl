@@ -8,7 +8,7 @@ import { LM } from 'src/translations/language-manager';
 import "../../../../main-layout/SessionWindow/SessionTab/SessionManagement/ParamsForm.scss";
 import { GlobalParameterService } from "../../../../services/GlobalParameterService";
 import { GlobalServiceRegistry } from "../../../../services/GlobalServiceRegistry";
-import { ParameterForm } from "../../../SessionWindow/SessionTab/SessionManagement/SessionParamsForm";
+import { ParameterForm } from "../../../../common/ParameterForm";
 
 const getIntlMessage = (msg: string, options?: any) => {
     return LM.getMessage(`global_params.${msg}`, options);
@@ -65,7 +65,7 @@ export class GlobalParamsForm extends React.Component<any, GlobalParamsFormState
             {initialized && <React.Fragment>
                 <div className="params-header">
                     <Popover
-                        content={addFormVisible ? <ParameterForm togglePopover={this.togglePopover} onChange={(key, value) => {
+                        content={addFormVisible ? <ParameterForm messageFunc={getIntlMessage} togglePopover={this.togglePopover} onChange={(key, value) => {
                             this.globalParamsManager.setGlobalParameter(key, value);
                             this.loadAll();
                         }} /> : null}

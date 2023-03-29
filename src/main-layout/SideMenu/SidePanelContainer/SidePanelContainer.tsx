@@ -1,8 +1,9 @@
-import { Drawer } from 'antd';
+import {Drawer} from 'antd';
 import React from 'react';
-import { ActionPanelType } from 'src/common/CommonDefs';
-import { ProfilePanel } from './ProfilePanel/ProfilePanel';
-import { SettingsPanel } from './SettingsPanel/SettingsPanel';
+import {ActionPanelType} from 'src/common/CommonDefs';
+import {ProfilePanel} from './ProfilePanel/ProfilePanel';
+import {SettingsPanel} from './SettingsPanel/SettingsPanel';
+import {GlobalParamsPanel} from "./GlobalParams/GlobalParamsPanel";
 import "./SidePanelContainer.scss";
 
 export interface SidePanelContainerState {
@@ -49,6 +50,7 @@ export class SidePanelContainer extends React.Component<SidePanelContainerProps,
             >
                 {activePanel === ActionPanelType.PROFILE && <ProfilePanel />}
                 {activePanel === ActionPanelType.SETTINGS && <SettingsPanel />}
+                {activePanel === ActionPanelType.GLOBAL_PARAMS && <GlobalParamsPanel />}
             </Drawer>
         </div>
     }

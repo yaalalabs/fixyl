@@ -97,8 +97,8 @@ export class FixSession {
         this.sessionParams = this.profile.sessionParams ? this.profile.sessionParams : {};
     }
 
-    getSessionParameters(): Parameters {
-        return this.sessionParams;
+    getSessionParameters(includeGlobal: boolean): Parameters {
+        return includeGlobal ? { ...GlobalServiceRegistry.globalParamsManager.getGlobalParameters(), ...this.sessionParams } : this.sessionParams;
     }
 
     setSessionParameter(param: string, value: any) {
@@ -223,7 +223,7 @@ export class FixSession {
 
             if (msgInst) {
                 this.rx++;
-                this.evaliateInputMesssage(msgInst.msg);
+                this.evaluateInputMessage(msgInst.msg);
 
                 this.socketDataSubject.next({
                     event: FixSessionEventType.DATA, data: {
@@ -318,7 +318,7 @@ export class FixSession {
     }
 
     public async send(msgDef: FixMessageDef, parameters?: Parameters): Promise<any> {
-        this.evaliateOutputMesssage(msgDef);
+        this.evaluateOutputMessage(msgDef);
         try {
             const header = this.generateFixMessageHeaders(msgDef, this.tx);
             const result = await this.sendInternal(header, msgDef, parameters);
@@ -383,7 +383,7 @@ export class FixSession {
         })
     }
 
-    private evaliateInputMesssage = (msg: FixMessageDef) => {
+    private evaluateInputMessage = (msg: FixMessageDef) => {
         switch (msg.name.toLowerCase()) {
             case "testrequest":
                 this.sendHB();
@@ -405,7 +405,7 @@ export class FixSession {
         }
     }
 
-    private evaliateOutputMesssage = (msg: FixMessageDef) => {
+    private evaluateOutputMessage = (msg: FixMessageDef) => {
         switch (msg.name.toLowerCase()) {
             case "logon":
                 const data = msg.getValue();

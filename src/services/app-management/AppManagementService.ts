@@ -4,7 +4,7 @@ import { FileManagementService } from "../file-management/FileManagementService"
 import { NetworkService } from "../network/NetworkService";
 import { ProfileWithCredentials } from "../profile/ProfileDefs";
 
-export type SessionActionType = "new" | "destroy" | "message_viewer" | "message_diff_viewer";
+export type SessionActionType = "new" | "destroy" | "message_viewer" | "message_diff_viewer" | "global_params";
 
 export interface SessionAction {
     profile?: ProfileWithCredentials;
@@ -97,6 +97,10 @@ export class AppManagementService {
 
     getProfilesFile() {
         return `${this.workingDir}/profiles.json`;
+    }
+
+    getGlobalParametersFile() {
+        return `${this.workingDir}/global_params.json`
     }
 
     onApplicationReady() {

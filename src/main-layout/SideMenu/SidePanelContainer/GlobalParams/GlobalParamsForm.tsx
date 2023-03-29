@@ -4,28 +4,26 @@ import {
 } from '@ant-design/icons';
 import { Button, Popover } from 'antd';
 import React from 'react';
-import { FixSession } from 'src/services/fix/FixSession';
 import { LM } from 'src/translations/language-manager';
-import "./ParamsForm.scss";
+import "../../../../main-layout/SessionWindow/SessionTab/SessionManagement/ParamsForm.scss";
+import { GlobalParameterService } from "../../../../services/GlobalParameterService";
+import { GlobalServiceRegistry } from "../../../../services/GlobalServiceRegistry";
 import { ParameterForm } from "../../../../common/ParameterForm";
 
 const getIntlMessage = (msg: string, options?: any) => {
-    return LM.getMessage(`session_params.${msg}`, options);
+    return LM.getMessage(`global_params.${msg}`, options);
 }
 
-interface SessionParamsFormProps {
-    session: FixSession;
-}
-
-interface SessionParamsFormState {
+interface GlobalParamsFormState {
     initialized: boolean;
     addFormVisible: boolean;
 }
 
-export class SessionParamsForm extends React.Component<SessionParamsFormProps, SessionParamsFormState> {
+export class GlobalParamsForm extends React.Component<any, GlobalParamsFormState> {
     fieldIterationIndex = 0;
     private formRef: any = React.createRef();
     private initialRenderTimer: any;
+    private globalParamsManager: GlobalParameterService;
 
     constructor(props: any) {
         super(props)
@@ -33,6 +31,7 @@ export class SessionParamsForm extends React.Component<SessionParamsFormProps, S
             initialized: false,
             addFormVisible: false
         }
+        this.globalParamsManager = GlobalServiceRegistry.globalParamsManager;
     }
 
 
@@ -44,7 +43,6 @@ export class SessionParamsForm extends React.Component<SessionParamsFormProps, S
         clearTimeout(this.initialRenderTimer)
     }
 
-
     private loadAll() {
         this.initialRenderTimer = setTimeout(() => {
             this.setState({ initialized: true })
@@ -52,7 +50,7 @@ export class SessionParamsForm extends React.Component<SessionParamsFormProps, S
     }
 
     private getInitialValues = () => {
-        return this.props.session.getSessionParameters(false);
+        return this.globalParamsManager.getGlobalParameters();
     }
 
     private togglePopover = (state: boolean) => {
@@ -61,15 +59,14 @@ export class SessionParamsForm extends React.Component<SessionParamsFormProps, S
 
     render() {
         const { initialized, addFormVisible } = this.state;
-        const { session } = this.props;
-        const allParams = session.getSessionParameters(false);
+        const allParams = this.globalParamsManager.getGlobalParameters();
 
         return <div className="params-container">
             {initialized && <React.Fragment>
                 <div className="params-header">
                     <Popover
-                        content={addFormVisible ? <ParameterForm messageFunc={getIntlMessage} togglePopover={this.togglePopover} session={session} onChange={(key, value) => {
-                            session.setSessionParameter(key, value);
+                        content={addFormVisible ? <ParameterForm messageFunc={getIntlMessage} togglePopover={this.togglePopover} onChange={(key, value) => {
+                            this.globalParamsManager.setGlobalParameter(key, value);
                             this.loadAll();
                         }} /> : null}
                         title={getIntlMessage("add").toUpperCase()}
@@ -83,24 +80,24 @@ export class SessionParamsForm extends React.Component<SessionParamsFormProps, S
                 <div className="params-table-wrapper">
                     <table className="styled-table">
                         <thead>
-                            <th>{getIntlMessage("key")}</th>
-                            <th>{getIntlMessage("value")}</th>
-                            <th>{getIntlMessage("counter")}</th>
-                            <th style={{width: 30}}></th>
+                        <th>{getIntlMessage("key")}</th>
+                        <th>{getIntlMessage("value")}</th>
+                        <th>{getIntlMessage("counter")}</th>
+                        <th style={{width: 30}}></th>
                         </thead>
                         <tbody>
-                            {Object.keys(allParams).map(key => {
-                                const param = allParams[key];
-                                return <tr>
-                                    <td>{key}</td>
-                                    <td>{param.value}</td>
-                                    <td>{param.count ?? "-"}</td>
-                                    <td><DeleteOutlined onClick={() => {
-                                        session.removeSessionParameter(key)
-                                        this.loadAll();
-                                    }} /></td>
-                                </tr>
-                            })}
+                        {Object.keys(allParams).map(key => {
+                            const param = allParams[key];
+                            return <tr>
+                                <td>{key}</td>
+                                <td>{param.value}</td>
+                                <td>{param.count ?? "-"}</td>
+                                <td><DeleteOutlined onClick={() => {
+                                    this.globalParamsManager.removeGlobalParameter(key);
+                                    this.loadAll();
+                                }} /></td>
+                            </tr>
+                        })}
                         </tbody>
                     </table>
                 </div>

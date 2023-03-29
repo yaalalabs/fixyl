@@ -43,27 +43,32 @@ export class FixFieldDef {
         }
     }
 
+    private generateFillerValue()
+    {
+        switch (this.type.toLowerCase()) {
+            case "string":
+            case "char":
+                return uuidv4();
+            case "int":
+                return Math.floor(Math.random() * 100);
+            case "float":
+                return Math.random().toFixed(3);
+            case "utctimestamp":
+                return moment(Date.now()).utc().format("YYYYMMDD-HH:mm:ss.000")
+            case 'monthyear':
+                return moment(Date.now()).utc().format("YYYYMM")
+            case 'utcdateonly':
+                return moment(Date.now()).utc().format("YYYYMMDD-HH")
+            case 'utctimeonly':
+                return moment(Date.now()).utc().format("mm:ss.000")
+            default:
+                return undefined;
+        }
+    }
+
     private checkForFieldFillers(inputValue: any, parameters?: Parameters) {
         if (inputValue === FixFieldValueFiller.AUTO_GEN) {
-            switch (this.type.toLowerCase()) {
-                case "string":
-                case "char":
-                    return uuidv4();
-                case "int":
-                    return Math.floor(Math.random() * 100);
-                case "float":
-                    return Math.random().toFixed(3);
-                case "utctimestamp":
-                    return moment(Date.now()).utc().format("YYYYMMDD-HH:mm:ss.000")
-                case 'monthyear':
-                    return moment(Date.now()).utc().format("YYYYMM")
-                case 'utcdateonly':
-                    return moment(Date.now()).utc().format("YYYYMMDD-HH")
-                case 'utctimeonly':
-                    return moment(Date.now()).utc().format("mm:ss.000")
-                default:
-                    return undefined;
-            }
+            return this.generateFillerValue();
         }
 
         const setRegex = /{set:(.*?)}/g;
@@ -84,7 +89,6 @@ export class FixFieldDef {
             }
             return `${parameters[param].value}${parameters[param].count}`;
         }
-
 
         return undefined
     }
@@ -128,8 +132,7 @@ export class FixField {
     }
 
     clone() {
-        const ret = new FixField(this.def, this.required);
-        return ret;
+        return new FixField(this.def, this.required);
     }
 }
 

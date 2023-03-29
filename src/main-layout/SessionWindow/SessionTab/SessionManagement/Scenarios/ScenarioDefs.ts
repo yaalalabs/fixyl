@@ -418,7 +418,7 @@ export class Scenario {
             for (let i = 0; i < this.stages.length; i++) {
                 if (skip) { continue; }
                 const stage = this.stages[i].stage
-                await stage.run({ ...this.session.getSessionParameters(), ...this.parameters });
+                await stage.run({ ...this.session.getSessionParameters(true), ...this.parameters });
                 if (stage.getState() === "FAILED") {
                     skip = true;
                 }

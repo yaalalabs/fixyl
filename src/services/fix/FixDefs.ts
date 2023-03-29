@@ -66,40 +66,9 @@ export class FixFieldDef {
         }
     }
 
-    private formatFillerValue(val: any)
-    {
-        switch (this.type.toLowerCase()) {
-            case "string":
-                return val as string;
-            case "char":
-                return val;
-            case "int":
-                return Math.floor(val as number);
-            case "float":
-                return val;
-            case "utctimestamp":
-                return moment(val as number).utc().format("YYYYMMDD-HH:mm:ss.000")
-            case 'monthyear':
-                return moment(val as number).utc().format("YYYYMM")
-            case 'utcdateonly':
-                return moment(val as number).utc().format("YYYYMMDD-HH")
-            case 'utctimeonly':
-                return moment(val as number).utc().format("mm:ss.000")
-            default:
-                return undefined;
-        }
-    }
-
     private checkForFieldFillers(inputValue: any, parameters?: Parameters) {
         if (inputValue === FixFieldValueFiller.AUTO_GEN) {
             return this.generateFillerValue();
-        }
-
-        const input = inputValue.toString();
-        if (input.startsWith("{") && input.endsWith("}")) {
-            const varName = input.slice(1, -1);
-            if (parameters == null || parameters[varName] == null) return undefined;
-            return this.formatFillerValue(parameters[varName].value);
         }
 
         const setRegex = /{set:(.*?)}/g;

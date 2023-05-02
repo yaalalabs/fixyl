@@ -185,11 +185,11 @@ export class ProfilePanel extends React.Component<any, ProfilePanelState> {
     private onCopy = (profile: ProfileWithCredentials) => {
         const currentProfile = deepCopyObject(profile);
         currentProfile["name"] = currentProfile["name"] + "__copy";
-        this.setState({ showNewForm: true, currentProfile, isNewForm: true })
+        this.setState({ showNewForm: true, currentProfile, isNewForm: true, requireTransportDic: profile["fixVersion"] === FixVersion.FIX_5 })
     }
 
     private onEdit = (profile: ProfileWithCredentials) => {
-        this.setState({ showNewForm: true, currentProfile: profile, isNewForm: false })
+        this.setState({ showNewForm: true, currentProfile: profile, isNewForm: false, requireTransportDic: profile["fixVersion"] === FixVersion.FIX_5 })
     }
 
     private getAllProfilesView = () => {

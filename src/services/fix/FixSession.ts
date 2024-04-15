@@ -348,6 +348,7 @@ export class FixSession {
                 this.tx++;
             }
         } catch (error) {
+            releaseLock()
             throw error;
         }
         releaseLock()

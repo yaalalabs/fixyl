@@ -61,6 +61,8 @@ export class FixSession {
     private parserInitialized = false;
     private socketDataSubject = new Subject<FixSessionEvent>();
     private parser: FixDefinitionParser;
+
+    private txLock: Promise<any>;
     private tx: number = 1;
     private rx: number = 1;
     private inputStream: string = "";
@@ -78,6 +80,8 @@ export class FixSession {
     private resendCache = new Map<number, { msgDef: FixComplexType, header: FixMsgHeader, parameters?: Parameters }>();
 
     constructor(public readonly profile: ProfileWithCredentials) {
+        this.txLock = Promise.resolve();
+
         this.parser = new FixDefinitionParser({
             path: profile.dictionaryLocation,
             transportDicPath: profile.transportDictionaryLocation,
@@ -317,8 +321,19 @@ export class FixSession {
         }
     }
 
+    private async acquireLock(): Promise<() => void> {
+        let releaseLock: () => void;
+        const nextLock = new Promise<void>(resolve => {
+            releaseLock = resolve; // capture the resolver to release the lock
+        });
+        await this.txLock; // wait for the current lock to resolve
+        this.txLock = nextLock;
+        return releaseLock!; // return the resolver function to release the lock
+    }
+
     public async send(msgDef: FixMessageDef, parameters?: Parameters): Promise<any> {
         this.evaluateOutputMessage(msgDef);
+        const releaseLock = await this.acquireLock(); // accuire lock
         try {
             const header = this.generateFixMessageHeaders(msgDef, this.tx);
             const result = await this.sendInternal(header, msgDef, parameters);
@@ -335,6 +350,7 @@ export class FixSession {
         } catch (error) {
             throw error;
         }
+        releaseLock()
     }
 
     private sendInternal(header: FixMsgHeader, msgDef: FixMessageDef, parameters?: Parameters, additionalHeaders?: any): Promise<any> {

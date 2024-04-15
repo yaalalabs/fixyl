@@ -465,6 +465,9 @@ export class FixSession {
                     }
                 }
             }
+            if (adminSeqStart !== -1) {
+                this.sendSeqReset(adminSeqStart, i);
+            }
         } else {
             console.error("BeginSeqNo or EndSeqNo is missing from the resend request", { beginSeqNo, endSeqNo })
         }

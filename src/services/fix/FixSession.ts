@@ -348,10 +348,10 @@ export class FixSession {
                 this.tx++;
             }
         } catch (error) {
-            releaseLock()
             throw error;
+        } finally {
+            releaseLock()
         }
-        releaseLock()
     }
 
     private sendInternal(header: FixMsgHeader, msgDef: FixMessageDef, parameters?: Parameters, additionalHeaders?: any): Promise<any> {
@@ -373,9 +373,12 @@ export class FixSession {
             let sub: Subscription | undefined;
             try {
                 sub = this.socket?.getSocketEventObservable().subscribe(event => {
-                    if (event.type === "result") {
+                    console.log(JSON.stringify(event))
+                    if (event.type === "disconnect") {
+                        sub?.unsubscribe();
+                        reject(new Error("socket closed"));
+                    }else if (event.type === "result") {
                         const msgInst = this.parser.decodeFixMessage(data);
-
                         if (msgInst) {
                             this.socketDataSubject.next({
                                 event: FixSessionEventType.DATA, data: {
@@ -388,7 +391,6 @@ export class FixSession {
                                 }
                             })
                         }
-
                         sub?.unsubscribe();
                         resolve(event.result)
                     }

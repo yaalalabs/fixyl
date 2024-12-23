@@ -61,6 +61,8 @@ export class FixSession {
     private parserInitialized = false;
     private socketDataSubject = new Subject<FixSessionEvent>();
     private parser: FixDefinitionParser;
+
+    private txLock: Promise<any>;
     private tx: number = 1;
     private rx: number = 1;
     private inputStream: string = "";
@@ -78,6 +80,8 @@ export class FixSession {
     private resendCache = new Map<number, { msgDef: FixComplexType, header: FixMsgHeader, parameters?: Parameters }>();
 
     constructor(public readonly profile: ProfileWithCredentials) {
+        this.txLock = Promise.resolve();
+
         this.parser = new FixDefinitionParser({
             path: profile.dictionaryLocation,
             transportDicPath: profile.transportDictionaryLocation,
@@ -317,8 +321,19 @@ export class FixSession {
         }
     }
 
+    private async acquireLock(): Promise<() => void> {
+        let releaseLock: () => void;
+        const nextLock = new Promise<void>(resolve => {
+            releaseLock = resolve; // capture the resolver to release the lock
+        });
+        await this.txLock; // wait for the current lock to resolve
+        this.txLock = nextLock;
+        return releaseLock!; // return the resolver function to release the lock
+    }
+
     public async send(msgDef: FixMessageDef, parameters?: Parameters): Promise<any> {
         this.evaluateOutputMessage(msgDef);
+        const releaseLock = await this.acquireLock(); // accuire lock
         try {
             const header = this.generateFixMessageHeaders(msgDef, this.tx);
             const result = await this.sendInternal(header, msgDef, parameters);
@@ -334,6 +349,8 @@ export class FixSession {
             }
         } catch (error) {
             throw error;
+        } finally {
+            releaseLock()
         }
     }
 
@@ -356,9 +373,12 @@ export class FixSession {
             let sub: Subscription | undefined;
             try {
                 sub = this.socket?.getSocketEventObservable().subscribe(event => {
-                    if (event.type === "result") {
+                    console.log(JSON.stringify(event))
+                    if (event.type === "disconnect") {
+                        sub?.unsubscribe();
+                        reject(new Error("socket closed"));
+                    }else if (event.type === "result") {
                         const msgInst = this.parser.decodeFixMessage(data);
-
                         if (msgInst) {
                             this.socketDataSubject.next({
                                 event: FixSessionEventType.DATA, data: {
@@ -371,7 +391,6 @@ export class FixSession {
                                 }
                             })
                         }
-
                         sub?.unsubscribe();
                         resolve(event.result)
                     }
@@ -447,6 +466,9 @@ export class FixSession {
                         this.resendMsg(inst.msgDef, inst.header, i, inst.parameters);
                     }
                 }
+            }
+            if (adminSeqStart !== -1) {
+                this.sendSeqReset(adminSeqStart, i);
             }
         } else {
             console.error("BeginSeqNo or EndSeqNo is missing from the resend request", { beginSeqNo, endSeqNo })

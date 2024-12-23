@@ -194,8 +194,10 @@ export class Scenarios extends React.Component<ScenariosProps, ScenariosState> {
     }
 
     private genExtraHeader = (inst: Scenario) => {
+        const { connected } = this.state;
+
         return <div className="scenario-extra-header">
-            <Button className="play-btn" icon={<SendOutlined />}
+            <Button className="play-btn" disabled={!connected} icon={<SendOutlined />}
                 onClick={(e) => {
                     e.stopPropagation();
                     if (inst.getState() === "EXECUTING") {

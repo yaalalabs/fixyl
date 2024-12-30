@@ -30,7 +30,7 @@ jobs:
     - name: install dependencies
       run: npm install --legacy-peer-deps
     - name: install iconv
-      run: npm install iconv-corefoundation
+      run: npm install iconv-corefoundation --legacy-peer-deps
     - name: publish
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

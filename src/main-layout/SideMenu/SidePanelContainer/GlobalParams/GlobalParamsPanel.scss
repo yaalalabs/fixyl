@@ -1,0 +1,23 @@
+.global-param-management {
+    .title {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+
+        .actions {
+            margin-left: auto;
+            
+            button {
+                margin-left: 5px;
+            }
+        }
+    }
+
+    .base-panel-body {
+        padding: 0px;
+    }
+    
+    .params-container {
+        border-top: none;
+    }
+}

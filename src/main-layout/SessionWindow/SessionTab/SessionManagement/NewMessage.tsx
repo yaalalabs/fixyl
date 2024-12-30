@@ -1,7 +1,7 @@
 import { AutoComplete, Empty, Input } from 'antd';
 import React from 'react';
 import { Subscription } from 'rxjs';
-import { FixMessage, FixSession, FixSessionEventType } from 'src/services/fix/FixSession';
+import { BaseClientFixSession, FixMessage, FixSession, FixSessionEventType } from 'src/services/fix/FixSession';
 import { LM } from 'src/translations/language-manager';
 import { FixForm } from './FixForm';
 import './NewMessage.scss';
@@ -11,7 +11,7 @@ const getIntlMessage = (msg: string) => {
 }
 
 interface NewMessageProps {
-    session: FixSession;
+    session: BaseClientFixSession;
 }
 
 interface NewMessageState {
@@ -33,6 +33,17 @@ export class NewMessage extends React.Component<NewMessageProps, NewMessageState
     }
 
     componentDidMount() {
+        this.subscribeSession()
+    }
+
+    componentDidUpdate(prevProps: Readonly<NewMessageProps>, prevState: Readonly<NewMessageState>, snapshot?: any): void {
+        if (prevProps.session !== this.props.session) {
+            this.subscribeSession();
+        }
+    }
+
+    private subscribeSession() {
+        this.sessionSub?.unsubscribe();
         this.sessionSub = this.props.session.getFixEventObservable().subscribe(eventData => {
             this.forceUpdate();
             this.setState({ connected: eventData.event !== FixSessionEventType.DISCONNECT })
@@ -91,7 +102,6 @@ export class NewMessage extends React.Component<NewMessageProps, NewMessageState
             <div className="body">
                 {!selectedMessage && <div className="no-message-msg">
                     <Empty
-                        image={require("../../../../assets/form-maker.svg").default}
                         description={getIntlMessage("no_message_selected")}>
 
                     </Empty>

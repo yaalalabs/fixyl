@@ -1,10 +1,25 @@
 .settings-management {
+    .title {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+
+        .actions {
+            margin-left: auto;
+            
+            button {
+                margin-left: 5px;
+            }
+        }
+    }
+    
     .field-container {
         display: flex;
         width: 100%;
         margin-bottom: 3px;
         font-size: 12px;
         min-height: 32px;
+        
         
         .field-name {
             width: 40%;

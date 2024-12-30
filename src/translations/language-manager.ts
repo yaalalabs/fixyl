@@ -123,14 +123,14 @@ export class LanguageManager {
             name: 'English',
             locale: 'en',
             shortName: 'EN',
-            flag: require('../assets/uk.svg').default
+            flag: ""
         });
 
         this.languageMap.set(LanguageCodes.SINHALA, {
             name: 'සිංහල',
             locale: 'si',
             shortName: 'SI',
-            flag: require('../assets/sri-lanka.svg').default
+            flag: ""
         });
     }
 

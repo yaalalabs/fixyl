@@ -1,5 +1,5 @@
 import React from 'react';
-import { FixSession } from 'src/services/fix/FixSession';
+import { BaseClientFixSession, FixSession } from 'src/services/fix/FixSession';
 import './SessionTab.scss';
 import FlexLayout, { IJsonModel } from "flexlayout-react";
 import { SessionManagement } from './SessionManagement/SessionManagement';
@@ -16,7 +16,7 @@ export enum SessionTabComponents {
 }
 
 interface SessionTabProps {
-  session: FixSession;
+  session: BaseClientFixSession;
   communicator: IntraTabCommunicator;
 }
 
@@ -98,7 +98,7 @@ export class SessionTab extends React.Component<SessionTabProps, SessionTabState
       case SessionTabComponents.SESSION_MESSSAGE_STREAM:
         return <SessoinMessageStream session={session} communicator={communicator} />
       case SessionTabComponents.SESSION_MESSAGE_VIEW:
-        return <SessionMessageView communicator={communicator} />
+        return <SessionMessageView session={session} communicator={communicator} />
     }
   }
 

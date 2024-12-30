@@ -1,8 +1,8 @@
 @import "./styles/styles.scss";
-@import "~antd/dist/antd.css";
+@import "../node_modules/antd/dist/antd.css";
 @import "./styles/antd/antd.scss";
 @import "./styles/themes/dark.scss";
-@import "./styles/themes/green.scss";
+@import "./styles/themes/light.scss";
 @import "./styles/vivify.min.css";
 
 #root {

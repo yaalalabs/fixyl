@@ -14,7 +14,7 @@ export const LoadingScreen: React.FC<any> = props => {
 
     return (<div className="loading-container">
         <div className="wrapper">
-            <img src={require('../../assets/loading.png').default} alt="Logo" />
+            <div className="loading-image" />
             {loading && <Spin className="spinner" indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} />}
         </div>
     </div>);

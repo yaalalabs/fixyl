@@ -1,4 +1,4 @@
-@import "node_modules/flexlayout-react/style/light.scss";
+@import "../node_modules/flexlayout-react/style/light.scss";
 
 .flexlayout__tab,
 .flexlayout__tabset {
@@ -50,4 +50,13 @@
         background-color: var(--background-shade-1);
         color: var(--text-color);
     }
+}
+
+.flexlayout__tab_button_trailing {
+    &::before {
+        content: "✖";
+        width: 8px;
+        height: 8px;
+        margin-top: -5px;
+    }    
 }

@@ -6,6 +6,7 @@ interface BasePanelProps {
     style?: any;
     title: any;
     subTitle?: string;
+    children: any;
 }
 
 export const BasePanel: FC<BasePanelProps> = ({ children, style, className, title, subTitle }) => {

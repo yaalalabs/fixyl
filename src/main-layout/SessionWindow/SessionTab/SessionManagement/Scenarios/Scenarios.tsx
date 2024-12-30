@@ -1,7 +1,7 @@
 
 import React, { useRef } from 'react';
 import { Subscription } from 'rxjs';
-import { FixSession, FixSessionEventType, } from 'src/services/fix/FixSession';
+import { BaseClientFixSession, FixSession, FixSessionEventType, } from 'src/services/fix/FixSession';
 import { GlobalServiceRegistry } from 'src/services/GlobalServiceRegistry';
 import { LM } from 'src/translations/language-manager';
 import { Scenario } from './ScenarioDefs';
@@ -69,7 +69,7 @@ const AddScenarioForm = ({ togglePopover, onAdded }: {
 }
 
 interface ScenariosProps {
-    session: FixSession;
+    session: BaseClientFixSession;
 }
 
 interface ScenariosState {
@@ -100,6 +100,17 @@ export class Scenarios extends React.Component<ScenariosProps, ScenariosState> {
             this.fetchScenarios();
         })
 
+        this.subscribeSession();
+    }
+
+    componentDidUpdate(prevProps: Readonly<ScenariosProps>, prevState: Readonly<ScenariosState>, snapshot?: any): void {
+        if (prevProps.session !== this.props.session) {
+            this.subscribeSession()
+        }
+    }
+
+    private subscribeSession() {
+        this.sessionSub?.unsubscribe();
         this.sessionSub = this.props.session.getFixEventObservable().subscribe(eventData => {
             this.forceUpdate();
             this.setState({ connected: eventData.event !== FixSessionEventType.DISCONNECT })
@@ -136,7 +147,7 @@ export class Scenarios extends React.Component<ScenariosProps, ScenariosState> {
     }
 
     private saveScenario = (inst: Scenario) => {
-        GlobalServiceRegistry.scenarioManager.saveScenario(this.props.session.getProfile(), inst).then(() => {
+        GlobalServiceRegistry.scenarioManager.saveScenario(this.props.session, inst).then(() => {
             Toast.success(getIntlMessage("msg_saving_success_title"), getIntlMessage("msg_saving_success", { name: inst.name }));
         }).catch(err => {
             console.error("Failed to save scenario", err);
@@ -171,7 +182,7 @@ export class Scenarios extends React.Component<ScenariosProps, ScenariosState> {
         } else {
             const inst = this.onAddNewScenario(deduplicatedName);
             inst.loadFromFile(data);
-            GlobalServiceRegistry.scenarioManager.saveScenario(this.props.session.getProfile(), inst);
+            GlobalServiceRegistry.scenarioManager.saveScenario(this.props.session.getProfile() as any, inst);
         }
     }
 
@@ -254,7 +265,7 @@ export class Scenarios extends React.Component<ScenariosProps, ScenariosState> {
 
                 <Collapse>
                     {scenarios.map(inst => <Panel header={inst.name} key={inst.name} extra={this.genExtraHeader(inst)}>
-                        <ScenarioInstance session={session} scenario={inst} />
+                        <ScenarioInstance session={session as FixSession} scenario={inst} />
                     </Panel >)}
                 </Collapse>
             </div>

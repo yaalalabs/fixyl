@@ -2,11 +2,12 @@ const { app, BrowserWindow, ipcMain } = require('electron')
 const isDev = require('electron-is-dev')
 
 const path = require('path')
+const logs = require("./logger")
+const logManager = require("./log-manager")
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
-
 
 function initModules(mainWindow) {
   require("./file-manager/file-event-handler")(mainWindow)
@@ -29,6 +30,7 @@ function createWindow() {
       enableRemoteModule: true,
       preload: path.join(__dirname, 'preload.js'),
     },
+    icon: path.join(__dirname, 'icon.png'),
   })
 
   // and load the index.html of the app.

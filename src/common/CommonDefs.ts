@@ -5,5 +5,6 @@ export enum ActionPanelType {
     PROFILE = "Profile",
     MESSAGE_VIEWER = "Message Viewer",
     GLOBAL_PARAMS = "Global Parameters",
+    SERVER = "Server",
     MESSAGE_DIFF_VIEWER = "Message Diff Viewer"
 }

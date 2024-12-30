@@ -1,0 +1,120 @@
+.server-general-info {
+    padding: 10px 20px;
+    display: flex;
+    flex-direction: column;
+
+    .header {
+        font-weight: 500;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .field-container {
+        display: flex;
+        width: 100%;
+        margin-bottom: 3px;
+        font-size: 12px;
+
+        .field-name {
+            width: 40%;
+            font-weight: 500;
+            color: var(--shade-250);
+        }
+
+        .field-value {
+            width: 60%;
+            text-transform: capitalize;
+            justify-content: flex-end;
+            display: flex;
+            text-align: right;
+
+            .ant-select-selector {
+                background-color: transparent;
+                border: none;
+                color: var(--text-color);
+            }
+
+            .working-dir-selector {
+                cursor: pointer;
+            }
+        }
+
+        .connected {
+            background-color: var(--success);
+            color: var(--shade-400);
+            border-radius: 3px;
+            text-transform: uppercase;
+            padding: 1px 5px;
+            font-weight: 500;
+            box-shadow: var(--box-shadow);
+        }
+
+        .disconnected {
+            background-color: var(--danger);
+            color: var(--shade-400);
+            border-radius: 3px;
+            text-transform: uppercase;
+            padding: 1px 5px;
+            font-weight: 500;
+            box-shadow: var(--box-shadow);
+        }
+    }
+
+    .body {
+        margin-bottom: 10px;
+    }
+
+    .action-container {
+        margin-top: 10px;
+        border-top: 1px solid var(--separator-color);
+        padding-top: 10px;
+
+        .header {
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+    }
+
+    .header-field-title {
+        background: var(--shade-350);
+        color: var(--text-color);
+        line-height: 1.5715;
+        cursor: pointer;
+        transition:
+            all 0.3s,
+            visibility 0s;
+        padding: 5px 10px;
+        display: flex;
+        border-top: 1px solid var(--shade-300);
+
+        .icon-container {
+            margin-left: auto;
+
+            .rotate-90 {
+                transform: rotate(90deg);
+                transition: transform 0.4s;
+            }
+
+            .rotate-0 {
+                transform: rotate(9deg);
+                transition: transform 0.4s;
+            }
+        }
+    }
+
+    .header-field-body {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        min-height: 0px;
+    }
+
+    .header-body-hide {
+        height: 0;
+        flex: 0;
+
+        .fix-header-form-container {
+            height: 0;
+        }
+    }
+}

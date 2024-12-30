@@ -8,8 +8,12 @@
         flex-direction: row;
         align-items: center;
 
-        button {
+        .actions {
             margin-left: auto;
+            
+            button {
+                margin-left: 5px;
+            }
         }
     }
 
@@ -52,6 +56,11 @@
             flex-direction: row;
             justify-content: space-between;
             margin-top: 20px;
+            flex-wrap: wrap;  
+
+            .ant-btn {
+                margin-top: 10px;
+            }
         }
 
         .new-profile-form {

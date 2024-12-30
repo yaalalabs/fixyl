@@ -33,8 +33,13 @@
             margin-top: 10px;
             width: 50%;
             background: var(--shade-350);
+            color: var(--text-color);
             border: none;
             margin-right: 5px;
+            
+            &::placeholder {
+                color: var(--text-color-alt);
+            }
         }
 
         .profiles {
@@ -59,8 +64,13 @@
 
     .launcher-img {
         width: 35%;
+        height: 250px;
         position: absolute;
+        background-image: url("../../../assets/launcher.png");
         bottom: 0;
         right: 0;
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
     }
 }

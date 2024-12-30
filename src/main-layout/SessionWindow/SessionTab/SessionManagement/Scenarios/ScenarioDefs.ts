@@ -1,7 +1,7 @@
 import { arrayMove } from "react-sortable-hoc";
 import { Subject, Subscription } from "rxjs";
 import { FixComplexType } from "src/services/fix/FixDefs";
-import { FixSession, FixSessionEventType, Parameters } from "src/services/fix/FixSession";
+import { BaseClientFixSession, FixSession, FixSessionEventType, Parameters } from "src/services/fix/FixSession";
 import { LM } from "src/translations/language-manager";
 import { CancelablePromise, makeCancelable, removeFalsyKeys } from "src/utils/utils";
 
@@ -28,7 +28,7 @@ export class Stage {
     private skipped = false;
     private waitingState = false;
 
-    constructor(public name: string, private session: FixSession, private onCaptureParam: (param: string, value: any) => void, waitTime?: number, stageWaitTime?: number) {
+    constructor(public name: string, private session: BaseClientFixSession, private onCaptureParam: (param: string, value: any) => void, waitTime?: number, stageWaitTime?: number) {
         this.subscribeToSession();
         this.setWaitTime(waitTime);
         this.setStageWaitTime(stageWaitTime);
@@ -355,7 +355,7 @@ export class Scenario {
     private state: ValidationState = "PENDING";
     private runPromise?: any;
 
-    constructor(public name: string, private session: FixSession) {
+    constructor(public name: string, private session: BaseClientFixSession) {
 
     }
 

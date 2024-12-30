@@ -150,7 +150,7 @@ export class MessageDiffViewerManagement extends React.Component<any, MessageDif
                             const prof = GlobalServiceRegistry.profile.getProfile(inst);
                             this.onNewSession(prof!.dictionaryLocation, prof?.fixVersion, prof?.transportDictionaryLocation);
                         }}>
-                            {GlobalServiceRegistry.profile.getAllProfiles().map((inst, i) => {
+                            {GlobalServiceRegistry.profile.getAllClientProfiles().map((inst, i) => {
                                 return <Option value={inst.name} key={i}>{inst.name}</Option>
                             })}
                         </Select>

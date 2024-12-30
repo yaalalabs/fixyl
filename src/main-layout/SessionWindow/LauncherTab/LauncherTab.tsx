@@ -4,7 +4,7 @@ import React from 'react';
 import { Subscription } from 'rxjs';
 import { ActionPanelType } from 'src/common/CommonDefs';
 import { GlobalServiceRegistry } from 'src/services/GlobalServiceRegistry';
-import { ProfileWithCredentials } from 'src/services/profile/ProfileDefs';
+import { BaseProfile } from 'src/services/profile/ProfileDefs';
 import { LM } from 'src/translations/language-manager';
 import './LauncherTab.scss';
 
@@ -13,7 +13,7 @@ const getIntlMessage = (msg: string) => {
 }
 
 interface LauncherTabState {
-  profiles: ProfileWithCredentials[],
+  profiles: BaseProfile[],
   filter?: string
 }
 
@@ -24,13 +24,13 @@ export class LauncherTab extends React.Component<any, LauncherTabState> {
     super(props);
 
     this.state = {
-      profiles: GlobalServiceRegistry.profile.getAllProfiles()
+      profiles: GlobalServiceRegistry.profile.getAllClientProfiles()
     }
   }
 
   componentDidMount() {
     this.subscribeToProfiles();
-    this.setState({ profiles: GlobalServiceRegistry.profile.getAllProfiles() })
+    this.setState({ profiles: GlobalServiceRegistry.profile.getAllClientProfiles() })
   }
 
   componentWillUnmount() {
@@ -41,7 +41,7 @@ export class LauncherTab extends React.Component<any, LauncherTabState> {
     const { profile } = GlobalServiceRegistry;
 
     this.profileSub = profile.getProfileUpdateObservable().subscribe(() => {
-      this.setState({ profiles: profile.getAllProfiles() })
+      this.setState({ profiles: profile.getAllClientProfiles() })
     })
   }
 
@@ -75,7 +75,7 @@ export class LauncherTab extends React.Component<any, LauncherTabState> {
           }}>{getIntlMessage("create_profile")}</Button>
         </div>
       </div>
-      <img className="launcher-img" alt="" src={require("../../../assets/launcher.png").default} />
+      <div className="launcher-img" />
     </div>
   }
 }

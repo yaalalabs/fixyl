@@ -1,0 +1,152 @@
+.server-manager-wrapper {
+    color: var(--text-color);
+    padding: 10px;
+    height: 100%;
+
+    .header {
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+
+        .title {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .actions {
+            margin-left: auto;
+        }
+    }
+
+    .body {
+        height: calc(100% - 36px);
+    }
+
+    .all-profile-wrapper {
+        flex-grow: 1;
+        overflow: auto;
+    }
+
+    .server-info-view {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .server-profile-management-wrapper {
+        overflow: auto;
+        display: flex;
+        flex-direction: column;
+        border-radius: 8px;
+        border: 1px solid var(--separator-color);
+
+        .title {
+            font-size: 16px;
+            padding: 10px 20px;
+            background-color: #9999990a;
+
+            .anticon {
+                margin-right: 10px;
+                color: var(--shade-250);
+            }
+        }
+
+        .footer {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            margin-top: 20px;
+            flex-wrap: wrap;  
+
+            .ant-btn {
+                margin-top: 10px;
+            }
+        }
+
+        .new-profile-form {
+            padding: 10px 20px 15px;
+            border-bottom: 1px solid var(--separator-color);
+            background-color: #9999990a;
+
+            .save-as-checkbox {
+                .ant-row {
+                    margin-top: 20px;
+                    margin-bottom: -10px;
+                    display: flex;
+                    flex-flow: row;
+                    align-items: center;
+                    width: 100%;
+
+                    .ant-form-item-label {
+                        width: 100%;
+                        padding-bottom: 0 !important;
+                    }
+
+                    .ant-form-item-control {
+                        width: 20px;
+                    }
+                }
+            }
+        }
+    }
+
+    .server-session-management-warpper {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+
+        .fix-session-connectivity {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+
+            .fix-session-title {
+                display: flex;
+                flex-direction: row;
+                font-weight: 500;
+                font-size: 15px;
+                color: var(--text-color);
+                align-content: center;
+                justify-content: center;
+                width: 100%;
+
+                &-text {
+                    width: 100%;
+                    text-transform: capitalize;
+                    text-overflow: ellipsis;
+                    overflow: hidden;
+                    white-space: nowrap;
+                }
+            }
+
+            .connect-btn-wrapper {
+                margin-left: auto;
+                .disconnect-btn {
+                    border-color: var(--danger);
+                    color: var(--danger);
+                }
+            }
+
+            .status-indic {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                font-weight: 500;
+                box-shadow: var(--box-shadow);
+                margin: auto;
+                margin-right: 5px;
+            }
+
+            .connected {
+                background-color: var(--success);
+            }
+
+            .disconnected {
+                background-color: var(--danger);
+            }
+        }
+    }
+}

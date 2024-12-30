@@ -5,7 +5,7 @@ import { Subscription } from 'rxjs';
 import { Toast } from 'src/common/Toast/Toast';
 import { SOH } from 'src/services/fix/FixDefinitionParser';
 import { FixComplexType } from 'src/services/fix/FixDefs';
-import { FixSession, FixSessionEventType } from 'src/services/fix/FixSession';
+import { BaseClientFixSession, FixSession, FixSessionEventType } from 'src/services/fix/FixSession';
 import { GlobalServiceRegistry } from 'src/services/GlobalServiceRegistry';
 import { LM } from 'src/translations/language-manager';
 import { FixForm } from './FixForm';
@@ -67,7 +67,7 @@ const SaveAsForm = ({ togglePopover, onAddToFavorites }: {
 }
 
 interface NewMessageFromRawProps {
-    session: FixSession;
+    session: BaseClientFixSession;
 }
 
 interface NewMessageFromRawState {
@@ -96,6 +96,18 @@ export class NewMessageFromRaw extends React.Component<NewMessageFromRawProps, N
     }
 
     componentDidMount() {
+        this.subscribeSession()
+    }
+
+    componentDidUpdate(prevProps: Readonly<NewMessageFromRawProps>, prevState: Readonly<NewMessageFromRawState>, snapshot?: any): void {
+        if (prevProps.session !== this.props.session) {
+            this.subscribeSession()
+        }
+    }
+
+
+    private subscribeSession() {
+        this.sessionSub?.unsubscribe();
         this.sessionSub = this.props.session.getFixEventObservable().subscribe(eventData => {
             this.forceUpdate();
             this.setState({ connected: eventData.event !== FixSessionEventType.DISCONNECT })
@@ -137,7 +149,7 @@ export class NewMessageFromRaw extends React.Component<NewMessageFromRawProps, N
         }
 
         this.setState({ inProgress: true })
-        GlobalServiceRegistry.favoriteManager.addToFavorites(session.profile, message, name, message.getValue()).then(() => {
+        GlobalServiceRegistry.favoriteManager.addToFavorites((session as FixSession).profile, message, name, message.getValue()).then(() => {
             this.setState({ inProgress: false })
             Toast.success(getIntlMessage("msg_saving_success_title"), getIntlMessage("msg_saving_success", { name }))
         }).catch(error => {

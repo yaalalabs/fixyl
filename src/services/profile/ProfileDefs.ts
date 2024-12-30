@@ -3,15 +3,14 @@ export enum FixVersion {
     FIX_5 = "5",
 }
 
-export interface Profile {
+export interface BaseProfile {
+    type?: "CLIENT" | "SERVER",
     name: string;
-    ip: string;
-    port: number;
-    hbInterval?: number;
     targetCompId: string;
     senderCompId: string;
     dictionaryLocation: string;
     fixVersion: FixVersion;
+    hbInterval?: number;
     transportDictionaryLocation?: string;
     sslEnabled?: boolean;
     sslServerName?: string;
@@ -26,8 +25,20 @@ export interface Profile {
     sessionParams?: any;
 }
 
+export interface Profile extends BaseProfile {
+    ip: string;
+    port: number;
+}
+
 export interface ProfileWithCredentials extends Profile {
     username: string;
     password: string;
     sslCertificatePassword?: string;
+}
+
+
+export interface ServerSideClientProfile extends BaseProfile {    
+}
+export interface ServerProfile extends BaseProfile {
+    port: number;
 }

@@ -2,8 +2,8 @@ import { Observable, Subject } from "rxjs";
 import { AppManagementService } from "../app-management/AppManagementService";
 import { FileManagementService } from "../file-management/FileManagementService";
 import { FixComplexType } from "../fix/FixDefs";
-import { FixSession } from "../fix/FixSession";
-import { ProfileWithCredentials } from "../profile/ProfileDefs";
+import { BaseClientFixSession } from "../fix/FixSession";
+import { BaseProfile, ProfileWithCredentials } from "../profile/ProfileDefs";
 
 export interface FavoriteInstance {
     msg: string,
@@ -16,7 +16,7 @@ export class FavoriteManagementService {
 
     }
 
-    private getDictionaryName(profile: ProfileWithCredentials) {
+    private getDictionaryName(profile: BaseProfile) {
         return profile.dictionaryLocation.replace(/^.*[\\/]/, '').replace(/\.[^/.]+$/, "");
     }
 
@@ -48,7 +48,7 @@ export class FavoriteManagementService {
         }
     }
 
-    async getAllFavorites(session: FixSession): Promise<{ name: string, msg: FixComplexType }[]> {
+    async getAllFavorites(session: BaseClientFixSession): Promise<{ name: string, msg: FixComplexType }[]> {
         const dictionaryName = this.getDictionaryName(session.profile);
         const dirPath = this.appManager.getWorkingDir() + "/" + dictionaryName;
         try {
@@ -81,7 +81,7 @@ export class FavoriteManagementService {
         }
     }
 
-    async getFavorite(name: string, session: FixSession): Promise<FixComplexType> {
+    async getFavorite(name: string, session: BaseClientFixSession): Promise<FixComplexType> {
         const dictionaryName = this.getDictionaryName(session.profile);
         const dirPath = this.appManager.getWorkingDir() + "/" + dictionaryName;
         try {

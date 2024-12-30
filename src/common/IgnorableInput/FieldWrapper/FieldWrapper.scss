@@ -41,7 +41,7 @@
         width: 250px;
 
         .ant-input-group-addon:first-child {
-            background: transparent;
+            background: transparent !important;
             color: var(--text-color);
             border: 1px solid #686868;
             border-top-left-radius: 2px;
@@ -51,7 +51,7 @@
         }
 
         .ant-input-group .ant-input-affix-wrapper:not(:first-child) {
-            background: transparent;
+            background: transparent !important;
             color: var(--text-color);
             border: 1px solid #686868;
             border-top-right-radius: 2px;

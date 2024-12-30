@@ -85,7 +85,7 @@ const AddStageForm = ({ togglePopover, onAdded, value }: {
 
 const DragHandle = SortableHandle(() => <div className="column-sort-row-handle">::</div>);
 
-const SortableItem = SortableElement(({ stage }: {
+const SortableItem = SortableElement<any>(({ stage }: {
     stage: Stage,
 }) => (
     <div className="column-sort-row">

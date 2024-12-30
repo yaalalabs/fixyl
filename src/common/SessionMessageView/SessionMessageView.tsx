@@ -5,6 +5,7 @@ import { LM } from 'src/translations/language-manager';
 import { FixCommMsg, IntraTabCommunicator } from '../IntraTabCommunicator';
 import { MessageView } from '../MessageView/MessageView';
 import './SessionMessageView.scss';
+import { BaseClientFixSession } from 'src/services/fix/FixSession';
 
 
 const getIntlMessage = (msg: string, options?: any) => {
@@ -12,6 +13,7 @@ const getIntlMessage = (msg: string, options?: any) => {
 }
 
 interface SessionMessageViewProps {
+  session?: BaseClientFixSession;
   communicator: IntraTabCommunicator;
 }
 
@@ -25,10 +27,18 @@ export class SessionMessageView extends React.Component<SessionMessageViewProps,
     super(props);
     this.state = {}
   }
+
   componentDidMount() {
     this.msgSelectSubscription = this.props.communicator.getMessageSelectObservable().subscribe(selectedMsg => {
       this.setState({ selectedMsg })
     })
+
+  }
+
+  componentDidUpdate(prevProps: Readonly<SessionMessageViewProps>, prevState: Readonly<SessionMessageViewState>, snapshot?: any): void {
+    if (prevProps.session !== this.props.session) {
+      this.setState({ selectedMsg: undefined })
+    }
   }
 
   componentWillUnmount() {

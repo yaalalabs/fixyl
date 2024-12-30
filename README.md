@@ -1,7 +1,7 @@
 # FIXYL
 ![logo.png](doc_support/icon.png)
 
-FIXYL is a tool for testing and verifying software that uses the [FIX protocol](https://www.fixtrading.org/what-is-fix/). It allows establishing FIX sessions and exchanging (and manipulating) FIX messages. As this tool can currently only act as a FIX client, it can only be used to test applications that act as a FIX server.
+FIXYL is a tool for testing and verifying software that uses the [FIX protocol](https://www.fixtrading.org/what-is-fix/). It allows establishing FIX sessions and exchanging (and manipulating) FIX messages. As this tool can act as a FIX client or a FIX server.
 
 The tool is based on the message definition format used in [QuickFix](https://github.com/quickfix/quickfix/tree/master/spec) and the tool provides support for all standard and custom FIX dictionaries across version 4.x and 5.x of the FIX protocol. It features a wide variety of options to support the testing and debugging of FIX gateways. You can find a sample definition [here](https://github.com/quickfix/quickfix/blob/master/spec/FIX44.xml).
 
@@ -45,7 +45,7 @@ npm run start
 
 This launches a React development server on `localhost:3000`, and starts an Electron application instance pointing to it. Make sure that port `3000` is not already occupied by some other program.
 
-## Usage
+# Usage
 
 ### First start-up
 
@@ -55,7 +55,9 @@ This directory is used for storing user configurations such as profiles and favo
 
 ![start_screenshot.jpg](doc_support/start_screenshot.jpg)
 
-### Adding a new profile
+## 1. Fix client mode
+
+### Adding a new client profile
 
 A profile contains all of the information required for creating a new FIX session. You may open the profile creation form by clicking on the `Profile` menu item and clicking the `+` button on the top of the opened panel.
 
@@ -64,7 +66,7 @@ Once this form is opened, you should enter the following information of the targ
 |Field               |Description                                             |
 |--------------------|--------------------------------------------------------|
 |Name                |Name of the profile                                     |
-|IP Address          |IP address of the targetserver                          |
+|IP Address          |IP address of the target server                         |
 |Port                |Port address of the target server                       |
 |HB Interval         |Heartbeat interval for the session                      |
 |SenderCompId        |Username to use for the login and sender identification |
@@ -85,9 +87,9 @@ The profile information will be saved in a configuration file inside the `workin
 
 ### Starting a FIX session
 
-Open the `Profile` menu and click the connet button of the profile that you have previously created. This will open a TCP connection to the FIX server mentioned in the profile, A new tab will be opened in the main window for the established session.
+Open the `Profile` menu and click the connect button of the profile that you have previously created. This will open a TCP connection to the FIX server mentioned in the profile, A new tab will be opened in the main window for the established session.
 
-If the connection is successfull, the connection indicator will turn `green` and the state will be presented as `CONNECTED`. 
+If the connection is successful, the connection indicator will turn `green` and the state will be presented as `CONNECTED`. 
 
 ![new_session_screenshot.jpg](doc_support/new_session_screenshot.jpg)
 
@@ -106,7 +108,7 @@ This section provides an overview of the session and tools required to interact 
 |Section     |Description                                                                                                                                                                                                                                                                                                                                                                                                      |Screenshot                                                                      |
 |------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------|
 |General     |Provides basic information on the FIX session, such as connection details and the status. It also provides the functionality to `connect` and `disconnect` the session.                                                                                                                                                                                                                                          |![general_section_screenshot.jpg](doc_support/general_section_screenshot.jpg)   |
-|New Message |Use this to send a new message through your FIX session. A message definition can be found using the dropdown menu (which supports auto complete). Selecting a messsage definition will prompt a form to fill the relevant fields before sending the message. You can also add the message you have saved to your favorites for later use. Refer [FIX Message Form](#fix-message-form) for more information. |                                                                                |
+|New Message |Use this to send a new message through your FIX session. A message definition can be found using the dropdown menu (which supports auto complete). Selecting a message definition will prompt a form to fill the relevant fields before sending the message. You can also add the message you have saved to your favorites for later use. Refer [FIX Message Form](#fix-message-form) for more information. |                                                                                |
 |Raw Data    |This is another way of sending a message. If you have a raw FIX message with printable field separators, use this tab to send it.                                                                                                                                                                                                                                                                                |![raw_data_section_screenshot.jpg](doc_support/raw_data_section_screenshot.jpg) |
 |Favorites   |All the favorites that you have saved previously are listed here. You can select a saved favorite message and send it.                                                                                                                                                                                                                                                                                             |![favorite_section_screenshot.jpg](doc_support/favorite_section_screenshot.jpg) |
 |Scenarios   |[EXPERIMATAL] This section gives users the ability to add automated testing for a message flow to cover a scenario. Refer [Scenario Configuration](#scenario-configuration) section for more information.                                                                                                                                                                                                    |                                                                                |
@@ -141,23 +143,62 @@ Following are some noteworthy features of this form:
 
 ## Scenario Configuration
 
-This section gives the user the abiity to configure test scenarios. A scenario can have multiple stages and each stage has an input and an output. Both input and output can have mutiple messages and each can be selected either from your favorites or manually.
+This section gives the user the ability to configure test scenarios. A scenario can have multiple stages and each stage has an input and an output. Both input and output can have multiple messages and each can be selected either from your favorites or manually.
 
 ![scenarios_screenshot.jpg](doc_support/scenarios_screenshot.jpg)
 
 Execution is done stage by stage and the application will send each message in the input list and check the received messages against the ones mentioned in the output list. Each output message should have the field values that you want to check when the actual message is received. You can exempt a field from this validation by not having them in the  output messages.
 
-You can also capture field values from the output message and use it in an input message. In the above screenshot, the `order` stage contains an input message for submitting a new order and the output message as the execution report that can be recieved if the order submittion is successful. 
+You can also capture field values from the output message and use it in an input message. In the above screenshot, the `order` stage contains an input message for submitting a new order and the output message as the execution report that can be received if the order submission is successful. 
 
 ![scenarios_output_screenshot.jpg](doc_support/scenarios_output_screenshot.jpg)
 
-The values recieved from the execution report can be captured using `{get: <unique name>}` tag.
+The values received from the execution report can be captured using `{get: <unique name>}` tag.
 
 The captured values are used in the next stage of this example by using `{set: <unique name>}` to send an order cancellation request.
 
-![scenarios_input_screenshot.jpg](doc_support/scenarios_input_screenshot.jpg)
-
 IMPORTANT: This feature is currently in an experimental stage so you may find some issues. 
+
+## 2. Fix server mode
+
+### Adding a new server profile
+
+First click on server option from side menu and go to the newly opened server tab. Next click on + to create a new server.
+A server profile contains all of the information required for creating a new FIX server session. 
+
+Once this form is opened, you should enter the following information of the target FIX server:
+
+|Field               |Description                                             |
+|--------------------|--------------------------------------------------------|
+|Name                |Name of the profile                                     |
+|Port                |Port address of the target server                       |
+|HB Interval         |Heartbeat interval for the session                      |
+|SenderCompId        |Username to use for the login and sender identification |
+|TargetCompId        |Target system/firm identification                       |
+|Fix Version         |Fix 4 or Fix 5                                          |
+|Dictionary Location |Location of the FIX dictionary definition XML file      |
+
+Pressing `Save` will create a new profile with the entered information and start a new server.
+
+When a new client connected to the server, the server tab will show it in list which can be selected to send and receive messages.
+
+![scenarios_input_screenshot.jpg](doc_support/server_screenshot.jpg)
+
+## Trubleshooting
+
+The logs generated while running the application are captured in logs files. These logs will kept for 5 days and will be removed accordingly. The logs also consists of a log rotation which will rotate the log when logs file size exceeds 50 MB.
+
+Following are the log file locations for each OS,
+```
+Windows
+%USERPROFILE%\AppData\Roaming\fixyl\logs
+
+Linux
+~/.config/fixyl/logs/
+
+MacOS
+~/Library/Logs/fixyl/
+```
 
 ## License 
 

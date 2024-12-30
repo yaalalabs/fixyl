@@ -59,16 +59,16 @@
 
         .message-table {
             height: 100%;
-            width: 100%;          
+            width: 100%;
         }
 
         .ag-row-odd {
             background-color: #323232;
         }
-        
+
         .ag-row-hover {
-            background-color: rgba(33, 150, 243, 0.1);    
-        } 
+            background-color: rgba(33, 150, 243, 0.1);
+        }
 
         .ag-row-selected {
             background-color: rgba(33, 150, 243, 0.3);
@@ -81,6 +81,11 @@
         align-items: center;
         padding: 0 5px;
         justify-content: space-between;
+        flex-wrap: wrap;
+
+        .ant-btn {
+            margin-top: 10px;
+        }
 
         .clear-btn {
             height: 18px;
@@ -93,30 +98,26 @@
 }
 
 .direction-cell {
-    padding-top: 4px;
     font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    user-select: none;
+    line-height: 20px;
+    font-weight: bold;
+    text-align: center;
+    margin-right: 12px;
+    border-radius: 2px;
+    align-items: center;
+    justify-content: center;
+    color: var(--side-color);
 
-    .direction-renderer {
-        width: 30px;
-        height: 20px;
-        display: flex;
-        font-size: 15px;
-        user-select: none;
-        line-height: 20px;
-        font-weight: bold;
-        text-align: center;
-        margin-right: 12px;
-        border-radius: 2px;
-        align-items: center;
-        justify-content: center;
-        color: var(--side-color);
-    }
-
-    .direction-renderer.out-cell {
+    &.out-cell {
         --side-color: var(--success);
     }
 
-    .direction-renderer.in-cell {
+    &.in-cell {
         --side-color: var(--danger);
     }
 }
@@ -130,7 +131,7 @@
 .header-menu-wrapper {
     .ant-popover-content {
         width: 270px !important;
-        
+
         .menu-popover {
             display: flex;
             align-items: center;

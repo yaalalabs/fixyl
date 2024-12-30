@@ -88,7 +88,6 @@ export class AddMsgModal extends React.Component<AddMsgModalProps, AddMsgModalSt
                     <div className="body">
                         {!selectedMessage && <div className="no-message-msg">
                             <Empty
-                                image={require("../../../../../assets/form-maker.svg").default}
                                 description={getIntlMessage("no_message_selected")}>
 
                             </Empty>

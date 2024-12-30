@@ -194,32 +194,43 @@ export class FixDefinitionParser {
         return checksum;
     }
 
-    private encodeToFixBody(data: any, parameters?: Parameters) {
-        removeFalsyKeys(data);
-        const properties = Object.keys(data);
+    private encodeToFixBody(msgDef: FixComplexType, data: any, parameters?: Parameters) {
         let fixMsgBody = "";
 
-        properties.forEach(property => {
-            let def: any = this.fieldMap.get(property);
-            if (def) {
-                if (def.isGroupField) {
-                    const arrayData = data[property] as any[];
-                    fixMsgBody += `${def.number}=${arrayData.length}${SOH}`;
-                    arrayData.forEach(inst => {
-                        fixMsgBody += this.encodeToFixBody(inst, parameters)
-                    })
-                } else {
-                    const fielData = def.formatValueToPack(data[property], parameters);
-                    fixMsgBody += `${def.number}=${fielData}${SOH}`
-                }
-            } else {
-                def = this.componentMap.get(property);
-                if (def) {
-                    fixMsgBody += this.encodeToFixBody(data[property], parameters);
-                }
+        msgDef.getFieldOrder().forEach(inst => {
+            if (data[inst.name] === undefined) {
+                return "";
             }
-        })
 
+            const msgFieldDef: any = this.fieldMap.get(inst.name);
+
+            switch (inst.type) {
+                case "field":
+                    const fieldDef = msgFieldDef.formatValueToPack(data[inst.name], parameters);
+                    fixMsgBody += `${msgFieldDef.number}=${fieldDef}${SOH}`
+                    break;
+                case "component":
+                    const compDef = msgDef.components.get(inst.name);
+                    if (compDef) {
+                        fixMsgBody += this.encodeToFixBody(compDef, data[inst.name], parameters);
+                    }
+                    break;
+                case "group":
+                    const groupDef = msgDef.groups.get(inst.name);
+                    if (groupDef) {
+                        const arrayData = data[inst.name] as any[];
+                        fixMsgBody += `${msgFieldDef.number}=${arrayData.length}${SOH}`;
+                        arrayData.forEach(inst => {
+                            fixMsgBody += this.encodeToFixBody(groupDef, inst, parameters)
+                        })
+                    }
+                    break;
+                default:
+                    "";
+            }
+
+        })
+        
         return fixMsgBody;
     }
 
@@ -235,7 +246,7 @@ export class FixDefinitionParser {
                     const arrayData = customHeaderData[property] as any[];
                     fixMsgHeader += `${def.number}=${arrayData.length}${SOH}`;
                     arrayData.forEach(inst => {
-                        fixMsgHeader += this.encodeToFixBody(inst)
+                        fixMsgHeader += this.encodeToFixBody(def, inst)
                     })
                 } else {
                     const fielData = def.formatValueToPack(customHeaderData[property]);
@@ -244,7 +255,7 @@ export class FixDefinitionParser {
             } else {
                 def = this.componentMap.get(property);
                 if (def) {
-                    fixMsgHeader += this.encodeToFixBody(customHeaderData[property]);
+                    fixMsgHeader += this.encodeToFixBody(def, customHeaderData[property]);
                 }
             }
         })
@@ -266,8 +277,9 @@ export class FixDefinitionParser {
         return ret;
     }
 
-    encodeToFix(data: any, header: FixMsgHeader, parameters?: Parameters, customHeaders?: any): string {
-        const messageBody = this.encodeToFixBody(data, parameters);
+
+    encodeToFix(msgDef: FixComplexType, data: any, header: FixMsgHeader, parameters?: Parameters, customHeaders?: any): string {
+        const messageBody = this.encodeToFixBody(msgDef, data, parameters);
         const messageHeader = this.encodeHeader(header, customHeaders);
         const msg = messageHeader + messageBody;
         let message = this.BEGIN_STRING + SOH + '9=' + msg.length + SOH + msg;

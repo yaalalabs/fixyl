@@ -8,7 +8,7 @@
 
     .ant-input-affix-wrapper {
         border-radius: 2px;
-        background: transparent;
+        background: transparent !important;
         border: 1px solid var(--separator-color);
         color: var(--text-color);
         font-size: 12px;
@@ -24,6 +24,10 @@
         .ant-input-suffix .ant-input-clear-icon {
             color: var(--text-color);
         }
+
+        .ant-input {
+            border: none !important;
+        }
     }
 
     .ant-input-password-icon {
@@ -37,7 +41,7 @@
     }
 
     .ant-select:not(.ant-select-customize-input) .ant-select-selector {
-        background: transparent;
+        background: transparent !important;
         color: var(--text-color);
         border: 1px solid var(--separator-color);
         border-radius: 2px;
@@ -83,7 +87,7 @@
     }
 
     .ant-input {
-        background: transparent;
+        background: transparent !important;
         border: 1px solid var(--separator-color);
         color: var(--text-color);
     }
@@ -94,7 +98,7 @@
 
     .ant-input-number {
         border-radius: 2px;
-        background: transparent;
+        background: transparent !important;
         border: 1px solid var(--separator-color);
         color: var(--text-color);
     }

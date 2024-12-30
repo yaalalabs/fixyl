@@ -14,36 +14,15 @@
             margin-bottom: 30px;
         }
 
-        .spinner {
-            position: absolute;
-            margin-top: 80px;
-            margin-left: 100px;
-
-            animation: scale-anime 1s;
-            -moz-animation: scale-anime 1s; /* Firefox */
-            -webkit-animation: scale-anime 1s; /* Safari and Chrome */
-            -o-animation: scale-anime 1s; /* Opera */
+        .loading-image {            
+            width: 400px;
+            height: 250px;
+            background-image: url("../../assets/loading.png");
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
         }
-
-        .system-model-wrapper {
-            width: 500px;
-            position: absolute;
-            margin-top: 80px;
-
-            .system-info-inline {
-                justify-content: center;
-                align-items: center;
                 
-                .system-info-inline-title {
-                    align-items: center;
-                }                
-
-                .system-info-inline-desc {
-                    text-align: center;
-                }
-            }
-        }
-        
         @keyframes scale-anime {
             0% {
                 transform: scale(0);

@@ -2,12 +2,12 @@ import { Observable, Subject, BehaviorSubject } from "rxjs";
 import { APP_NAME } from "src/common/CommonDefs";
 import { FileManagementService } from "../file-management/FileManagementService";
 import { NetworkService } from "../network/NetworkService";
-import { ProfileWithCredentials } from "../profile/ProfileDefs";
+import { BaseProfile, } from "../profile/ProfileDefs";
 
-export type SessionActionType = "new" | "destroy" | "message_viewer" | "message_diff_viewer" | "global_params";
+export type SessionActionType = "new" | "destroy" | "message_viewer" | "message_diff_viewer" | "global_params" | "server";
 
 export interface SessionAction {
-    profile?: ProfileWithCredentials;
+    profile?: BaseProfile;
     type: SessionActionType
 }
 

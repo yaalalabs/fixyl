@@ -1,6 +1,7 @@
 import React from 'react';
 export interface KeyboardEventDispatcherProps {
     listenToAllEvents?: boolean;
+    children: any;
     events: { keys: string | string[], event: () => void }[]
 }
 

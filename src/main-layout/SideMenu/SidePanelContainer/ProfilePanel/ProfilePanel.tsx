@@ -1,4 +1,4 @@
-import { PlusOutlined, ApiOutlined } from '@ant-design/icons';
+import { PlusOutlined, ApiOutlined, CloseOutlined } from '@ant-design/icons';
 import { Button, Collapse, Empty, FormInstance, Input, InputNumber, Select, Tooltip } from 'antd';
 import React from 'react';
 import { LM } from 'src/translations/language-manager';
@@ -25,11 +25,15 @@ interface ProfilePanelState {
     requireTransportDic: boolean;
 }
 
+interface ProfilePanelProps {
+    onClose: () => void;
+}
+
 const getIntlMessage = (msg: string) => {
     return LM.getMessage(`profile_management.${msg}`);
 }
 
-export class ProfilePanel extends React.Component<any, ProfilePanelState> {
+export class ProfilePanel extends React.Component<ProfilePanelProps, ProfilePanelState> {
     private formRef = React.createRef<FormInstance>();
     private navSubscription?: Subscription;
     private profilesSubscription?: Subscription;
@@ -40,7 +44,7 @@ export class ProfilePanel extends React.Component<any, ProfilePanelState> {
 
         this.state = {
             showNewForm: false,
-            profiles: GlobalServiceRegistry.profile.getAllProfiles(),
+            profiles: GlobalServiceRegistry.profile.getAllClientProfiles() as any,
             currentProfile: undefined,
             isNewForm: true,
             requireTransportDic: false
@@ -50,7 +54,7 @@ export class ProfilePanel extends React.Component<any, ProfilePanelState> {
     componentDidMount() {
         const { profile } = GlobalServiceRegistry;
         this.profilesSubscription = profile.getProfileUpdateObservable().subscribe(() => {
-            this.setState({ profiles: profile.getAllProfiles() })
+            this.setState({ profiles: profile.getAllClientProfiles() as any })
         })
 
         this.subscribeToNavigations();
@@ -203,9 +207,13 @@ export class ProfilePanel extends React.Component<any, ProfilePanelState> {
 
     render() {
         return <BasePanel className="profile-management" title={<React.Fragment>{getIntlMessage("title")}
-            <Tooltip placement="right" title={getIntlMessage("new_profile")}>
-                <Button shape="circle" icon={<PlusOutlined />} onClick={this.onNewProfile} />
-            </Tooltip>
+            <div className="actions">
+                <Tooltip placement="bottom" title={getIntlMessage("new_profile")}>
+                    <Button shape="circle" icon={<PlusOutlined />} onClick={this.onNewProfile} />
+                </Tooltip>
+
+                <Button shape="circle" icon={<CloseOutlined />} onClick={this.props.onClose} />
+            </div>
         </React.Fragment>}>
             {this.getNewProfileForm()}
             {this.getAllProfilesView()}

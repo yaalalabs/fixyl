@@ -2,8 +2,8 @@ import { Observable, Subject } from "rxjs";
 import { Scenario } from "src/main-layout/SessionWindow/SessionTab/SessionManagement/Scenarios/ScenarioDefs";
 import { AppManagementService } from "../app-management/AppManagementService";
 import { FileManagementService } from "../file-management/FileManagementService";
-import { FixSession } from "../fix/FixSession";
-import { ProfileWithCredentials } from "../profile/ProfileDefs";
+import { BaseClientFixSession, FixSession } from "../fix/FixSession";
+import { BaseProfile } from "../profile/ProfileDefs";
 
 
 export class ScenarioManagementService {
@@ -12,7 +12,7 @@ export class ScenarioManagementService {
 
     }
 
-    private getDictionaryName(profile: ProfileWithCredentials) {
+    private getDictionaryName(profile: BaseProfile) {
         return profile.dictionaryLocation.replace(/^.*[\\/]/, '').replace(/\.[^/.]+$/, "");
     }
 
@@ -20,9 +20,13 @@ export class ScenarioManagementService {
         return this.favoriteUpdateSubject.asObservable()
     }
 
-    async saveScenario(profile: ProfileWithCredentials, scenario: Scenario) {
-        const dictionaryName = this.getDictionaryName(profile);
-        const saveDirPath = this.appManager.getWorkingDir() + "/" + dictionaryName + "/scenarios";
+    async saveScenario(session: BaseClientFixSession, scenario: Scenario) {
+        const dictionaryName = this.getDictionaryName(session.profile);
+        let saveDirPath = this.appManager.getWorkingDir() + "/" + dictionaryName + "/scenarios";
+
+        if (session.getType() === "SERVER_SIDE_CLIENT") {
+            saveDirPath = this.appManager.getWorkingDir() + "/" + dictionaryName + "/server_scenarios";
+        }
         try {
             await this.fileManager.createDir(saveDirPath);
             await this.fileManager.writeFile(`${saveDirPath}/${scenario.name}.json`, JSON.stringify(scenario.getDataToSave()));
@@ -32,9 +36,14 @@ export class ScenarioManagementService {
         }
     }
 
-    async getAllScenarios(session: FixSession): Promise<Scenario[]> {
-        const dictionaryName = this.getDictionaryName(session.profile);
-        const dirPath = this.appManager.getWorkingDir() + "/" + dictionaryName + "/scenarios";
+    async getAllScenarios(session: BaseClientFixSession): Promise<Scenario[]> {
+        const dictionaryName = this.getDictionaryName(session.profile);        
+        let dirPath = this.appManager.getWorkingDir() + "/" + dictionaryName + "/scenarios";
+
+        if (session.getType() === "SERVER_SIDE_CLIENT") {
+            dirPath = this.appManager.getWorkingDir() + "/" + dictionaryName + "/server_scenarios";
+        }
+
         try {
             const data = await this.fileManager.listDirContent(dirPath);
             if (data.error) {

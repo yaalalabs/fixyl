@@ -15,6 +15,7 @@ export interface ModalBoxProps {
     mask?: boolean;
     modalRender?: any;
     getContainer?: any;
+    children: any;
 }
 
 export const ModalBox: FC<ModalBoxProps> = ({ visible, title, closable, onClose, className, width, loading,

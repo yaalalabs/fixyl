@@ -58,7 +58,7 @@ export class FixFieldDef {
             case 'monthyear':
                 return moment(Date.now()).utc().format("YYYYMM")
             case 'utcdateonly':
-                return moment(Date.now()).utc().format("YYYYMMDD-HH")
+                return moment(Date.now()).utc().format("YYYYMMDD")
             case 'utctimeonly':
                 return moment(Date.now()).utc().format("mm:ss.000")
             default:

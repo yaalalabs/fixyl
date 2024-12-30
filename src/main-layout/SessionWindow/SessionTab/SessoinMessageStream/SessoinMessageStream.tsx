@@ -3,7 +3,7 @@ import { Switch, Form, Button, Tooltip, Checkbox, Popover, } from 'antd';
 import { AgGridColumn, AgGridReact } from '@ag-grid-community/react';
 import { AllCommunityModules, ColumnApi, GridApi, } from '@ag-grid-community/all-modules';
 import React from 'react';
-import { FixSession, FixSessionEventType } from 'src/services/fix/FixSession';
+import { BaseClientFixSession, FixSession, FixSessionEventType } from 'src/services/fix/FixSession';
 import { LM } from 'src/translations/language-manager';
 import './SessoinMessageStream.scss';
 import { transformDate } from 'src/utils/utils';
@@ -15,15 +15,8 @@ const getIntlMessage = (msg: string) => {
   return LM.getMessage(`session_message_stream.${msg}`);
 }
 
-export const DirectionComponent = (props: any) => {
-  const isIn = props.value === 'IN';
-  return <span className={`direction-renderer ${isIn ? 'in' : 'out'}-cell`}>
-    {isIn ? '⬇' : '⬆'}
-  </span>;
-}
-
 interface SessoinMessageStreamProps {
-  session: FixSession;
+  session: BaseClientFixSession;
   communicator: IntraTabCommunicator;
 }
 
@@ -57,7 +50,7 @@ export class SessoinMessageStream extends React.Component<SessoinMessageStreamPr
       columnConfig: [
         {
           label: "", key: 'direction', width: 30, minWidth: 30, maxWidth: 30, sortable: false,
-          pinned: true, headerClassName: "hide-resizer", renderer: "directionRenderer"
+          pinned: true, headerClassName: "hide-resizer"
         },
         { label: getIntlMessage("message"), key: 'message', flex: 1 },
         { label: getIntlMessage("sequence"), key: 'sequence', width: 130, type: "number" },
@@ -83,6 +76,9 @@ export class SessoinMessageStream extends React.Component<SessoinMessageStreamPr
   protected getValueGetter = (col: any, params: any) => {
     if (col.type === 'time') {
       return transformDate(params.data[col.key], 'HH:mm:ss:ms');
+    } else if (col.key === 'direction') {
+      const isIn = params.data[col.key] === 'IN';
+      return isIn ? '⬇' : '⬆'
     }
 
     return params.data[col.key];
@@ -94,27 +90,53 @@ export class SessoinMessageStream extends React.Component<SessoinMessageStreamPr
   }
 
   componentDidMount() {
+    this.subscribeSession()
+    this.onResizeObserver();
+  }
+
+
+  private subscribeSession() {
+    this.sessionSub?.unsubscribe();
+    this.setState({ rowData: this.props.session.getEventHistory().map(event => this.getDataFromEvent(event)).filter(data => !!data) })
+
     this.sessionSub = this.props.session.getFixEventObservable().subscribe(event => {
-      const { data } = event;
-      if (event.event === FixSessionEventType.DATA && data) {
-        const id = data.msg.name + data.timestamp;
+      const data = this.getDataFromEvent(event)
+      if (data) {
+        
         const addedRow = this.gridApi?.applyTransaction({
-          add: [{
-            direction: data.direction, message: data.msg.name,
-            length: data.length, time: data.timestamp, msg: data.msg,
-            rawMsg: data.fixMsg, sequence: data.sequence, id
-          }]
-        });
+          add: [data]
+        })
 
         if (this.state.scrollLocked) {
           setImmediate(() => {
             this.gridApi?.ensureIndexVisible(addedRow?.add[0].rowIndex, 'bottom');
           })
         }
+
       }
     })
+  }
 
-    this.onResizeObserver();
+  private getDataFromEvent(event: any) {
+    const { data } = event;
+
+    if (event.event === FixSessionEventType.DATA && data) {
+      const id = data.msg.name + data.timestamp;
+      return {
+        direction: data.direction, message: data.msg.name,
+        length: data.length, time: data.timestamp, msg: data.msg,
+        rawMsg: data.fixMsg, sequence: data.sequence, id
+      }
+
+    }
+
+    return null;
+  }
+
+  componentDidUpdate(prevProps: Readonly<SessoinMessageStreamProps>, prevState: Readonly<SessoinMessageStreamState>, snapshot?: any): void {
+    if (prevProps.session !== this.props.session) {
+      this.subscribeSession()
+    }
   }
 
   componentWillUnmount() {
@@ -188,7 +210,7 @@ export class SessoinMessageStream extends React.Component<SessoinMessageStreamPr
         direction: {
           filterType: 'text',
           type: 'equals',
-          filter: ["IN"]
+          filter: ["⬇"]
         }
       });
     } else {
@@ -209,7 +231,7 @@ export class SessoinMessageStream extends React.Component<SessoinMessageStreamPr
         direction: {
           filterType: 'text',
           type: 'equals',
-          filter: ["OUT"]
+          filter: ["⬆"]
         }
       });
     } else {
@@ -291,9 +313,6 @@ export class SessoinMessageStream extends React.Component<SessoinMessageStreamPr
             rowSelection="multiple"
             onCellClicked={this.onRowSelected}
             getRowNodeId={(data) => data.id}
-            frameworkComponents={{
-              directionRenderer: DirectionComponent,
-            }}
             animateRows={true}>
             {columnConfig.map((col: any) => {
               return <AgGridColumn
@@ -314,6 +333,8 @@ export class SessoinMessageStream extends React.Component<SessoinMessageStreamPr
                 cellClassRules={{
                   'right-aligned': () => col.type === 'number',
                   'direction-cell': () => col.key === 'direction',
+                  'in-cell': (params) => col.key === 'direction' && params.value === "⬇",
+                  'out-cell': (params) => col.key === 'direction' && params.value === "⬆",
                 }}
                 cellRenderer={this.getCellRenderer(col)}
                 valueGetter={(params) => this.getValueGetter(col, params)}

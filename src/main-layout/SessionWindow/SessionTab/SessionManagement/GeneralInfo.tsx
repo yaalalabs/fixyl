@@ -2,7 +2,7 @@ import { Switch, Form, Button, Popover, Select } from 'antd';
 import { RightOutlined } from '@ant-design/icons';
 import React, { useEffect, useRef, useState } from 'react';
 import { Subscription } from 'rxjs';
-import { FixSession, FixSessionEventType } from 'src/services/fix/FixSession';
+import { BaseClientFixSession, FixSession, FixSessionEventType } from 'src/services/fix/FixSession';
 import { LM } from 'src/translations/language-manager';
 import { FixHeaderForm } from './FixHeaderForm';
 import './GeneralInfo.scss';
@@ -17,7 +17,7 @@ const getIntlMessage = (msg: string) => {
 const AutoLoginForm = ({ onChange, session, togglePopover }: {
     onChange: (state: boolean, loginMsg: any) => void,
     togglePopover: (state: boolean) => void,
-    session: FixSession
+    session: BaseClientFixSession
 }) => {
     const formRef: any = useRef(null);
     const [favorites, setFavorites] = useState([]);
@@ -91,7 +91,7 @@ const AutoLoginForm = ({ onChange, session, togglePopover }: {
 
 
 interface GeneralInfoProps {
-    session: FixSession;
+    session: BaseClientFixSession;
 }
 
 interface GeneralInfoState {
@@ -130,6 +130,17 @@ export class GeneralInfo extends React.Component<GeneralInfoProps, GeneralInfoSt
     }
 
     componentDidMount() {
+        this.subscribeSession();
+    }
+
+    componentDidUpdate(prevProps: Readonly<GeneralInfoProps>, prevState: Readonly<GeneralInfoState>, snapshot?: any): void {
+        if (prevProps.session !== this.props.session) {
+            this.subscribeSession();
+        }
+    }
+
+    private subscribeSession() {
+        this.sessionSub?.unsubscribe();
         this.sessionSub = this.props.session.getFixEventObservable().subscribe(eventData => {
             this.forceUpdate();
             this.setState({ connected: eventData.event !== FixSessionEventType.DISCONNECT, connecting: false })
@@ -162,9 +173,22 @@ export class GeneralInfo extends React.Component<GeneralInfoProps, GeneralInfoSt
         this.setState({ autoLoginFormVisible: state })
     }
 
+    private getClientInfo = () => {
+        const { session } = this.props;
+        if (session.getType() === "SERVER_SIDE_CLIENT") {
+            return null
+        }
+
+        const { name, ip, port, } = (session as FixSession).profile;
+        return <>
+            {this.getFieldValue(getIntlMessage("name"), name)}
+            {this.getFieldValue(getIntlMessage("ip"), ip)}
+            {this.getFieldValue(getIntlMessage("port"), port)}
+        </>
+    }
     render() {
         const { session } = this.props;
-        const { name, ip, port, senderCompId, targetCompId, } = session.profile;
+        const { senderCompId, targetCompId, } = session.profile;
         const { connected, hbEnabled, testRequestEnabled, showHeaderFields, showSessionParams,
             resendRequestEnabled, autoLoginEnabled, autoLoginFormVisible } = this.state;
 
@@ -173,14 +197,12 @@ export class GeneralInfo extends React.Component<GeneralInfoProps, GeneralInfoSt
                 {getIntlMessage("general_info_title")}
             </div>
             <div className="body">
-                {this.getFieldValue(getIntlMessage("name"), name)}
-                {this.getFieldValue(getIntlMessage("ip"), ip)}
-                {this.getFieldValue(getIntlMessage("port"), port)}
+                {this.getClientInfo()}
                 {this.getFieldValue(getIntlMessage("sender_comp_id"), senderCompId)}
                 {this.getFieldValue(getIntlMessage("target_comp_id"), targetCompId)}
                 {this.getFieldValue(getIntlMessage("connected_time"), session.getConnectedTime())}
-                {this.getFieldValue(getIntlMessage("state"), connected ? <div className="connected">{getIntlMessage("connect")}</div> :
-                    <div className="disconnected">{getIntlMessage("disconnect")}</div>)}
+                {this.getFieldValue(getIntlMessage("state"), connected ? <div className="connected">{getIntlMessage("connected")}</div> :
+                    <div className="disconnected">{getIntlMessage("disconnected")}</div>)}
 
                 <div className="action-container">
                     <div className="header">
@@ -231,18 +253,21 @@ export class GeneralInfo extends React.Component<GeneralInfoProps, GeneralInfoSt
                     <RightOutlined className={showHeaderFields ? "rotate-90" : "rotate-0"} />
                 </div>
             </div>
-            <div className={`header-field-body vivify ${showHeaderFields ? "fadeIn" : "fadeOut header-body-hide"}`}>
-                {<FixHeaderForm session={session} />}
-            </div>
-            <div className='header-field-title' onClick={this.toggleSessionParams}>
-                <span>{getIntlMessage("session_params")} </span>
-                <div className="icon-container">
-                    <RightOutlined className={showSessionParams ? "rotate-90" : "rotate-0"} />
+            {session.getType() === "CLIENT" && <>
+                <div className={`header-field-body vivify ${showHeaderFields ? "fadeIn" : "fadeOut header-body-hide"}`}>
+                    {<FixHeaderForm session={session as FixSession} />}
                 </div>
-            </div>
-            <div className={`header-field-body vivify ${showSessionParams ? "fadeIn" : "fadeOut header-body-hide"}`}>
-                {<SessionParamsForm session={session} />}
-            </div>
+                <div className='header-field-title' onClick={this.toggleSessionParams}>
+                    <span>{getIntlMessage("session_params")} </span>
+                    <div className="icon-container">
+                        <RightOutlined className={showSessionParams ? "rotate-90" : "rotate-0"} />
+                    </div>
+                </div>
+                <div className={`header-field-body vivify ${showSessionParams ? "fadeIn" : "fadeOut header-body-hide"}`}>
+                    {<SessionParamsForm session={session as FixSession} />}
+                </div>
+            </>}
+
         </div>
     }
 }

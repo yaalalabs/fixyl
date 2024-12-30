@@ -10,6 +10,9 @@ import { IntraTabCommunicator } from '../../common/IntraTabCommunicator';
 import { Toast } from 'src/common/Toast/Toast';
 import { MessageViewerTab } from './MessageViewerTab/MessageViewerTab';
 import { MessageDiffViewerTab } from './MessageDiffViewerTab/MessageDiffViewerTab';
+import { Subscription } from 'rxjs';
+import { ServerTab } from './ServerTab/ServerTab';
+import { ProfileWithCredentials } from 'src/services/profile/ProfileDefs';
 
 export const Title: FC<{ node: any }> = ({ node }) => {
   const config: { session: FixSession } | undefined = node.getConfig();
@@ -32,12 +35,12 @@ export const Title: FC<{ node: any }> = ({ node }) => {
 
   return (<div className="tab-title">
     <div className="name">{name}</div>
-    {(!["launcher", "message_viewer", "message_diff_viewer"].includes(component)) && <div className={connected ? "connected" : "disconnected"}></div>}
+    {(!["launcher", "message_viewer", "message_diff_viewer", "server"].includes(component)) && <div className={connected ? "connected" : "disconnected"}></div>}
   </div>)
 }
 
-const getIntlMessage = (msg: string) => {
-  return LM.getMessage(`session_window.${msg}`);
+const getIntlMessage = (msg: string, opts?: any) => {
+  return LM.getMessage(`session_window.${msg}`, opts);
 }
 
 
@@ -48,6 +51,7 @@ interface SessionWindowState {
 
 export class SessionWindow extends React.Component<any, SessionWindowState> {
   private layoutRef = React.createRef<any>();
+  private actionSub?: Subscription;
 
   constructor(props: any) {
     super(props);
@@ -89,24 +93,28 @@ export class SessionWindow extends React.Component<any, SessionWindowState> {
     this.subscribeToSessionCreations();
   }
 
+  componentWillUnmount(): void {
+    this.actionSub?.unsubscribe();
+  }
+
   private subscribeToSessionCreations() {
-    GlobalServiceRegistry.appManager.getSessionActionObservable().subscribe(action => {
+    this.actionSub = GlobalServiceRegistry.appManager.getSessionActionObservable().subscribe(action => {
       if (action.type === "new" && action.profile) {
-        let session = GlobalServiceRegistry.fix.getFixSession(action.profile);
+        let session = GlobalServiceRegistry.fix.getFixSession(action.profile as ProfileWithCredentials);
         let hasSession = true;
 
         if (!session || session.isSessionDestroyed()) {
-          session = GlobalServiceRegistry.fix.getNewFixSession(action.profile);
+          session = GlobalServiceRegistry.fix.getNewFixSession(action.profile as ProfileWithCredentials);
           hasSession = false;
         }
 
         if (!hasSession) {
           session.connect().catch((err) => {
             console.log(err);
-            Toast.error(getIntlMessage("msg_connection_failed_title"), getIntlMessage("msg_connection_failed_desc"))
+            Toast.error(getIntlMessage("msg_connection_failed_title"), getIntlMessage("msg_connection_failed_desc", { error: err.message }))
             console.log("Failed to connect to fix session", action.profile)
           })
-  
+
           const communicator = new IntraTabCommunicator();
           this.setState({ allSessions: [...this.state.allSessions, session] });
 
@@ -118,6 +126,13 @@ export class SessionWindow extends React.Component<any, SessionWindowState> {
           this.state.model?.doAction(FlexLayout.Actions.selectTab(session.getProfile().name));
         }
       } else if (action.type === "message_viewer" || action.type === "message_diff_viewer") {
+        const communicator = new IntraTabCommunicator();
+
+        this.layoutRef.current?.addTabToTabSet("MAIN", {
+          type: "tab", component: action.type, enableClose: true,
+          name: getIntlMessage(action.type), config: { communicator }
+        })
+      } else if (action.type === "server") {
         const communicator = new IntraTabCommunicator();
 
         this.layoutRef.current?.addTabToTabSet("MAIN", {
@@ -145,6 +160,13 @@ export class SessionWindow extends React.Component<any, SessionWindowState> {
       const config: { communicator: IntraTabCommunicator } | undefined = node.getConfig();
       if (config) {
         return <MessageDiffViewerTab communicator={config.communicator} />
+      }
+    }
+
+    if (component === "server") {
+      const config: { communicator: IntraTabCommunicator } | undefined = node.getConfig();
+      if (config) {
+        return <ServerTab communicator={config.communicator} />
       }
     }
 

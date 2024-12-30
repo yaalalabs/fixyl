@@ -4,7 +4,7 @@ import { Toast } from 'src/common/Toast/Toast';
 import { LM } from 'src/translations/language-manager';
 import { deepCopyObject } from 'src/utils/utils';
 import { GlobalServiceRegistry } from '../GlobalServiceRegistry';
-import { ProfileWithCredentials } from '../profile/ProfileDefs';
+import { BaseProfile, Profile, ProfileWithCredentials, ServerProfile, ServerSideClientProfile } from '../profile/ProfileDefs';
 import { SocketInst, SocketSSLConfigs } from '../socket-management/SocketManagementSevice';
 import { FixDefinitionParser, FixMessageDef, FixMsgHeader } from './FixDefinitionParser';
 import { DEFAULT_HB_INTERVAL, FixComplexType, FixFieldDef, HBMonitor } from './FixDefs';
@@ -55,31 +55,34 @@ const getIntlMessage = (msg: string, options?: any) => {
     return LM.getMessage(`fix_session.${msg}`, options);
 }
 
-export class FixSession {
-    private socket?: SocketInst;
-    private connected = false;
-    private parserInitialized = false;
-    private socketDataSubject = new Subject<FixSessionEvent>();
-    private parser: FixDefinitionParser;
 
-    private txLock: Promise<any>;
-    private tx: number = 1;
-    private rx: number = 1;
-    private inputStream: string = "";
-    private hbMonitor?: HBMonitor;
-    private testRequestid = 1;
-    private connectedTime: any;
-    private isDestroyed = false;
-    private hbEnabled = true;
-    private testRequestEnabled = true;
-    private autoLoginEnabled = false;
-    private sequenceResetRequestEnabled = false;
-    private resendRequestEnabled = false;
-    private sessionParams: Parameters = {};
+export abstract class BaseClientFixSession {
+    protected type: "SERVER_SIDE_CLIENT" | "CLIENT" = "CLIENT"
+    protected socket?: SocketInst;
+    protected connected = false;
+    protected parserInitialized = false;
+    protected socketDataSubject = new Subject<FixSessionEvent>();
+    protected parser: FixDefinitionParser;
 
-    private resendCache = new Map<number, { msgDef: FixComplexType, header: FixMsgHeader, parameters?: Parameters }>();
+    protected txLock: Promise<any>;
+    protected tx: number = 1;
+    protected rx: number = 1;
+    protected inputStream: string = "";
+    protected hbMonitor?: HBMonitor;
+    protected testRequestid = 1;
+    protected connectedTime: any;
+    protected isDestroyed = false;
+    protected hbEnabled = true;
+    protected testRequestEnabled = true;
+    protected autoLoginEnabled = false;
+    protected sequenceResetRequestEnabled = false;
+    protected resendRequestEnabled = false;
+    protected sessionParams: Parameters = {};
+    protected socketDataEventHistory: FixSessionEvent[] = []
 
-    constructor(public readonly profile: ProfileWithCredentials) {
+    protected resendCache = new Map<number, { msgDef: FixComplexType, header: FixMsgHeader, parameters?: Parameters }>();
+
+    constructor(public readonly profile: BaseProfile) {
         this.txLock = Promise.resolve();
 
         this.parser = new FixDefinitionParser({
@@ -94,11 +97,28 @@ export class FixSession {
         this.initAutoSessionControlInfo();
     }
 
-    private initAutoSessionControlInfo() {
+    protected initAutoSessionControlInfo() {
         this.autoLoginEnabled = !!this.profile.autoLoginEnabled && !!this.profile.autoLoginMsg;
         this.sequenceResetRequestEnabled = !!this.profile.sequenceResetRequestEnabled;
         this.resendRequestEnabled = !!this.profile.resendRequestEnabled;
         this.sessionParams = this.profile.sessionParams ? this.profile.sessionParams : {};
+    }
+
+    protected publishSocketEvent(event: FixSessionEvent) {
+        this.socketDataEventHistory.push(event)
+        this.socketDataSubject.next(event)
+    }
+
+    getEventHistory() {
+        return this.socketDataEventHistory;
+    }
+
+    getSocket() {
+        return this.socket;
+    }
+
+    getType() {
+        return this.type
     }
 
     getSessionParameters(includeGlobal: boolean): Parameters {
@@ -128,8 +148,12 @@ export class FixSession {
         return this.isDestroyed;
     }
 
-    getProfile(): ProfileWithCredentials {
+    getProfile(): BaseProfile {
         return this.profile;
+    }
+
+    getFixEventObservable(): Observable<FixSessionEvent> {
+        return this.socketDataSubject.asObservable();
     }
 
     getAllMessageDefs(): FixMessageDef[] {
@@ -180,9 +204,7 @@ export class FixSession {
         this.updateProfile();
     }
 
-    private updateProfile() {
-        GlobalServiceRegistry.profile.addOrEditProfile(this.profile);
-    }
+    protected abstract updateProfile(): void;
 
     getConnectedTime() {
         if (this.connectedTime) {
@@ -212,102 +234,13 @@ export class FixSession {
         return this.resendRequestEnabled;
     }
 
-    private onData(data: string) {
-        this.hbMonitor?.resetHB();
-
-        this.inputStream += data;
-        let messages: string[] = [];
-        let length = this.parser.extractMessages(this.inputStream, messages);
-        if (length > 0) {
-            this.inputStream = this.inputStream.substring(length);
-        }
-
-        messages.forEach(msg => {
-            const msgInst = this.parser.decodeFixMessage(msg);
-
-            if (msgInst) {
-                this.rx++;
-                this.evaluateInputMessage(msgInst.msg);
-
-                this.socketDataSubject.next({
-                    event: FixSessionEventType.DATA, data: {
-                        direction: "IN",
-                        msg: msgInst.msg,
-                        length: msg.length,
-                        timestamp: Date.now(),
-                        fixMsg: msg,
-                        sequence: msgInst.header.sequence
-                    }
-                })
-            }
-        });
-    }
-
-
-    private onDisconnect() {
-        log('(' + this.profile.name + ') disconnected');
-        this.connected = false;
-        this.socketDataSubject.next({ event: FixSessionEventType.DISCONNECT })
-        Toast.error(getIntlMessage("msg_disconnect", { name: this.profile.name, ip: this.profile.ip }))
-    }
-
-    getFixEventObservable(): Observable<FixSessionEvent> {
-        return this.socketDataSubject.asObservable();
-    }
-
     isReady() {
         return this.connected && this.parserInitialized;
     }
 
-    async connect(): Promise<void> {
-        const { ip, port } = this.profile;
-        const sslConfigs: SocketSSLConfigs = {
-            sslEnabled: this.profile.sslEnabled, sslProtocol: this.profile.sslProtocol
-            , sslCACertificate: this.profile.sslCACertificate, sslServerName: this.profile.sslServerName
-            , sslCertificate: this.profile.sslCertificate, sslCertificatePassword: this.profile.sslCertificatePassword
-        };
-        this.socket = GlobalServiceRegistry.socket.createSocket(ip, port, sslConfigs);
-
-        return new Promise(async (resolve, reject) => {
-            try {
-
-                await new Promise((resolve, reject) => {
-                    log('(' + this.profile.name + ') connecting to ' + ip + ':' + port);
-                    this.socket?.getSocketEventObservable().subscribe(event => {
-                        switch (event.type) {
-                            case "connect":
-                                log('(' + this.profile.name + ') connected');
-                                this.connected = true;
-                                this.evaluteAndSendReady();
-                                this.connectedTime = Date.now();
-                                resolve(this.socket);
-                                break;
-                            case "error":
-                                log('(' + this.profile.name + ') connection error');
-                                this.connected = false;
-                                this.socketDataSubject.next({ event: FixSessionEventType.DISCONNECT })
-                                reject(new SocketTimeOutError());
-                                break;
-                            case "disconnect":
-                                this.onDisconnect();
-                                break;
-                            case "data":
-                                this.onData(event.data);
-                                break;
-                        }
-                    })
-                })
-            } catch (error) {
-                reject(error);
-            }
-
-            resolve();
-        });
-    }
-
-    private async evaluteAndSendReady() {
+    protected async evaluteAndSendReady() {
         if (this.isReady()) {
-            this.socketDataSubject.next({ event: FixSessionEventType.READY })
+            this.publishSocketEvent({ event: FixSessionEventType.READY })
             if (this.autoLoginEnabled && this.profile.autoLoginMsg) {
                 try {
                     const loginMsg = await GlobalServiceRegistry.favoriteManager.getFavorite(this.profile.autoLoginMsg, this);
@@ -321,7 +254,7 @@ export class FixSession {
         }
     }
 
-    private async acquireLock(): Promise<() => void> {
+    protected async acquireLock(): Promise<() => void> {
         let releaseLock: () => void;
         const nextLock = new Promise<void>(resolve => {
             releaseLock = resolve; // capture the resolver to release the lock
@@ -354,7 +287,7 @@ export class FixSession {
         }
     }
 
-    private sendInternal(header: FixMsgHeader, msgDef: FixMessageDef, parameters?: Parameters, additionalHeaders?: any): Promise<any> {
+    protected sendInternal(header: FixMsgHeader, msgDef: FixMessageDef, parameters?: Parameters, additionalHeaders?: any): Promise<any> {
         const data = this.encodeToFix(header, msgDef, parameters, additionalHeaders);
 
         return new Promise(async (resolve, reject) => {
@@ -367,7 +300,7 @@ export class FixSession {
         });
     }
 
-    private writeToSocket = (data: string) => {
+    protected writeToSocket = (data: string) => {
         this.socket?.write(data);
         return new Promise((resolve, reject) => {
             let sub: Subscription | undefined;
@@ -377,10 +310,10 @@ export class FixSession {
                     if (event.type === "disconnect") {
                         sub?.unsubscribe();
                         reject(new Error("socket closed"));
-                    }else if (event.type === "result") {
+                    } else if (event.type === "result") {
                         const msgInst = this.parser.decodeFixMessage(data);
                         if (msgInst) {
-                            this.socketDataSubject.next({
+                            this.publishSocketEvent({
                                 event: FixSessionEventType.DATA, data: {
                                     direction: "OUT",
                                     msg: msgInst.msg as any,
@@ -402,7 +335,7 @@ export class FixSession {
         })
     }
 
-    private evaluateInputMessage = (msg: FixMessageDef) => {
+    protected evaluateInputMessage = (msg: FixMessageDef) => {
         switch (msg.name.toLowerCase()) {
             case "testrequest":
                 this.sendHB();
@@ -424,7 +357,7 @@ export class FixSession {
         }
     }
 
-    private evaluateOutputMessage = (msg: FixMessageDef) => {
+    protected evaluateOutputMessage = (msg: FixMessageDef) => {
         switch (msg.name.toLowerCase()) {
             case "logon":
                 const data = msg.getValue();
@@ -442,7 +375,7 @@ export class FixSession {
         }
     }
 
-    private onResendRequest = (msg: FixMessageDef) => {
+    protected onResendRequest = (msg: FixMessageDef) => {
         const beginSeqNo = msg.getFieldValue("BeginSeqNo");
         const endSeqNo = msg.getFieldValue("EndSeqNo");
 
@@ -475,12 +408,12 @@ export class FixSession {
         }
     }
 
-    private resendMsg(msgDef: FixComplexType, prevHeader: FixMsgHeader, tx: number, parameters?: Parameters) {
+    protected resendMsg(msgDef: FixComplexType, prevHeader: FixMsgHeader, tx: number, parameters?: Parameters) {
         const header = this.generateFixMessageHeaders(msgDef, tx);
         this.sendInternal(header, msgDef, parameters, { PossDupFlag: "Y", OrigSendingTime: moment(prevHeader.time, "YYYYMMDD-HH:mm:ss.000").toISOString() });
     }
 
-    private sendSeqReset(tx: number, end: number) {
+    protected sendSeqReset(tx: number, end: number) {
         const msg = this.createNewMessageInst("SequenceReset");
         if (msg) {
             msg.setValue({ GapFillFlag: "Y", NewSeqNo: end });
@@ -488,7 +421,7 @@ export class FixSession {
         }
     }
 
-    private sendHB = (data?: any) => {
+    protected sendHB = (data?: any) => {
         if (!this.hbEnabled) {
             return;
         }
@@ -500,7 +433,7 @@ export class FixSession {
         }
     }
 
-    private sendTestRequest = () => {
+    protected sendTestRequest = () => {
         if (!this.testRequestEnabled) {
             return;
         }
@@ -530,7 +463,7 @@ export class FixSession {
         // debug('(' + this.profile.name + ') disconnected');
     }
 
-    private generateFixMessageHeaders = (msgDef: FixMessageDef, tx: number): FixMsgHeader => {
+    protected generateFixMessageHeaders = (msgDef: FixMessageDef, tx: number): FixMsgHeader => {
         return {
             msgType: msgDef.id,
             senderCompId: this.profile.senderCompId,
@@ -549,11 +482,179 @@ export class FixSession {
         if (additionalHeaders) {
             newHeaders = { ...newHeaders, ...additionalHeaders }
         }
-
-        return this.parser.encodeToFix(msgDef.getValue(), header, parameters, newHeaders)
+        
+        return this.parser.encodeToFix(msgDef, msgDef.getValue(), header, parameters, newHeaders)
     }
 
     public decodeFixMessage = (msg: string) => {
         return this.parser.decodeFixMessage(msg)?.msg
+    }
+}
+
+
+export class FixSession extends BaseClientFixSession {
+
+    constructor(public readonly profile: ProfileWithCredentials) {
+        super(profile)
+    }
+
+    protected updateProfile() {
+        GlobalServiceRegistry.profile.addOrEditProfile(this.profile);
+    }
+
+    private onData(data: string) {
+        this.hbMonitor?.resetHB();
+
+        this.inputStream += data;
+        let messages: string[] = [];
+        let length = this.parser.extractMessages(this.inputStream, messages);
+        if (length > 0) {
+            this.inputStream = this.inputStream.substring(length);
+        }
+
+        messages.forEach(msg => {
+            const msgInst = this.parser.decodeFixMessage(msg);
+
+            if (msgInst) {
+                this.rx++;
+                this.evaluateInputMessage(msgInst.msg);
+
+                this.publishSocketEvent({
+                    event: FixSessionEventType.DATA, data: {
+                        direction: "IN",
+                        msg: msgInst.msg,
+                        length: msg.length,
+                        timestamp: Date.now(),
+                        fixMsg: msg,
+                        sequence: msgInst.header.sequence
+                    }
+                })
+            }
+        });
+    }
+
+
+    private onDisconnect() {
+        log('(' + this.profile.name + ') disconnected');
+        this.connected = false;
+        this.publishSocketEvent({ event: FixSessionEventType.DISCONNECT })
+        Toast.error(getIntlMessage("msg_disconnect", { name: this.profile.name, ip: this.profile.ip }))
+    }
+
+    async connect(): Promise<void> {
+        const { ip, port } = this.profile;
+        const sslConfigs: SocketSSLConfigs = {
+            sslEnabled: this.profile.sslEnabled, sslProtocol: this.profile.sslProtocol
+            , sslCACertificate: this.profile.sslCACertificate, sslServerName: this.profile.sslServerName
+            , sslCertificate: this.profile.sslCertificate, sslCertificatePassword: this.profile.sslCertificatePassword
+        };
+        this.socket = GlobalServiceRegistry.socket.createSocket(ip, port, sslConfigs);
+
+        return new Promise(async (resolve, reject) => {
+            try {
+
+                await new Promise((resolve, reject) => {
+                    log('(' + this.profile.name + ') connecting to ' + ip + ':' + port);
+                    this.socket?.getSocketEventObservable().subscribe(event => {
+                        switch (event.type) {
+                            case "connect":
+                                log('(' + this.profile.name + ') connected');
+                                this.connected = true;
+                                this.evaluteAndSendReady();
+                                this.connectedTime = Date.now();
+                                resolve(this.socket);
+                                break;
+                            case "error":
+                                log('(' + this.profile.name + ') connection error', event.error);
+                                this.connected = false;
+                                this.publishSocketEvent({ event: FixSessionEventType.DISCONNECT })
+                                reject(event.error ? new Error(event.error) : new SocketTimeOutError());
+                                break;
+                            case "disconnect":
+                                this.onDisconnect();
+                                break;
+                            case "data":
+                                this.onData(event.data);
+                                break;
+                        }
+                    })
+                })
+            } catch (error) {
+                reject(error);
+            }
+
+            resolve();
+        });
+    }
+}
+
+export class ServerSideFixClientSession extends BaseClientFixSession {
+    protected type: "SERVER_SIDE_CLIENT" | "CLIENT" = "SERVER_SIDE_CLIENT"
+
+    constructor(public readonly profile: ServerSideClientProfile, socket: SocketInst) {
+        super(profile)
+        this.socket = socket;
+        this.connected = true;
+        this.listenToEvents()
+    }
+
+    protected updateProfile() {
+        // GlobalServiceRegistry.profile.addOrEditProfile(this.profile);
+    }
+
+    private onData(data: string) {
+        this.hbMonitor?.resetHB();
+
+        this.inputStream += data;
+        let messages: string[] = [];
+        let length = this.parser.extractMessages(this.inputStream, messages);
+        if (length > 0) {
+            this.inputStream = this.inputStream.substring(length);
+        }
+
+        messages.forEach(msg => {
+            const msgInst = this.parser.decodeFixMessage(msg);
+
+            if (msgInst) {
+                this.rx++;
+                this.evaluateInputMessage(msgInst.msg);
+
+                this.publishSocketEvent({
+                    event: FixSessionEventType.DATA, data: {
+                        direction: "IN",
+                        msg: msgInst.msg,
+                        length: msg.length,
+                        timestamp: Date.now(),
+                        fixMsg: msg,
+                        sequence: msgInst.header.sequence
+                    }
+                })
+            }
+        });
+    }
+
+    private onDisconnect() {
+        log('server side client disconnected');
+        this.connected = false;
+        this.publishSocketEvent({ event: FixSessionEventType.DISCONNECT })
+        Toast.error(getIntlMessage("msg_server_disconnect"))
+    }
+
+    async listenToEvents(): Promise<void> {
+        log('listening to server side client events');
+        this.socket?.getSocketEventObservable().subscribe(event => {
+            switch (event.type) {
+                case "error":
+                    this.connected = false;
+                    this.publishSocketEvent({ event: FixSessionEventType.DISCONNECT })
+                    break;
+                case "disconnect":
+                    this.onDisconnect();
+                    break;
+                case "data":
+                    this.onData(event.data);
+                    break;
+            }
+        })
     }
 }

@@ -3,7 +3,7 @@ import { SendOutlined, StopOutlined } from '@ant-design/icons';
 import { Toast } from 'src/common/Toast/Toast';
 import './SessionManagement.scss';
 import { Tabs, Button } from 'antd';
-import { FixSession, FixSessionEventType } from 'src/services/fix/FixSession';
+import { BaseClientFixSession, FixSession, FixSessionEventType } from 'src/services/fix/FixSession';
 import { LM } from 'src/translations/language-manager';
 import { NewMessage } from './NewMessage';
 import { IntraTabCommunicator } from '../../../../common/IntraTabCommunicator';
@@ -20,7 +20,7 @@ const getIntlMessage = (msg: string, opt?: any) => {
 }
 
 interface SessionManagementProps {
-  session: FixSession;
+  session: BaseClientFixSession;
   communicator: IntraTabCommunicator;
 }
 
@@ -42,6 +42,18 @@ export class SessionManagement extends React.Component<SessionManagementProps, S
   }
 
   componentDidMount() {
+    this.subscribeSession();
+  }
+
+  componentDidUpdate(prevProps: Readonly<SessionManagementProps>, prevState: Readonly<SessionManagementoState>, snapshot?: any): void {
+    if (prevProps.session !== this.props.session) {
+      this.setState({ connected: this.props.session.isReady() })
+      this.subscribeSession();
+    }
+  }
+
+  private subscribeSession() {
+    this.sessionSub?.unsubscribe();
     this.sessionSub = this.props.session.getFixEventObservable().subscribe(eventData => {
       this.forceUpdate();
       this.setState({ connected: eventData.event !== FixSessionEventType.DISCONNECT, connecting: false })
@@ -52,6 +64,15 @@ export class SessionManagement extends React.Component<SessionManagementProps, S
     this.sessionSub?.unsubscribe();
   }
 
+  private getSessionName() {
+    const { session } = this.props;
+    if (session.getType() === "CLIENT") {
+      return session.profile.name;
+    } else {
+      return "SSC_" + session.getSocket()?.id;
+    }
+  }
+
   render() {
     const { session } = this.props;
     const { connected, connecting } = this.state;
@@ -60,22 +81,24 @@ export class SessionManagement extends React.Component<SessionManagementProps, S
       <div className="fix-session-connectivity">
         <div className="fix-session-title">
           <div className={`status-indic ${connected ? "connected" : "disconnected"}`}></div>
-          <div className="fix-session-title-text">{getIntlMessage("fix_session_connectivity", { name: session.profile.name })}</div>
+          <div className="fix-session-title-text">{getIntlMessage("fix_session_connectivity", { name: this.getSessionName() })}</div>
         </div>
-        <div className="connect-btn-wrapper">
+        {session.getType() === "CLIENT" && <div className="connect-btn-wrapper">
           {!connected && <Button loading={connecting} icon={<SendOutlined />} type="primary" onClick={() => {
-            this.setState({ connecting: true })
 
-            session.connect().catch((err) => {
+            this.setState({ connecting: true });
+
+            (session as FixSession).connect().catch((err) => {
               this.setState({ connecting: false })
               console.log(err);
-              Toast.error(getIntlMessage("msg_connection_failed_title"), getIntlMessage("msg_connection_failed_desc"))
+              Toast.error(getIntlMessage("msg_connection_failed_title"), getIntlMessage("msg_connection_failed_desc", { error: err.message }))
             })
+
           }}>{getIntlMessage("connect")}</Button>}
           {connected && <Button className="disconnect-btn" icon={<StopOutlined />} type="ghost" onClick={() => {
             session.disconnect();
           }}>{getIntlMessage("disconnect")}</Button>}
-        </div>
+        </div>}
       </div>
       <div className="tab-view">
         <Tabs defaultActiveKey="0">

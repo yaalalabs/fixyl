@@ -8,7 +8,7 @@ import React, { useRef } from 'react';
 import { IgnorableInput } from 'src/common/IgnorableInput/IgnorableInput';
 import { Toast } from 'src/common/Toast/Toast';
 import { FixComplexType, FixField } from 'src/services/fix/FixDefs';
-import { FixMessage, FixSession } from 'src/services/fix/FixSession';
+import { BaseClientFixSession, FixMessage, FixSession } from 'src/services/fix/FixSession';
 import { GlobalServiceRegistry } from 'src/services/GlobalServiceRegistry';
 import { LM } from 'src/translations/language-manager';
 import "./FixForm.scss";
@@ -72,7 +72,7 @@ const SaveAsForm = ({ togglePopover, onAddToFavorites, name }: {
 
 interface FixFormProps {
     message: FixMessage;
-    session: FixSession;
+    session: BaseClientFixSession;
     hideTitle?: boolean;
     removeNonFilledFields?: boolean;
     value?: any;
@@ -212,7 +212,7 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
         const ret = this.getMessageData(data);
         this.setState({ saving: true })
 
-        GlobalServiceRegistry.favoriteManager.addToFavorites(session.profile, message, name, ret).then(() => {
+        GlobalServiceRegistry.favoriteManager.addToFavorites((session as FixSession).profile, message, name, ret).then(() => {
             this.setState({ saving: false })
             Toast.success(getIntlMessage("msg_saving_success_title"), getIntlMessage("msg_saving_success", { name }))
         }).catch(error => {
@@ -311,7 +311,7 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
 
     private getInitialValues() {
         const { session, value } = this.props;
-        const { hbInterval, password } = session.profile;
+        const { hbInterval, password } = (session as FixSession).profile;
         if (value) {
             return this.createFormData(value);
         }
@@ -481,7 +481,7 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
     }
 
     render() {
-        const { hideTitle, message, viewOnly, disabled, name, saveMode, preferredFavName } = this.props;
+        const { hideTitle, session, message, viewOnly, disabled, name, saveMode, preferredFavName } = this.props;
         const { initialized, confirmVisible, saving } = this.state;
 
         return <div className="fix-form-container">
@@ -497,7 +497,7 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
                     {this.renderFormFields(message, 0, 0, "root")}
                 </div>
                 {!viewOnly && <div className="form-footer">
-                    {!saveMode && <React.Fragment>
+                    {(!saveMode) && <React.Fragment>
                         <Popover
                             content={<SaveAsForm togglePopover={this.togglePopover} name={preferredFavName}
                                 onAddToFavorites={(data) => { this.onAddToFavorites(data.name); }} />}

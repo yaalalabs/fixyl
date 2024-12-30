@@ -47,6 +47,7 @@ interface DatePrickerProps {
     onChange: (value: any) => void;
     disableAutogen?: boolean;
     value: any;
+    children: any;
 }
 
 interface DatePrickerState {

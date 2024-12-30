@@ -1,10 +1,10 @@
 import { Observable, Subject } from "rxjs";
 import { FixComplexType } from "src/services/fix/FixDefs";
-import { FixSession } from "src/services/fix/FixSession";
+import { BaseClientFixSession } from "src/services/fix/FixSession";
 
 export interface FixCommMsg {
     def: FixComplexType,
-    session: FixSession,
+    session: BaseClientFixSession,
     rawMsg: string,
     metaData?: any
 }

@@ -2,11 +2,11 @@ import { Observable, Subject } from "rxjs";
 import { APP_NAME } from "../../common/CommonDefs";
 import { AppManagementService } from "../app-management/AppManagementService";
 import { FileManagementService } from "../file-management/FileManagementService";
-import { Profile, ProfileWithCredentials } from "./ProfileDefs";
+import { BaseProfile, Profile, ProfileWithCredentials, ServerProfile } from "./ProfileDefs";
 import { SecureKeyManager } from "./SecureKeyManager";
 
 export class ProfileManagementService {
-    private profiles = new Map<string, ProfileWithCredentials>();
+    private profiles = new Map<string, BaseProfile>();
     private profileUpdateSubject = new Subject<void>();
     private secureKeyManager = new SecureKeyManager();
 
@@ -27,17 +27,25 @@ export class ProfileManagementService {
     private async loadFromDevice() {
         const profileInfo = await this.loadGeneralProfileInfo();
         profileInfo.forEach(async inst => {
-            const profile: ProfileWithCredentials = { ...inst, username: "", password: "" };
-            const credentials = await this.secureKeyManager.findKeyForService(`${APP_NAME}.${inst.name}.credentials`);
-            if (credentials) {
-                profile.username = credentials.account;
-                profile.password = credentials.password;
+            let profile: BaseProfile;
+            if (inst.type !== "SERVER") {
+                const clProfile: ProfileWithCredentials = ({ ...inst, username: "", password: "" })
+                const credentials = await this.secureKeyManager.findKeyForService(`${APP_NAME}.${inst.name}.credentials`);
+                if (credentials) {
+                    clProfile.username = credentials.account;
+                    clProfile.password = credentials.password;
+                }
+
+                const certCredentials = await this.secureKeyManager.findKeyForService(`${APP_NAME}.${inst.name}.certificate_credentials`);
+                if (certCredentials) {
+                    clProfile.sslCertificatePassword = certCredentials.password;
+                }
+
+                profile = clProfile;
+            } else {
+                profile = { ...inst };
             }
 
-            const certCredentials = await this.secureKeyManager.findKeyForService(`${APP_NAME}.${inst.name}.certificate_credentials`);
-            if (certCredentials) {
-                profile.sslCertificatePassword = certCredentials.password;
-            }
 
             this.profiles.set(profile.name, profile);
         })
@@ -59,16 +67,27 @@ export class ProfileManagementService {
 
     }
 
-    getProfile(name: string): ProfileWithCredentials | undefined {
+    getProfile(name: string): BaseProfile | undefined {
         return this.profiles.get(name)
     }
-    
-    getAllProfiles(): ProfileWithCredentials[] {
-        return Array.from(this.profiles.values());
+
+    getAllClientProfiles(): BaseProfile[] {
+        return Array.from(this.profiles.values()).filter(inst => inst.type !== "SERVER");
+    }
+
+    getAllServerProfiles(): BaseProfile[] {
+        return Array.from(this.profiles.values()).filter(inst => inst.type === "SERVER");
     }
 
     getProfileUpdateObservable(): Observable<void> {
         return this.profileUpdateSubject.asObservable();
+    }
+
+    addOrEditServerProfile(profile: ServerProfile): boolean {
+        this.profiles.set(profile.name, profile);
+        this.saveAllProfilesInDevice();
+        this.profileUpdateSubject.next();
+        return true
     }
 
     addOrEditProfile(profile: ProfileWithCredentials): boolean {
@@ -81,18 +100,20 @@ export class ProfileManagementService {
         return true
     }
 
-    removeProfile(profile: ProfileWithCredentials) {
+    removeProfile(profile: BaseProfile) {
         this.profiles.delete(profile.name);
         this.saveAllProfilesInDevice();
         this.profileUpdateSubject.next();
     }
 
     private saveAllProfilesInDevice() {
-        const data: Profile[] = this.getAllProfiles().map(profile => {
+        const data: BaseProfile[] = Array.from(this.profiles.values()).map(profile => {
             const temp = { ...profile };
-            delete (temp as any).username;
-            delete (temp as any).password;
-            delete (temp as any).sslCertificatePassword;
+            if (profile.type !== "SERVER") {
+                delete (temp as any).username;
+                delete (temp as any).password;
+                delete (temp as any).sslCertificatePassword;
+            }
             return temp;
         })
 

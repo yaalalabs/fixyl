@@ -1,5 +1,5 @@
-import { MoreOutlined } from '@ant-design/icons';
-import { Select } from 'antd';
+import { CloseOutlined, MoreOutlined } from '@ant-design/icons';
+import { Button, Select } from 'antd';
 import React from 'react';
 import { GlobalServiceRegistry } from 'src/services/GlobalServiceRegistry';
 import { LanguageCodes, LM } from 'src/translations/language-manager';
@@ -13,7 +13,11 @@ const getIntlMessage = (msg: string) => {
   return LM.getMessage(`settings.${msg}`);
 }
 
-export class SettingsPanel extends React.Component<any, any> {
+interface SettingsPanelProps {
+  onClose: () => void;
+}
+
+export class SettingsPanel extends React.Component<SettingsPanelProps, any> {
   state = {
     lang: GlobalServiceRegistry.appManager.getPreferredLanguage(),
     theme: GlobalServiceRegistry.appManager.getPreferredTheme(),
@@ -24,7 +28,11 @@ export class SettingsPanel extends React.Component<any, any> {
   render() {
     const { theme, lang, workingDir, showDialog } = this.state;
 
-    return <BasePanel className="settings-management" title={getIntlMessage("title")}>
+    return <BasePanel className="settings-management" title={<React.Fragment>{getIntlMessage("title")}
+      <div className="actions">        
+        <Button shape="circle" icon={<CloseOutlined />} onClick={this.props.onClose} />
+      </div>
+    </React.Fragment>}>
       <div className="field-container">
         <div className="field-name">{getIntlMessage("theme")}</div>
         <div className="field-value"><Select value={theme} onChange={(value) => {
@@ -34,7 +42,7 @@ export class SettingsPanel extends React.Component<any, any> {
           GlobalServiceRegistry.appManager.setPreferredTheme(theme);
         }}>
           <Option value="dark">{getIntlMessage("dark")}</Option>
-          <Option value="green">{getIntlMessage("green")}</Option>
+          <Option value="light">{getIntlMessage("light")}</Option>
         </Select></div>
       </div>
       <div className="field-container">

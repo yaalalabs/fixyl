@@ -1,7 +1,5 @@
 import { ClearOutlined, SwapOutlined, WechatOutlined, MoreOutlined, DiffOutlined } from '@ant-design/icons';
 import { Switch, Form, Button, Tooltip, Checkbox, Popover, } from 'antd';
-import { AgGridColumn, AgGridReact } from '@ag-grid-community/react';
-import { AllCommunityModules, ColumnApi, GridApi, } from '@ag-grid-community/all-modules';
 import React from 'react';
 import { BaseClientFixSession, FixSession, FixSessionEventType } from 'src/services/fix/FixSession';
 import { LM } from 'src/translations/language-manager';
@@ -10,6 +8,8 @@ import { transformDate } from 'src/utils/utils';
 import { Subscription } from 'rxjs';
 import { IntraTabCommunicator, FixCommMsg } from '../../../../common/IntraTabCommunicator';
 import { MessageDiffViewer } from './MessageDiffViewer';
+import { ColDef, ColumnApi, GridApi } from 'ag-grid-community';
+import { AgGridReact } from "ag-grid-react";
 
 const getIntlMessage = (msg: string) => {
   return LM.getMessage(`session_message_stream.${msg}`);
@@ -102,14 +102,14 @@ export class SessoinMessageStream extends React.Component<SessoinMessageStreamPr
     this.sessionSub = this.props.session.getFixEventObservable().subscribe(event => {
       const data = this.getDataFromEvent(event)
       if (data) {
-        
+
         const addedRow = this.gridApi?.applyTransaction({
           add: [data]
         })
 
         if (this.state.scrollLocked) {
           setImmediate(() => {
-            this.gridApi?.ensureIndexVisible(addedRow?.add[0].rowIndex, 'bottom');
+            addedRow?.add[0].rowIndex && this.gridApi?.ensureIndexVisible(addedRow?.add[0].rowIndex, 'bottom');
           })
         }
 
@@ -164,13 +164,15 @@ export class SessoinMessageStream extends React.Component<SessoinMessageStreamPr
   }
 
   private onRowSelected = (event: any) => {
-    this.setState({ selectedRow: event.data });
-    this.props.communicator.onMessageSelected({ def: event.data.msg as any, session: this.props.session, rawMsg: event.data.rawMsg });
+    const node = this.gridApi?.getDisplayedRowAtIndex(event.rowIndex);
+
+    this.setState({ selectedRow: node?.data });
+    this.props.communicator.onMessageSelected({ def: node?.data.msg as any, session: this.props.session, rawMsg: node?.data.rawMsg });
 
     const rows = this.gridApi?.getSelectedRows();
     if (rows?.length === 2) {
       this.setState({
-        selectedRows: rows.map(row => ({
+        selectedRows: rows.map((row: any) => ({
           def: row.msg,
           rawMsg: JSON.stringify(row.msg.getValue(), null, 2),
           session: this.props.session
@@ -265,6 +267,41 @@ export class SessoinMessageStream extends React.Component<SessoinMessageStreamPr
     </div>
   }
 
+
+  private getColDef = (cols: any[]): ColDef[] => {
+    return cols.map(col => ({
+      field: col.key,
+      resizable: true,
+      key: col.key,
+      sortable: true,
+      sort: col.sort,
+      hide: col.hide ?? false,
+      type: col.type === 'number' ? 'numericColumn' : undefined,
+      headerName: col.label,
+      minWidth: col.minWidth,
+      maxWidth: col.maxWidth,
+      initialWidth: col.width || 200,
+      initialFlex: col.flex,
+      cellClass: col.className,
+      headerClass: col.headerClassName,
+      cellRenderer: this.getCellRenderer(col),
+      pinned: col.pinned,
+      lockPinned: true,
+      lockPosition: col.key === 'checked',
+      cellClassRules: {
+        'right-aligned': () => col.type === 'number',
+        'direction-cell': () => col.key === 'direction',
+        'in-cell': (params) => col.key === 'direction' && params.value === "⬇",
+        'out-cell': (params) => col.key === 'direction' && params.value === "⬆",
+      },
+      filter: true,
+      filterParams: col.filterParams,
+      suppressColumnsToolPanel: col.type === 'custom',
+      valueGetter: (params: any) => this.getValueGetter(col, params),
+      comparator: col.comparator,
+    }));
+  }
+
   render() {
     const { columnConfig, diffModeEnabled, selectedRows, input,
       output, hb, showDiffModal, showSideBySideModal, scrollLocked, minimizedMode } = this.state;
@@ -307,6 +344,17 @@ export class SessoinMessageStream extends React.Component<SessoinMessageStreamPr
       <div className="body">
         <div className="ag-theme-alpine message-table" >
           <AgGridReact
+            onGridReady={this.onGridReady}
+            rowData={this.state.rowData}
+            suppressMenuHide={false}
+            animateRows
+            rowSelection="multiple"
+            detailCellRendererParams={{ refreshStrategy: 'everything' }}
+            onCellFocused={this.onRowSelected}
+            getRowId={({ data }: any) => data.id}
+            columnDefs={this.getColDef(columnConfig)}
+          />
+          {/* <AgGridReact
             modules={AllCommunityModules}
             rowData={this.state.rowData}
             onGridReady={this.onGridReady}
@@ -341,7 +389,7 @@ export class SessoinMessageStream extends React.Component<SessoinMessageStreamPr
                 suppressMovable={true}
               />
             })}
-          </AgGridReact>
+          </AgGridReact> */}
           <MessageDiffViewer msg1={selectedRows?.[0]?.rawMsg} msg2={selectedRows?.[1]?.rawMsg} visible={showDiffModal || showSideBySideModal}
             sideBySide={showSideBySideModal}
             msgObj1={selectedRows?.[0]} msgObj2={selectedRows?.[1]}

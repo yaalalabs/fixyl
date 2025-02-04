@@ -61,6 +61,11 @@
             height: 100%;
             width: 100%;
         }
+        
+        .ag-filter-icon,
+        .ag-icon-menu {
+            display: none !important;
+        }
 
         .ag-row-odd {
             background-color: #323232;

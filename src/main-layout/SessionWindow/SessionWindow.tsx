@@ -99,7 +99,7 @@ export class SessionWindow extends React.Component<any, SessionWindowState> {
 
   private subscribeToSessionCreations() {
     this.actionSub = GlobalServiceRegistry.appManager.getSessionActionObservable().subscribe(action => {
-      if (action.type === "new" && action.profile) {
+      if (action.type === "new" && action.profile && action.profile.type !== "SERVER") {
         let session = GlobalServiceRegistry.fix.getFixSession(action.profile as ProfileWithCredentials);
         let hasSession = true;
 

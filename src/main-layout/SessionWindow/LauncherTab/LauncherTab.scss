@@ -24,7 +24,17 @@
     .launcher-actions {
         margin-top: 20px;
         width: 50%;
+        display: flex;
 
+        .clients {
+            padding-right: 25px;
+            border-right: 1px solid var(--separator-color);
+        }
+
+        .servers {
+            padding-left: 25px;
+        }
+        
         .action-title {
             font-size: 18px;
         }

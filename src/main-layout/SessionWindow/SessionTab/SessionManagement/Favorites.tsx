@@ -8,7 +8,7 @@ import { LM } from 'src/translations/language-manager';
 import { Tree, Input, Button, Popover, Tooltip, Drawer, Form, Switch } from 'antd';
 import './Favorites.scss';
 import { DeleteOutlined, EditOutlined, EyeOutlined, SendOutlined } from '@ant-design/icons';
-// import ReactJson from 'react-json-view';
+import ReactJson from 'react-json-view';
 import { FixForm } from './FixForm';
 import { Toast } from 'src/common/Toast/Toast';
 
@@ -171,7 +171,7 @@ export class Favorites extends React.Component<FavoritesProps, FavoritesState> {
                 <Popover title={getIntlMessage("message", { msg: msg.name })} placement="right"
                     trigger="click" overlayClassName="msg-view-wrapper"
                     content={<div className="msg-view">
-                        {/* <ReactJson src={msg.getValue()} theme="google" style={{ backgroundColor: "transparent" }} /> */}
+                        <ReactJson src={msg.getValue()} theme="google" style={{ backgroundColor: "transparent" }} />
                     </div>}>
                     <Tooltip title={getIntlMessage("view")}>
                         <Button className="action-btn" icon={<EyeOutlined />}></Button>

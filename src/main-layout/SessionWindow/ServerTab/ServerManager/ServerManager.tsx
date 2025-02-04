@@ -44,6 +44,7 @@ interface ServerManagerState {
 export class ServerManager extends React.Component<ServerManagerProps, ServerManagerState> {
     private formRef: any = React.createRef();
     private sessionSub?: Subscription;
+    private actionSub?: Subscription;
     private profilesSubscription?: Subscription;
 
     constructor(props: any) {
@@ -59,6 +60,7 @@ export class ServerManager extends React.Component<ServerManagerProps, ServerMan
 
     componentDidMount() {
         const { profile } = GlobalServiceRegistry;
+        this.subscribeToSessionCreations();
         this.profilesSubscription = profile.getProfileUpdateObservable().subscribe(() => {
             this.setState({ profiles: profile.getAllServerProfiles() as any })
         })
@@ -70,9 +72,22 @@ export class ServerManager extends React.Component<ServerManagerProps, ServerMan
         })
     }
 
+    private subscribeToSessionCreations() {
+        this.actionSub = GlobalServiceRegistry.appManager.getSessionActionObservable().subscribe(action => {
+            if (action.type === "new" && action.profile && action.profile.type === "SERVER") {
+                this.onStart(action.profile as any)
+                this.actionSub?.unsubscribe();
+            } else if (action.type === "new" && action.metaData === "new_server") {
+                this.onNewProfile()
+                this.actionSub?.unsubscribe();
+            }
+        })
+    }
+
     componentWillUnmount(): void {
         this.state.serverFixSession?.destroy();
         this.sessionSub?.unsubscribe();
+        this.actionSub?.unsubscribe();
         this.profilesSubscription?.unsubscribe();
     }
 

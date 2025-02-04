@@ -20,7 +20,7 @@ export enum FixFieldValueFiller {
 }
 
 export interface FixFieldOption {
-    value: string,
+    value?: string,
     displayValue: string
 }
 
@@ -43,8 +43,7 @@ export class FixFieldDef {
         }
     }
 
-    private generateFillerValue()
-    {
+    private generateFillerValue() {
         switch (this.type.toLowerCase()) {
             case "string":
             case "char":
@@ -148,6 +147,7 @@ export class FixComplexType {
     components = new Map<string, FixComplexType>();
     groups = new Map<string, FixComplexType>();
     fieldOrder: FieldOrderEntry[] = [];
+    itemIdMap = new Map<string, { name: string, type: FieldTypes, field: FixComplexType | FixFieldDef }>()
     groupInstances: any = {};
     id: string;
     msgcat?: "admin" | "app";
@@ -164,7 +164,6 @@ export class FixComplexType {
 
         xmlNode.children.forEach(child => {
             this.fieldOrder.push({ name: child.attributes.name, type: child.name as any })
-
             switch (child.name) {
                 case "field":
                     const def = this.fieldDefMap.get(child.attributes.name);
@@ -201,6 +200,44 @@ export class FixComplexType {
         return this.fieldOrder;
     }
 
+    getComponentRefs(id: string, ref: string[]): boolean {
+        let ret = false;
+        if (this.fields.get(id)) {
+            ref.push(this.name)
+            ret = true;
+        }
+
+        if (!ret && this.groups.get(id)) {
+            ref.push(this.name)
+            ret = true;
+        }
+
+        this.components.forEach((inst) => {
+            if (!ret) {
+                ret = inst.getComponentRefs(id, ref)
+            }
+        })
+
+        return ret;
+
+    }
+
+    getFieldForId(id: string): any {
+        let field = this.itemIdMap.get(id)
+
+        if (!field) {
+            const comps = Array.from(this.components.values())
+            for (let i = 0; i < comps.length; i++) {
+                field = comps[i].getFieldForId(id)
+                if (field) {
+                    break;
+                }
+            }
+        }
+
+        return field;
+    }
+
     getFieldValue(name: string): any {
         return this.value?.[name];
     }
@@ -232,12 +269,24 @@ export class FixComplexType {
                 inst.groups = new Map(Array.from(ref.groups.values()).map(comp => comp.clone()).map(i => [i.name, i]));
                 inst.requiredFields = ref.requiredFields.map(comp => comp.clone());
                 inst.fieldOrder = ref.fieldOrder;
+
+                Array.from(inst.components.values()).forEach(inst => inst.setupInternalRefs())
+                Array.from(inst.groups.values()).forEach(inst => inst.setupInternalRefs())
+
+                inst.setupInternalRefs()
             }
         });
 
         this.groups.forEach(inst => {
             inst?.resolveFields(componentMap);
         });
+
+        this.setupInternalRefs();
+    }
+
+    setupInternalRefs() {
+        this.fields.forEach(field => this.itemIdMap.set(field.def.number, { name: field.def.name, type: "field", field: field.def }))
+        this.groups.forEach(group => this.itemIdMap.set(group.id, { name: group.name, type: "group", field: group }))
     }
 }
 

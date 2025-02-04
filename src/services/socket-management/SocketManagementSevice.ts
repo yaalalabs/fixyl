@@ -90,6 +90,7 @@ export class SocketManagementSevice {
         if (socket && event.type === "disconnect") {
           this.socketMap.delete(event.id);
         }
+        return;
       }
 
       switch (event.type) {
@@ -112,7 +113,7 @@ export class SocketManagementSevice {
           (sock ? sock as SocketInst : undefined)?.publishSocketEvent({ id: event.clId, type: "error", error: event.error })
         } break;
         case "client_data": {
-          const sock = this.socketMap.get(event.clId);
+          const sock = this.socketMap.get(event.clId);          
           (sock ? sock as SocketInst : undefined)?.publishSocketEvent({ id: event.clId, type: "data", data: event.data })
         } break;
         case "disconnect":

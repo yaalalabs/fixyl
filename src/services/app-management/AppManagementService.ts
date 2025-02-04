@@ -8,6 +8,7 @@ export type SessionActionType = "new" | "destroy" | "message_viewer" | "message_
 
 export interface SessionAction {
     profile?: BaseProfile;
+    metaData?: any;
     type: SessionActionType
 }
 

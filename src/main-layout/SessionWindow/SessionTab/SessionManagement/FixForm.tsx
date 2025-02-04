@@ -140,6 +140,10 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
                         break;
                 }
 
+                if (!field.required && value === "") {
+                    return;
+                }
+
                 ret[name] = value
             })
         })

@@ -1,6 +1,6 @@
 {
 	"menu": {
-		"profile": "Profile",
+		"profile": "Clients",
 		"settings": "Settings",
 		"message_viewer": "Msg. Viewer",
 		"message_diff_viewer": "Msg. Diff",
@@ -8,8 +8,8 @@
 		"server": "Server"
 	},
 	"profile_management": {
-		"title": "Profile Management",
-		"new_profile": "New Profile",
+		"title": "Client Profile Management",
+		"new_profile": "New Client Profile",
 		"name": "Name",
 		"ip": "IP Address",
 		"port": "Port",
@@ -20,8 +20,8 @@
 		"ssl_ca_certificate": "CA Certificate (.pem)",
 		"ssl_certificate": "Certificate (.pfx)",
 		"ssl_certificate_password": "Certificate Password",
-		"new_profile_title": "Add New Profile",
-		"edit_profile_title": "Edit Profile",
+		"new_profile_title": "Add New Client Profile",
+		"edit_profile_title": "Edit Client Profile",
 		"hb_interval": "HB Interval",
 		"target_comp": "Target",
 		"sender_comp": "Sender",
@@ -72,9 +72,12 @@
 	"launcher_tab": {
 		"title": "FIXYL",
 		"sub_title": "FIXYL is a FIX test tool support creation of FIX sessions and the exchange of FIX messages. It supports standard and custom FIX dictionaries. This tool is based on Electron and can support cross-platform builds.",
-		"action_title": "Create a new profile or select an existing one",
+		"action_title": "Create a new client profile or select an existing one",
+		"action_server_title": "Create a new server profile or select an existing one",
 		"create_profile": "Create New Profile",
-		"filter": "Filter Profiles"
+		"create_server": "Create New Server",
+		"filter": "Filter Profiles",
+		"filter_server": "Filter Servers"
 	},
 	"session_tab": {},
 	"session_management": {

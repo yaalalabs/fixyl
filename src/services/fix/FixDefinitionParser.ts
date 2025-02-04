@@ -4,6 +4,24 @@ import { FixVersion } from "../profile/ProfileDefs";
 import { FixXmlNode, FixFieldDef, FixComplexType, FixField } from "./FixDefs";
 import { Parameters } from "./FixSession";
 const parser = require('xml-reader');
+function mergeIntoObject(target: any, source: any) {
+    for (const key in source) {
+        if (source.hasOwnProperty(key)) {
+            if (
+                typeof source[key] === "object" &&
+                source[key] !== null &&
+                !Array.isArray(source[key])
+            ) {
+                if (!target[key] || typeof target[key] !== "object") {
+                    target[key] = {}; // Ensure nested object exists
+                }
+                mergeIntoObject(target[key], source[key]); // Recursively merge
+            } else {
+                target[key] = source[key]; // Direct assignment for non-objects
+            }
+        }
+    }
+}
 
 export type FixMessageDef = FixComplexType;
 export const SOH = String.fromCharCode(1);
@@ -230,7 +248,7 @@ export class FixDefinitionParser {
             }
 
         })
-        
+
         return fixMsgBody;
     }
 
@@ -287,138 +305,145 @@ export class FixDefinitionParser {
         return message;
     }
 
-    private getTagValueFormGroups(message: string, tag: string, iterationIndex: number = 0, requiredField?: FixField): string | undefined {
-        let fields = message.split(SOH);
-        let index = -1;
-        let requiredIndex = -1;
-        const requiredFieldNum = requiredField?.def.number;
+
+    private getTagValue(fields: string[], tag: string): { data: string, pos: number } | undefined {
 
         for (let i = 0; i < fields.length; i++) {
             let temp = fields[i].split('=');
-
-            if (requiredFieldNum !== undefined && requiredFieldNum === temp[0]) {
-                requiredIndex++;
-            }
-
             if (tag === temp[0]) {
-                index++;
-
-                if ((requiredIndex === iterationIndex) ||
-                    (requiredFieldNum === undefined && index === iterationIndex)) {
-                    return temp[1];
-                }
+                return { data: temp[1], pos: i };
             }
         }
 
         return undefined
     }
 
-    private getTagValue(message: string, tag: string, iterationIndex: number = 0): string | undefined {
-        let fields = message.split(SOH);
-        let index = -1;
-
-        for (let i = 0; i < fields.length; i++) {
-            let temp = fields[i].split('=');
-            if (tag === temp[0]) {
-                index++;
-                if (index === iterationIndex) {
-                    return temp[1];
-                }
-            }
-        }
-
-        return undefined
-    }
-
-    private getFieldValues = (def: FixComplexType, inputData: string, fieldIterationIndex: number, withHeaders: boolean, isGroup?: boolean) => {
-        const ret: any = {};
-        const requiredField = def.requiredFields[0];
-
-        def.fields.forEach(field => {
-            let fieldValue;
-
-            if (!isGroup) {
-                fieldValue = this.getTagValue(inputData, field.def.number, fieldIterationIndex);
-            } else {
-                fieldValue = this.getTagValueFormGroups(inputData, field.def.number, fieldIterationIndex, requiredField);
-            }
-
-            this.getTagValueFormGroups(inputData, field.def.number, fieldIterationIndex, requiredField);
-            ret[`${field.def.name}${withHeaders ? `[${field.def.number}]` : ""}`] = fieldValue;
-        })
-
-        return ret;
-    }
-
-    private getGroupValues = (def: FixComplexType, inputData: string, fieldIterationIndex: number, withHeaders: boolean) => {
-        const ret: any = [];
-        const interationLen = this.getTagValue(inputData, def.id);
-
-        if (!interationLen) {
-            return undefined;
-        }
-
-        for (let i = 0; i < Number(interationLen); i++) {
-            const fieldData = this.getFieldValues(def, inputData, i, withHeaders, true)
-
-            let groupData: any = {};
-            def.groups.forEach(group => {
-                groupData[group.name] = this.getGroupValues(group, inputData, i, withHeaders);
-            })
-
-            let componentData: any = {};
-            def.components.forEach(comp => {
-                componentData[comp.name] = this.getComponentValues(comp, inputData, i, withHeaders);
-            })
-
-            ret.push({ ...fieldData, ...groupData, ...componentData })
-        }
-
-        return ret;
-    }
-
-    private getComponentValues = (def: FixComplexType, inputData: string, fieldIterationIndex: number, withHeaders: boolean) => {
-        const fieldData = this.getFieldValues(def, inputData, fieldIterationIndex, withHeaders)
-        let groupData: any = {};
-        def.groups.forEach(group => {
-            groupData[group.name] = this.getGroupValues(group, inputData, fieldIterationIndex, withHeaders);
-        })
-
-        let componentData: any = {};
-        def.components.forEach(comp => {
-            componentData[comp.name] = this.getComponentValues(comp, inputData, fieldIterationIndex, withHeaders);
-        })
-
-        return { ...fieldData, ...groupData, ...componentData };
-    }
-
-    private decodeHeader(msg: string): FixMsgHeader {
+    private decodeHeader(fields: string[]): FixMsgHeader {
         return {
-            msgType: this.getTagValue(msg, "35") ?? "",
-            senderCompId: this.getTagValue(msg, "49") ?? "",
-            targetCompId: this.getTagValue(msg, "56") ?? "",
-            time: this.getTagValue(msg, "52") ?? "",
-            sequence: Number(this.getTagValue(msg, "34")) ?? 1,
+            msgType: this.getTagValue(fields, "35")?.data ?? "",
+            senderCompId: this.getTagValue(fields, "49")?.data ?? "",
+            targetCompId: this.getTagValue(fields, "56")?.data ?? "",
+            time: this.getTagValue(fields, "52")?.data ?? "",
+            sequence: Number(this.getTagValue(fields, "34")?.data) ?? 1,
         }
     }
 
-    private decodeInternals(msgDef: FixComplexType, msg: string, withHeaders = false) {
-        const fieldData = this.getFieldValues(msgDef, msg, 0, withHeaders)
-        let groupData: any = {};
-        msgDef.groups.forEach(group => {
-            groupData[group.name] = this.getGroupValues(group, msg, 0, withHeaders);
+    private fillComponents(msgDef: FixComplexType, data: any) {
+        const ret: any = {}
+        Object.keys(data).forEach(key => {
+            const field = msgDef.fields.get(key)
+            if (field) {
+                ret[key] = data[key]
+                return;
+            }
+
+            const group = msgDef.groups.get(key)
+            if (group && Array.isArray(data[key])) {
+                
+                ret[key] = data[key].map(inst => this.fillComponents(group, inst));
+                return;
+            }
+
+            const components: string[] = []
+            msgDef.getComponentRefs(key, components)
+            if (components.length > 0) {
+                let finalRef: any = {};
+                const root = finalRef;
+                components.forEach(inst => {
+                    finalRef[inst] = {}
+                    finalRef = finalRef[inst]
+                })
+
+                finalRef[key] = data[key]
+                mergeIntoObject(ret, root)
+            }
+
+
+        })
+        return ret;
+    }
+
+    private decodeInternals(msgDef: FixComplexType, fields: string[]) {
+        const data: any = {}
+        const dataWithHeaders: any = {}
+        const defStack = [msgDef]
+
+        let currentDef = defStack[0]
+        let currentData: any = data;
+        let currentDataWithHeaders: any = dataWithHeaders;
+        let currentGroupStack: {
+            len: number, def: FixComplexType, value: { data: any, dataWithHeaders: any }[], currentRepetitionField: string,
+            parentDef: FixComplexType, parentDataObj: any, parentDataWithHeaderObj: any
+        }[] = [];
+
+        fields.forEach(inst => {
+            let keyValuePair = inst.split('=');
+            const fieldId = keyValuePair[0];
+            const fieldValue = keyValuePair[1];
+            let fieldDef: any;
+            do {
+                fieldDef = currentDef.getFieldForId(fieldId)
+
+                if (!fieldDef) {
+                    if (currentGroupStack.length > 0) {
+                        const lastGroup = currentGroupStack.pop()
+                        if (!lastGroup) {
+                            console.log("failed to load def for field", keyValuePair);
+                            return;
+                        }
+
+                        currentDef = lastGroup.parentDef;
+                        currentData = lastGroup.parentDataObj;
+                        currentDataWithHeaders = lastGroup.parentDataWithHeaderObj;
+                        currentData[lastGroup.def.name] = lastGroup.value.map(inst => inst.data);
+                        currentDataWithHeaders[`${lastGroup.def.name}[${lastGroup.def.id}]`] = lastGroup.value.map(inst => inst.dataWithHeaders);
+                    }
+                }
+
+            } while (!fieldDef && currentGroupStack.length !== 0)
+
+            switch (fieldDef?.type) {
+                case "group": {
+                    const groupDef = fieldDef.field;
+                    if (groupDef) {
+                        currentGroupStack.push({
+                            def: groupDef, len: Number(fieldValue), value: [] as any,
+                            currentRepetitionField: groupDef.getFieldOrder()[0].name,
+                            parentDef: currentDef,
+                            parentDataObj: currentData, parentDataWithHeaderObj: currentDataWithHeaders
+                        })
+
+                        defStack.push(groupDef)
+                        currentDef = defStack[defStack.length - 1]
+                        currentData = null;
+                        currentDataWithHeaders = null;
+                    }
+                    break;
+                }
+                case "field": {
+                    if (currentGroupStack.length > 0) {
+                        const currentGroup = currentGroupStack[currentGroupStack.length - 1]
+                        if (currentGroup.currentRepetitionField === fieldDef.name) {
+                            currentData = {};
+                            currentDataWithHeaders = {};
+                            currentGroup.value.push({ data: currentData, dataWithHeaders: currentDataWithHeaders })
+                        }
+                    }
+
+                    currentData[fieldDef.name] = fieldValue
+                    currentDataWithHeaders[`${fieldDef.name}[${fieldId}]`] = fieldValue;
+                } break;
+            }
+
         })
 
-        let componentData: any = {};
-        msgDef.components.forEach(comp => {
-            componentData[comp.name] = this.getComponentValues(comp, msg, 0, withHeaders)
-        })
-
-        return { ...fieldData, ...groupData, ...componentData };
+        return { data: this.fillComponents(msgDef, data), dataWithHeaders }
     }
 
     decodeFixMessage(msg: string): { msg: FixComplexType, header: FixMsgHeader } | undefined {
-        const msgType = this.getTagValue(msg, "35");
+        const fields = msg.split(SOH);
+
+        const msgType = this.getTagValue(fields, "35")?.data;
         if (!msgType) {
             console.log("Unsupported message type: ", msgType)
             return undefined;
@@ -426,14 +451,14 @@ export class FixDefinitionParser {
 
         const msgDef = this.messageTypeMap.get(msgType);
         if (msgDef) {
-            const ret = this.decodeInternals(msgDef, msg);
-            const headerRet = this.decodeInternals(msgDef, msg, true);
+            const { data, dataWithHeaders } = this.decodeInternals(msgDef, fields);
+            // const headerRet = this.decodeInternals(msgDef, msg, true);
 
             const def = msgDef.clone();
-            (def as FixComplexType).setValue(ret);
-            (def as FixComplexType).setValueWithHeaders(headerRet);
+            (def as FixComplexType).setValue(data);
+            (def as FixComplexType).setValueWithHeaders(dataWithHeaders);
 
-            return { msg: def, header: this.decodeHeader(msg) }
+            return { msg: def, header: this.decodeHeader(fields) }
         }
 
         return undefined;

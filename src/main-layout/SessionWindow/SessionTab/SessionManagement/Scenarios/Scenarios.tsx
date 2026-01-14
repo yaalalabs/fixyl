@@ -10,6 +10,7 @@ import { Button, Collapse, Popover, Form, Input, Menu, Dropdown } from 'antd';
 import { ScenarioInstance } from './ScenarioInstance';
 import { DownloadOutlined, PlusOutlined, SendOutlined, SettingOutlined } from '@ant-design/icons';
 import { Toast } from 'src/common/Toast/Toast';
+import { LogService } from 'src/services/log-management/LogService';
 
 const { Panel } = Collapse;
 
@@ -131,7 +132,7 @@ export class Scenarios extends React.Component<ScenariosProps, ScenariosState> {
 
             this.forceUpdate();
         }).catch(error => {
-            console.log("Failed to load favorites")
+            LogService.error("Failed to load scenarios")
         })
     }
 

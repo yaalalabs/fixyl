@@ -11,6 +11,7 @@ import { DeleteOutlined, EditOutlined, EyeOutlined, SendOutlined } from '@ant-de
 import ReactJson from 'react-json-view';
 import { FixForm } from './FixForm';
 import { Toast } from 'src/common/Toast/Toast';
+import { LogService } from 'src/services/log-management/LogService';
 
 const { Search } = Input;
 
@@ -126,7 +127,7 @@ export class Favorites extends React.Component<FavoritesProps, FavoritesState> {
             })
             this.setState({ favorites: Array.from(dataMap.values()), allNodes })
         }).catch(error => {
-            console.log("Failed to load favorites")
+            LogService.error("Failed to load favorites")
         })
     }
 

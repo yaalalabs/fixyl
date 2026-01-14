@@ -29,6 +29,8 @@ Building from source requires NodeJS 12 or higher. Note that this step can be in
 
 ```bash
 npm install
+or 
+npm install --legacy-peer-deps
 npm run build
 ```
 
@@ -40,6 +42,8 @@ Once the build is complete, the installer can be found inside the `dist` directo
 
 ```bash
 npm install
+or 
+npm install --legacy-peer-deps
 npm run start
 ```
 
@@ -213,6 +217,6 @@ You may contribute to this project in any of the following manners.
 
 ---
 
-Copyright 2022 [Yaala Labs](https://yaalalabs.com)
+Copyright 2026 [Yaala Labs](https://yaalalabs.com)
 
 ![yl_logo.png](doc_support/yl_logo.png)

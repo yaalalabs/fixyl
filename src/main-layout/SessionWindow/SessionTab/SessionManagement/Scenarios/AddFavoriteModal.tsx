@@ -9,6 +9,7 @@ import { GlobalServiceRegistry } from "src/services/GlobalServiceRegistry";
 import { makeCancelable } from "src/utils/utils";
 import { Spin } from 'antd';
 import { LoadingOutlined } from "@ant-design/icons";
+import { LogService } from "src/services/log-management/LogService";
 
 interface AddFavoriteModalProps {
     visible: boolean;
@@ -57,7 +58,7 @@ export class AddFavoriteModal extends React.Component<AddFavoriteModalProps, Add
                 return;
             }
             this.setState({ loading: false })
-            console.log("Failed to load favorites")
+            LogService.error("Failed to load favorites")
         })
     }
 

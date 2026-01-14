@@ -5,6 +5,7 @@ import { ServerProfile } from '../profile/ProfileDefs';
 import { ServerSideFixClientSession, SocketTimeOutError } from './FixSession';
 import { Subject } from 'rxjs';
 import moment from 'moment';
+import { LogService } from '../log-management/LogService';
 
 const { log } = console;
 
@@ -45,7 +46,7 @@ export class FixServerSession {
     }
 
     destroy() {
-        console.log("Server session destroyed");
+        LogService.log("Server session destroyed");
         this.socket?.end();
     }
 

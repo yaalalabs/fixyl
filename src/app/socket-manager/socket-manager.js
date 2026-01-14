@@ -46,7 +46,9 @@ module.exports = class SocketManager {
       });
 
       this.serverSocketClientInfo.delete(id)
-      this.allSockets[id].close()
+      if (this.allSockets[id]) {
+        this.allSockets[id].close()
+      }
       return { id, type: 'disconnect' }
     }
   }

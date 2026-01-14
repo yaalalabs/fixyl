@@ -16,6 +16,7 @@ import { ServerProfileInstance } from "./ServerProfileInstance";
 import { GlobalServiceRegistry } from "src/services/GlobalServiceRegistry";
 import Checkbox from "antd/lib/checkbox/Checkbox";
 import { ServerSideClientList } from "./ServerSideClientList";
+import { LogService } from "src/services/log-management/LogService";
 
 const { Option } = Select;
 
@@ -195,7 +196,7 @@ export class ServerManager extends React.Component<ServerManagerProps, ServerMan
 
                         serverFixSession?.connect().catch((err) => {
                             this.setState({ connecting: false })
-                            console.log(err);
+                            LogService.log(err);
                             Toast.error(getIntlMessage("msg_connection_failed_title"), getIntlMessage("msg_connection_failed_desc", { error: err.message }))
                         })
 
@@ -228,7 +229,7 @@ export class ServerManager extends React.Component<ServerManagerProps, ServerMan
         const session = new FixServerSession(profile)
         session?.connect().catch((err) => {
             this.setState({ connecting: false })
-            console.log(err);
+            LogService.log(err);
             Toast.error(getIntlMessage("msg_connection_failed_title"), getIntlMessage("msg_connection_failed_desc", { error: err.message }))
         })
 

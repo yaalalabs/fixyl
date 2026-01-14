@@ -1,56 +1,56 @@
 const log = require('electron-log');
 
+const originalConsoleLog = console.log;
+
 // Override console.log
 console.log = function (...args) {
   const timestamp = new Date().toISOString();
   try {
-
+    const message = `[${timestamp}] ${args.join(' ')}`;    
+    log.debug(message);
   } catch(err) {
     
   }
-  const message = `[${timestamp}] ${args.join(' ')}`;
-  
-  log.debug(message);
 
-//   originalConsoleLog(`[${timestamp}] `, ...args);
+  originalConsoleLog(`[${timestamp}] `, ...args);
 };
 
+
 // Override console.log
+const originalConsoleWarn = console.warn;
 console.warn = function (...args) {
   const timestamp = new Date().toISOString();
   try {
-
+    const message = `[${timestamp}] ${args.join(' ')}`; 
+    log.warn(message);
   } catch(err) {
     
   }
-  const message = `[${timestamp}] ${args.join(' ')}`;
-  
-  log.warn(message);
-
+  originalConsoleWarn(`[${timestamp}] `, ...args);
 };
 
 // Override console.log
+const originalConsoleInfo = console.info;
 console.info = function (...args) {
   const timestamp = new Date().toISOString();
   try {
-
+    const message = `[${timestamp}] ${args.join(' ')}`;  
+    log.info(message);
   } catch(err) {
     
   }
-  const message = `[${timestamp}] ${args.join(' ')}`;
-  
-  log.info(message);
+  originalConsoleInfo(`[${timestamp}] `, ...args);
 };
 
 // Override console.log
+const originalConsoleError = console.error;
 console.error = function (...args) {
   const timestamp = new Date().toISOString();
   try {
-
+    const message = `[${timestamp}] ${args.join(' ')}`;
+    log.error(message);
   } catch(err) {
     
   }
-  const message = `[${timestamp}] ${args.join(' ')}`;
-  
-  log.error(message);
+  originalConsoleError(`[${timestamp}] `, ...args);
 };

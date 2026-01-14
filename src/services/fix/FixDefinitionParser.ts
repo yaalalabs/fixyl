@@ -3,6 +3,7 @@ import { GlobalServiceRegistry } from "../GlobalServiceRegistry";
 import { FixVersion } from "../profile/ProfileDefs";
 import { FixXmlNode, FixFieldDef, FixComplexType, FixField } from "./FixDefs";
 import { Parameters } from "./FixSession";
+import { LogService } from "../log-management/LogService";
 const parser = require('xml-reader');
 function mergeIntoObject(target: any, source: any) {
     for (const key in source) {
@@ -237,10 +238,12 @@ export class FixDefinitionParser {
                     const groupDef = msgDef.groups.get(inst.name);
                     if (groupDef) {
                         const arrayData = data[inst.name] as any[];
-                        fixMsgBody += `${msgFieldDef.number}=${arrayData.length}${SOH}`;
-                        arrayData.forEach(inst => {
-                            fixMsgBody += this.encodeToFixBody(groupDef, inst, parameters)
-                        })
+                        if (arrayData.length > 0) {
+                            fixMsgBody += `${msgFieldDef.number}=${arrayData.length}${SOH}`;
+                            arrayData.forEach(inst => {
+                                fixMsgBody += this.encodeToFixBody(groupDef, inst, parameters)
+                            })
+                        }
                     }
                     break;
                 default:
@@ -339,7 +342,7 @@ export class FixDefinitionParser {
 
             const group = msgDef.groups.get(key)
             if (group && Array.isArray(data[key])) {
-                
+
                 ret[key] = data[key].map(inst => this.fillComponents(group, inst));
                 return;
             }
@@ -388,7 +391,7 @@ export class FixDefinitionParser {
                     if (currentGroupStack.length > 0) {
                         const lastGroup = currentGroupStack.pop()
                         if (!lastGroup) {
-                            console.log("failed to load def for field", keyValuePair);
+                            LogService.error("failed to load def for field", keyValuePair);
                             return;
                         }
 
@@ -445,7 +448,7 @@ export class FixDefinitionParser {
 
         const msgType = this.getTagValue(fields, "35")?.data;
         if (!msgType) {
-            console.log("Unsupported message type: ", msgType)
+            LogService.error("Unsupported message type: ", msgType)
             return undefined;
         }
 

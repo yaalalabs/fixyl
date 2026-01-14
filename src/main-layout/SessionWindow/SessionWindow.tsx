@@ -13,6 +13,7 @@ import { MessageDiffViewerTab } from './MessageDiffViewerTab/MessageDiffViewerTa
 import { Subscription } from 'rxjs';
 import { ServerTab } from './ServerTab/ServerTab';
 import { ProfileWithCredentials } from 'src/services/profile/ProfileDefs';
+import { LogService } from 'src/services/log-management/LogService';
 
 export const Title: FC<{ node: any }> = ({ node }) => {
   const config: { session: FixSession } | undefined = node.getConfig();
@@ -110,9 +111,9 @@ export class SessionWindow extends React.Component<any, SessionWindowState> {
 
         if (!hasSession) {
           session.connect().catch((err) => {
-            console.log(err);
+            LogService.log(err);
             Toast.error(getIntlMessage("msg_connection_failed_title"), getIntlMessage("msg_connection_failed_desc", { error: err.message }))
-            console.log("Failed to connect to fix session", action.profile)
+            LogService.error("Failed to connect to fix session", action.profile)
           })
 
           const communicator = new IntraTabCommunicator();

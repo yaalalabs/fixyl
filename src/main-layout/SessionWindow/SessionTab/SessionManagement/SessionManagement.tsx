@@ -12,6 +12,7 @@ import { Favorites } from './Favorites';
 import { Scenarios } from './Scenarios/Scenarios';
 import { NewMessageFromRaw } from './NewMessageFromRaw';
 import { Subscription } from 'rxjs';
+import { LogService } from 'src/services/log-management/LogService';
 
 const { TabPane } = Tabs;
 
@@ -90,7 +91,7 @@ export class SessionManagement extends React.Component<SessionManagementProps, S
 
             (session as FixSession).connect().catch((err) => {
               this.setState({ connecting: false })
-              console.log(err);
+              LogService.error('Failed to connect to fix session', err);
               Toast.error(getIntlMessage("msg_connection_failed_title"), getIntlMessage("msg_connection_failed_desc", { error: err.message }))
             })
 

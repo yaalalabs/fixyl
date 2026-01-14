@@ -140,6 +140,7 @@
 	},
 	"session_message_view": {
 		"title": "Message View",
+		"search": "Search Field",
 		"message": "Message: { msg }",
 		"tag": "Tag",
 		"name": "Name",

@@ -1,12 +1,13 @@
-import { Skeleton } from 'antd';
+import { Form, Input, Skeleton } from 'antd';
 import React from 'react';
 import { SOH } from 'src/services/fix/FixDefinitionParser';
-import { FixFieldDef } from 'src/services/fix/FixDefs';
+import { FixFieldDef, FixFieldOption } from 'src/services/fix/FixDefs';
 import { LM } from 'src/translations/language-manager';
 import { removeFalsyKeys } from 'src/utils/utils';
 import { FixCommMsg, } from '../IntraTabCommunicator';
 import './MessageView.scss';
-
+const { v4: uuidv4 } = require('uuid');
+const Mark = require("mark.js");
 
 const getIntlMessage = (msg: string, options?: any) => {
   return LM.getMessage(`session_message_view.${msg}`, options);
@@ -18,6 +19,10 @@ interface MessageViewProps {
 }
 
 export class MessageView extends React.Component<MessageViewProps, any> {
+  private searchFormRef: any = React.createRef();
+  private markInstance: any;
+  private martkUpdateTimeout: any;
+  private componentKey = uuidv4();
 
 
   private isEmpty = (value: any) => {
@@ -31,7 +36,7 @@ export class MessageView extends React.Component<MessageViewProps, any> {
     return def && ["multiplevaluestring", "multiplecharvalue"].indexOf(def.type.toLowerCase()) > -1
   }
 
-  private getValueFromOptions = (options: { value: string, displayValue: string }[], value: string) => {
+  private getValueFromOptions = (options: FixFieldOption[], value: string) => {
     const option = options.filter(inst => inst.value === value)[0];
     if (option) {
       return option.displayValue;
@@ -113,7 +118,43 @@ export class MessageView extends React.Component<MessageViewProps, any> {
 
       {selectedMsg && <div className="message-wrapper">
         <div className="title">{getIntlMessage("message", { msg: selectedMsg.def.name })}</div>
-        {!this.isEmpty(selectedMsg.def.getValue()) ? this.renderValues(selectedMsg.def.getValue()) : <div className="no-data">{getIntlMessage("no_data")}</div>}
+        <div className="field-search">
+          <Form ref={this.searchFormRef}>
+            <Form.Item name="search">
+              <Input placeholder={getIntlMessage("search")} onChange={(e) => {
+                this.setState({ searchText: e.target.value, markedItems: [], currentMarkedIndex: undefined }, () => {
+                  clearTimeout(this.martkUpdateTimeout);
+                  const itemArray: any[] = [];
+
+                  this.markInstance = new Mark(document.querySelector(`#search-node-msg-view${this.componentKey}`));
+                  this.markInstance.unmark({
+                    done: () => {
+                      this.markInstance.mark(this.state.searchText, {
+                        each: (data: any) => {
+                          clearTimeout(this.martkUpdateTimeout);
+                          itemArray.push(data);
+
+                          this.martkUpdateTimeout = setTimeout(() => {
+                            let currentMarkedIndex = undefined;
+                            if (itemArray.length > 0) {
+                              currentMarkedIndex = 0;
+                              itemArray[0].scrollIntoView();
+                            }
+
+                            this.setState({ markedItems: itemArray, currentMarkedIndex })
+                          })
+                        },
+                      });
+                    }
+                  });
+                });
+
+              }} />
+            </Form.Item>
+          </Form>
+        </div>
+        {!this.isEmpty(selectedMsg.def.getValue()) ? <div id={`search-node-msg-view${this.componentKey}`}>{this.renderValues(selectedMsg.def.getValue())}</div>
+          : <div className="no-data">{getIntlMessage("no_data")}</div>}
       </div>}
 
       {selectedMsg && !hideRawMsg && <div className="raw-message-wrapper">

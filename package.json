@@ -1,6 +1,6 @@
 {
   "name": "fixyl",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "private": true,
   "dependencies": {
     "ag-grid-community": "29.3.5",

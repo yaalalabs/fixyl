@@ -90,7 +90,7 @@ export abstract class BaseClientFixSession {
             path: profile.dictionaryLocation,
             transportDicPath: profile.transportDictionaryLocation,
             fixVersion: profile.fixVersion
-        }, () => {
+        }, GlobalServiceRegistry.fileManger, () => {
             this.parserInitialized = true;
             this.evaluteAndSendReady();
         });

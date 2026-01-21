@@ -5,7 +5,8 @@ import { FileSelect } from "src/common/FileSelect/FileSelect";
 import { IntraTabCommunicator } from "src/common/IntraTabCommunicator";
 import { FixServerSession } from "src/services/fix/FixServerSession";
 import { BaseClientFixSession, ServerSideFixClientSession } from "src/services/fix/FixSession";
-import { FixVersion, ServerProfile } from "src/services/profile/ProfileDefs";
+import { ServerProfile } from "src/services/profile/ProfileDefs";
+import { FixVersion } from "src/services/fix/FixDefs";
 import { ApiOutlined, PlusOutlined, SendOutlined, StopOutlined } from '@ant-design/icons';
 import { LM } from "src/translations/language-manager";
 import "./ServerManager.scss"

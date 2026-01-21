@@ -9,7 +9,7 @@ import { Toast } from 'src/common/Toast/Toast';
 import { EyeOutlined } from '@ant-design/icons';
 import { FixSession } from 'src/services/fix/FixSession';
 import { FileSelect } from 'src/common/FileSelect/FileSelect';
-import { FixVersion } from 'src/services/profile/ProfileDefs';
+import { FixVersion } from 'src/services/fix/FixDefs';
 import { GlobalServiceRegistry } from 'src/services/GlobalServiceRegistry';
 
 const { Option } = Select;

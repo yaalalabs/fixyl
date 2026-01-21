@@ -1,6 +1,17 @@
 import moment from "moment";
-import { Parameters } from "./FixSession";
 const { v4: uuidv4 } = require('uuid');
+
+export interface Parameter {
+    value: any;
+    count?: number;
+}
+
+export type Parameters = { [key: string]: Parameter };
+
+export enum FixVersion {
+    FIX_4 = "4",
+    FIX_5 = "5",
+}
 
 export interface FixXmlNode {
     name: string; // element name (empty for text nodes)
@@ -235,6 +246,16 @@ export class FixComplexType {
             }
         }
 
+        if (!field) {
+            const groups = Array.from(this.groups.values())
+            for (let i = 0; i < groups.length; i++) {
+                field = groups[i].getFieldForId(id)
+                if (field) {
+                    break;
+                }
+            }
+        }
+
         return field;
     }
 
@@ -260,7 +281,12 @@ export class FixComplexType {
         return ret;
     }
 
-    resolveFields(componentMap: Map<string, FixComplexType>) {
+    resolveFields(componentMap: Map<string, FixComplexType>, visited = new Set<FixComplexType>()) {
+        if (visited.has(this)) {
+            return;
+        }
+        visited.add(this);
+
         this.components.forEach(inst => {
             const ref = componentMap.get(inst.name);
             if (ref) {
@@ -269,24 +295,34 @@ export class FixComplexType {
                 inst.groups = new Map(Array.from(ref.groups.values()).map(comp => comp.clone()).map(i => [i.name, i]));
                 inst.requiredFields = ref.requiredFields.map(comp => comp.clone());
                 inst.fieldOrder = ref.fieldOrder;
-
-                Array.from(inst.components.values()).forEach(inst => inst.setupInternalRefs())
-                Array.from(inst.groups.values()).forEach(inst => inst.setupInternalRefs())
-
-                inst.setupInternalRefs()
             }
         });
 
         this.groups.forEach(inst => {
-            inst?.resolveFields(componentMap);
+            inst?.resolveFields(componentMap, visited);
         });
 
-        this.setupInternalRefs();
+        this.components.forEach(inst => {
+            inst.resolveFields(componentMap, visited);
+        });
+
+        this.setupInternalRefsRecursive();
     }
 
     setupInternalRefs() {
         this.fields.forEach(field => this.itemIdMap.set(field.def.number, { name: field.def.name, type: "field", field: field.def }))
         this.groups.forEach(group => this.itemIdMap.set(group.id, { name: group.name, type: "group", field: group }))
+    }
+
+    private setupInternalRefsRecursive(visited = new Set<FixComplexType>()) {
+        if (visited.has(this)) {
+            return;
+        }
+        visited.add(this);
+
+        this.setupInternalRefs();
+        this.components.forEach(comp => comp.setupInternalRefsRecursive(visited));
+        this.groups.forEach(group => group.setupInternalRefsRecursive(visited));
     }
 }
 

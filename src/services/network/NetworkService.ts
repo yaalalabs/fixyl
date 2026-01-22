@@ -1,3 +1,5 @@
+import { LogService } from "../log-management/LogService";
+
 export interface NetworkResponse {
   requestId: number;
   payload?: any;
@@ -31,10 +33,10 @@ export class NetworkService {
           this.requestMap.get(parsedResponse.requestId)?.reject(parsedResponse);
         }
         else {
-          console.log('Unsupported response in network service.', parsedResponse);
+          LogService.error('Unsupported response in network service.', parsedResponse);
         }
       } catch (error) {
-        console.log('Failed to parse response in network service.', error);
+        LogService.error('Failed to parse response in network service.', error);
       }
     });
   }

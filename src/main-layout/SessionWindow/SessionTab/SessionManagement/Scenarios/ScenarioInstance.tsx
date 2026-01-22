@@ -1,5 +1,5 @@
 
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Subscription } from 'rxjs';
 import { FixSession, FixSessionEventType, } from 'src/services/fix/FixSession';
 import { LM } from 'src/translations/language-manager';
@@ -29,6 +29,7 @@ const AddStageForm = ({ togglePopover, onAdded, value }: {
     value?: any
 }) => {
     const formRef: any = useRef(null);
+    const [waitIndefinitely, setWaitIndefinitely] = useState(value?.waitIndefinitely ?? false);
 
     const checkFormHasErrors = (): boolean => {
         const fields = formRef.current?.getFieldsError() ?? [];
@@ -50,6 +51,14 @@ const AddStageForm = ({ togglePopover, onAdded, value }: {
             }}>✕</div>
         </div>
         <Form initialValues={value} ref={formRef} layout="vertical" className="add-new-stage-form"
+            onValuesChange={(changedValues, allValues) => {
+                if (allValues.waitIndefinitely) {
+                    setWaitIndefinitely(true);
+                    formRef.current?.setFieldsValue({ waitTime: undefined, stageWaitTime: undefined });
+                } else {
+                    setWaitIndefinitely(false);
+                }
+            }}
             onFinish={(values) => {
                 onAdded(values)
                 formRef.current?.resetFields();
@@ -61,10 +70,13 @@ const AddStageForm = ({ togglePopover, onAdded, value }: {
                     <Input />
                 </Form.Item>
                 <Form.Item name="waitTime" label={getIntlMessage("wait_time")}>
-                    <InputNumber />
+                    <InputNumber disabled={waitIndefinitely} />
                 </Form.Item>
                 <Form.Item name="stageWaitTime" label={getIntlMessage("stage_wait_time")}>
-                    <InputNumber />
+                    <InputNumber disabled={waitIndefinitely} />
+                </Form.Item>
+                <Form.Item name="waitIndefinitely" label={getIntlMessage("wait_indefinitely")} className="wait-indefinitely-item" valuePropName="checked">
+                    <Checkbox />
                 </Form.Item>
             </div>
             <div style={{ textAlign: "center" }}>
@@ -98,6 +110,7 @@ const SortableItem = SortableElement<any>(({ stage }: {
 
 interface CustomSortableContainerProps extends SortableContainerProps {
     togglePopover: (stage: boolean) => void;
+    children: React.ReactNode;
 }
 
 
@@ -190,7 +203,8 @@ export class ScenarioInstance extends React.Component<ScenarioInstanceProps, Sce
             <Popover
                 content={<AddStageForm togglePopover={() => this.toggleEditPopover("")} value={{
                     name: stage.name, waitTime: stage.getWaitTime(),
-                    stageWaitTime: stage.getStageWaitTime()
+                    stageWaitTime: stage.getStageWaitTime(),
+                    waitIndefinitely: stage.isWaitIndefinitely()
                 }}
                     onAdded={(data) => { this.onEditStage(stage, data.name, data.waitTime, data.stageWaitTime) }} />}
                 title={getIntlMessage("edit_stage").toUpperCase()}
@@ -320,8 +334,8 @@ export class ScenarioInstance extends React.Component<ScenarioInstanceProps, Sce
         this.setState({ sortStagesVisible: state })
     }
 
-    private onAddNewStage = (name: string, waitTime: number, stageWaitTime: number) => {
-        this.props.scenario.addStage(name, waitTime, false, stageWaitTime);
+    private onAddNewStage = (name: string, waitTime: number, stageWaitTime: number, waitIndefinitely?: boolean,) => {
+        this.props.scenario.addStage(name, waitTime, false, stageWaitTime, waitIndefinitely);
         this.setState({ addMsgVisible: false })
         this.forceUpdate();
     }
@@ -338,7 +352,7 @@ export class ScenarioInstance extends React.Component<ScenarioInstanceProps, Sce
         return <React.Fragment>
             <div className="add-btn">
                 <Popover
-                    content={<AddStageForm togglePopover={this.toggleNewStagePopover} onAdded={(data) => { this.onAddNewStage(data.name, data.waitTime, data.stageWaitTime) }} />}
+                    content={<AddStageForm togglePopover={this.toggleNewStagePopover} onAdded={(data) => { this.onAddNewStage(data.name, data.waitTime, data.stageWaitTime, data.waitIndefinitely) }} />}
                     title={getIntlMessage("add_new_stage").toUpperCase()}
                     placement="top"
                     visible={addStageVisible}

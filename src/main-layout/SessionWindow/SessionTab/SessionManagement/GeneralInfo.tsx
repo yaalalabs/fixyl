@@ -9,6 +9,7 @@ import './GeneralInfo.scss';
 import { GlobalServiceRegistry } from 'src/services/GlobalServiceRegistry';
 import { makeCancelable } from 'src/utils/utils';
 import { SessionParamsForm } from './SessionParamsForm';
+import { LogService } from 'src/services/log-management/LogService';
 
 const getIntlMessage = (msg: string) => {
     return LM.getMessage(`session_management.${msg}`);
@@ -30,7 +31,7 @@ const AutoLoginForm = ({ onChange, session, togglePopover }: {
             if (error.isCanceled) {
                 return;
             }
-            console.log("Failed to load favorites")
+            LogService.error("Failed to load favorites")
         })
 
         return () => {

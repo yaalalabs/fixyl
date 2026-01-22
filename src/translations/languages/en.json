@@ -140,6 +140,7 @@
 	},
 	"session_message_view": {
 		"title": "Message View",
+		"search": "Search Field",
 		"message": "Message: { msg }",
 		"tag": "Tag",
 		"name": "Name",
@@ -212,6 +213,7 @@
 		"add": "Add",
 		"stage_name": "Stage Name",
 		"wait_time": "Response Wait Time (Seconds)",
+		"wait_indefinitely": "Wait Indefinitely",
 		"stage_wait_time": "Stage Wait Time (Seconds)",
 		"add_new_message": "Find Message",
 		"no_message_selected": "No Message Selected",

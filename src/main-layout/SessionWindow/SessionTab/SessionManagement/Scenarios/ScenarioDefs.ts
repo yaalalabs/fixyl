@@ -19,19 +19,26 @@ export class Stage {
     private startListening = false;
     private waitTimer: any;
     private stageWaitTimerPrmise?: CancelablePromise;
-    private waitTime = DEFAULT_WAIT_TIME;
-    private stageWaitTime = 0;
+    private waitTime? = DEFAULT_WAIT_TIME;
+    private stageWaitTime? = 0;
     private failedReason?: string;
     private sessionSub?: Subscription;
     private eventSubject = new Subject<"UPDATE" | "DONE">();
     private doneCB?: () => void;
     private skipped = false;
     private waitingState = false;
+    private waitIndefinitely = false;
 
-    constructor(public name: string, private session: BaseClientFixSession, private onCaptureParam: (param: string, value: any) => void, waitTime?: number, stageWaitTime?: number) {
+    constructor(public name: string, private session: BaseClientFixSession, private onCaptureParam: (param: string, value: any) => void, waitTime?: number,
+        stageWaitTime?: number, waitIndefinitely?: boolean) {
         this.subscribeToSession();
         this.setWaitTime(waitTime);
         this.setStageWaitTime(stageWaitTime);
+        this.waitIndefinitely = waitIndefinitely ?? false;
+    }
+
+    isWaitIndefinitely() {
+        return this.waitIndefinitely;
     }
 
     getEventObservable() {
@@ -51,6 +58,11 @@ export class Stage {
     }
 
     setStageWaitTime(time?: number) {
+        if (this.waitIndefinitely) {
+            this.stageWaitTime = undefined;
+            return;
+        }
+
         if (time === undefined) {
             this.stageWaitTime = 0;
         } else {
@@ -59,6 +71,11 @@ export class Stage {
     }
 
     setWaitTime(time?: number) {
+        if (this.waitIndefinitely) {
+            this.waitTime = undefined;
+            return;
+        }
+
         if (time === undefined) {
             this.waitTime = DEFAULT_WAIT_TIME;
         } else {
@@ -277,8 +294,8 @@ export class Stage {
     getDataToSave(): SaveFileStageStructure | undefined {
         return {
             name: this.name,
-            waitTime: (this.waitTime / 1000),
-            stageWaitTime: (this.stageWaitTime / 1000),
+            waitTime: this.waitTime ? (this.waitTime / 1000) : undefined,
+            stageWaitTime: this.stageWaitTime ? (this.stageWaitTime / 1000) : undefined,
             skipped: this.skipped,
             inputMsg: this.inputMsg ? { name: this.inputMsg.name, data: JSON.stringify(this.inputMsg.getValue()) } : undefined,
             outputMsgs: Array.from(this.outputMsgs.values()).map(inst => ({ name: inst.msg.name, data: JSON.stringify(inst.msg.getValue()) }))
@@ -290,11 +307,11 @@ export class Stage {
     }
 
     getWaitTime() {
-        return this.waitTime / 1000
+        return this.waitTime ? (this.waitTime / 1000) : undefined
     }
 
     getStageWaitTime() {
-        return this.stageWaitTime / 1000
+        return this.stageWaitTime ? (this.stageWaitTime / 1000) : undefined
     }
 
     stop(reset?: boolean) {
@@ -313,13 +330,22 @@ export class Stage {
             this.doneCB?.();
         }
 
+        if (this.waitIndefinitely) {
+            clean();
+            return;
+        }
+
         this.stageWaitTimerPrmise?.promise.then(() => clean()).catch(() => clean())
     }
 
     private startTimer() {
+        if (!this.waitTime) {
+            return;
+        }
+
         this.waitTimer = setTimeout(() => {
             this.state = "FAILED";
-            this.failedReason = getIntlMessage("msg_timeout", { time: this.waitTime / 1000 })
+            this.failedReason = getIntlMessage("msg_timeout", { time: this.waitTime! / 1000 })
         }, this.waitTime)
     }
 
@@ -329,6 +355,10 @@ export class Stage {
     }
 
     private startStageWaitTimer() {
+        if (!this.stageWaitTime) {
+            return;
+        }
+
         this.stageWaitTimerPrmise = makeCancelable(new Promise((resolve, reject) => {
             this.setWaitingState(true);
 
@@ -341,7 +371,7 @@ export class Stage {
 }
 
 interface SaveFileStageStructure {
-    name: string, waitTime: number, skipped: boolean, stageWaitTime?: number,
+    name: string, waitTime?: number, skipped: boolean, stageWaitTime?: number, waitIndefinitely?: boolean,
     inputMsg?: { name: string, data: string }, outputMsgs: { name: string, data: string }[]
 }
 interface SaveFileStructure {
@@ -375,19 +405,19 @@ export class Scenario {
     loadFromFile(data: string) {
         const obj: SaveFileStructure = JSON.parse(data);
         obj.stages.forEach(inst => {
-            const stage = this.addStage(inst.name, inst.waitTime, true, inst.stageWaitTime);
+            const stage = this.addStage(inst.name, inst.waitTime ?? undefined, true, inst.stageWaitTime ?? undefined, inst.waitIndefinitely ?? undefined);
             stage.loadFromFile(inst);
         })
     }
 
-    addStage(name: string, waitTime: number, mute = false, stageWaitTime?: number) {
+    addStage(name: string, waitTime?: number, mute = false, stageWaitTime?: number, waitIndefinitely?: boolean) {
         const stage = new Stage(name, this.session, (param: string, value: any) => {
             if (!this.parameters[param]) {
                 this.parameters[param] = { value }
             } else {
                 this.parameters[param].value = value;
-            }            
-        }, waitTime, stageWaitTime);
+            }
+        }, waitTime, stageWaitTime, waitIndefinitely);
         this.stages.push({ stage, sub: stage.getEventObservable().subscribe(() => this.stageUpdatedSubject.next()) });
         if (!mute) {
             this.stageUpdatedSubject.next();

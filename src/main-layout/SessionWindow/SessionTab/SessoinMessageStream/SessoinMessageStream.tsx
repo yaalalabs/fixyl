@@ -108,9 +108,9 @@ export class SessoinMessageStream extends React.Component<SessoinMessageStreamPr
         })
 
         if (this.state.scrollLocked) {
-          setImmediate(() => {
+          setTimeout(() => {
             addedRow?.add[0].rowIndex && this.gridApi?.ensureIndexVisible(addedRow?.add[0].rowIndex, 'bottom');
-          })
+          }, 0)
         }
 
       }

@@ -1,7 +1,4 @@
-export enum FixVersion {
-    FIX_4 = "4",
-    FIX_5 = "5",
-}
+import { FixVersion } from "../fix/FixDefs";
 
 export interface BaseProfile {
     type?: "CLIENT" | "SERVER",

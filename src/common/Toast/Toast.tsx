@@ -5,6 +5,7 @@ import {
     CheckCircleFilled, InfoCircleFilled, CloseOutlined,
     WarningFilled, CloseCircleFilled
 } from '@ant-design/icons';
+import { LogService } from "src/services/log-management/LogService";
 
 
 const getPlacement = (): "topLeft" | "topRight" | "bottomLeft" | "bottomRight" => {
@@ -97,7 +98,7 @@ export class Toast {
             placement: getPlacement(),
             onClose: () => notificationKey ? onClose(notificationKey) : undefined
         });
-        console.log(`${messageHeading}: ${messageBody}`);
+        LogService.info(`${messageHeading}: ${messageBody}`);
     }
 
     static warn = (messageHeading: string, messageBody?: any, duration?: number, key?: string) => {
@@ -118,7 +119,7 @@ export class Toast {
             placement: getPlacement(),
             onClose: () => notificationKey ? onClose(notificationKey) : undefined
         });
-        console.warn(`${messageHeading}: ${messageBody}`);
+        LogService.warn(`${messageHeading}: ${messageBody}`);
     }
 
     static error = (messageHeading: string, messageBody?: any, duration?: number, key?: string) => {
@@ -139,6 +140,6 @@ export class Toast {
             placement: getPlacement(),
             onClose: () => notificationKey ? onClose(notificationKey) : undefined
         });
-        console.error(`${messageHeading}: ${messageBody}`);
+        LogService.error(`${messageHeading}: ${messageBody}`);
     }
 }

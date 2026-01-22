@@ -12,6 +12,7 @@ import { BaseClientFixSession, FixMessage, FixSession } from 'src/services/fix/F
 import { GlobalServiceRegistry } from 'src/services/GlobalServiceRegistry';
 import { LM } from 'src/translations/language-manager';
 import "./FixForm.scss";
+import { LogService } from 'src/services/log-management/LogService';
 
 const Mark = require("mark.js");
 
@@ -218,10 +219,11 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
 
         GlobalServiceRegistry.favoriteManager.addToFavorites((session as FixSession).profile, message, name, ret).then(() => {
             this.setState({ saving: false })
+            LogService.log('Add to favorites successful', name);
             Toast.success(getIntlMessage("msg_saving_success_title"), getIntlMessage("msg_saving_success", { name }))
         }).catch(error => {
             this.setState({ saving: false })
-            console.log('Saving failed', error);
+            LogService.error('Saving failed', error);
             Toast.error(getIntlMessage("msg_saving_failed_title"), getIntlMessage("msg_saving_failed"))
         });
     }

@@ -1,9 +1,9 @@
+
 import { removeFalsyKeys } from "src/utils/utils";
-import { GlobalServiceRegistry } from "../GlobalServiceRegistry";
-import { FixVersion } from "../profile/ProfileDefs";
-import { FixXmlNode, FixFieldDef, FixComplexType, FixField } from "./FixDefs";
-import { Parameters } from "./FixSession";
+import { FixVersion, FixXmlNode, FixFieldDef, FixComplexType, FixField, Parameters } from "./FixDefs";
+
 const parser = require('xml-reader');
+
 function mergeIntoObject(target: any, source: any) {
     for (const key in source) {
         if (source.hasOwnProperty(key)) {
@@ -25,6 +25,7 @@ function mergeIntoObject(target: any, source: any) {
 
 export type FixMessageDef = FixComplexType;
 export const SOH = String.fromCharCode(1);
+
 const EXCLUDED_HEADERS = ["BeginString", "BodyLength", "MsgType", "SenderCompID", "TargetCompID", "MsgSeqNum", "SendingTime"];
 export interface FixMsgHeader {
     msgType: string;
@@ -37,17 +38,18 @@ export interface FixMsgHeader {
 export class FixDefinitionParser {
     private VERSION = 'FIX.4.4';
     private BEGIN_STRING = '8=' + this.VERSION;
-    private fileManager = GlobalServiceRegistry.fileManger;
     private messageMap = new Map<string, FixComplexType>();
     private messageTypeMap = new Map<string, FixComplexType>();
     private fieldMap = new Map<string, FixFieldDef>();
     private componentMap = new Map<string, FixComplexType>();
     private headerFields = new Map<string, { field: FixComplexType | FixField, type: "field" | "component" | "group" }>();
+    private headerTagIds?: Set<string>;
 
     constructor(private readonly dictionaryInfo: {
         path: string,
-        fixVersion: FixVersion, transportDicPath?: string
-    }, private readyCB: () => void) {
+        fixVersion: FixVersion,
+        transportDicPath?: string,
+    }, private fileManager: { readFile: (path: string) => Promise<any> }, private readyCB: () => void) {
 
         this.parseDefinition();
     }
@@ -237,10 +239,12 @@ export class FixDefinitionParser {
                     const groupDef = msgDef.groups.get(inst.name);
                     if (groupDef) {
                         const arrayData = data[inst.name] as any[];
-                        fixMsgBody += `${msgFieldDef.number}=${arrayData.length}${SOH}`;
-                        arrayData.forEach(inst => {
-                            fixMsgBody += this.encodeToFixBody(groupDef, inst, parameters)
-                        })
+                        if (arrayData.length > 0) {
+                            fixMsgBody += `${msgFieldDef.number}=${arrayData.length}${SOH}`;
+                            arrayData.forEach(inst => {
+                                fixMsgBody += this.encodeToFixBody(groupDef, inst, parameters)
+                            })
+                        }
                     }
                     break;
                 default:
@@ -339,8 +343,8 @@ export class FixDefinitionParser {
 
             const group = msgDef.groups.get(key)
             if (group && Array.isArray(data[key])) {
-                
-                ret[key] = data[key].map(inst => this.fillComponents(group, inst));
+
+                ret[key] = data[key].map((inst: any) => this.fillComponents(group, inst));
                 return;
             }
 
@@ -363,81 +367,227 @@ export class FixDefinitionParser {
         return ret;
     }
 
-    private decodeInternals(msgDef: FixComplexType, fields: string[]) {
-        const data: any = {}
-        const dataWithHeaders: any = {}
-        const defStack = [msgDef]
+    private tokenizeFields(fields: string[]): { id: string, value: string }[] {
+        const tokens: { id: string, value: string }[] = [];
+        fields.forEach(raw => {
+            if (!raw) {
+                return;
+            }
+            const sep = raw.indexOf('=');
+            if (sep <= 0) {
+                return;
+            }
+            const id = raw.substring(0, sep);
+            const value = raw.substring(sep + 1);
+            tokens.push({ id, value });
+        });
+        return tokens;
+    }
 
-        let currentDef = defStack[0]
-        let currentData: any = data;
-        let currentDataWithHeaders: any = dataWithHeaders;
-        let currentGroupStack: {
-            len: number, def: FixComplexType, value: { data: any, dataWithHeaders: any }[], currentRepetitionField: string,
-            parentDef: FixComplexType, parentDataObj: any, parentDataWithHeaderObj: any
-        }[] = [];
+    private collectTagIds(def: FixComplexType, tags: Set<string>, visited = new Set<FixComplexType>()) {
+        if (visited.has(def)) {
+            return;
+        }
+        visited.add(def);
 
-        fields.forEach(inst => {
-            let keyValuePair = inst.split('=');
-            const fieldId = keyValuePair[0];
-            const fieldValue = keyValuePair[1];
-            let fieldDef: any;
-            do {
-                fieldDef = currentDef.getFieldForId(fieldId)
+        def.fields.forEach(field => tags.add(field.def.number));
+        def.groups.forEach(group => {
+            tags.add(group.id);
+            this.collectTagIds(group, tags, visited);
+        });
+        def.components.forEach(comp => this.collectTagIds(comp, tags, visited));
+    }
 
-                if (!fieldDef) {
-                    if (currentGroupStack.length > 0) {
-                        const lastGroup = currentGroupStack.pop()
-                        if (!lastGroup) {
-                            console.log("failed to load def for field", keyValuePair);
-                            return;
-                        }
+    private getHeaderTagIds(): Set<string> {
+        if (this.headerTagIds) {
+            return this.headerTagIds;
+        }
 
-                        currentDef = lastGroup.parentDef;
-                        currentData = lastGroup.parentDataObj;
-                        currentDataWithHeaders = lastGroup.parentDataWithHeaderObj;
-                        currentData[lastGroup.def.name] = lastGroup.value.map(inst => inst.data);
-                        currentDataWithHeaders[`${lastGroup.def.name}[${lastGroup.def.id}]`] = lastGroup.value.map(inst => inst.dataWithHeaders);
+        const tags = new Set<string>();
+        this.headerFields.forEach(inst => {
+            if (inst.type === "field") {
+                tags.add((inst.field as FixField).def.number);
+            } else {
+                this.collectTagIds(inst.field as FixComplexType, tags);
+            }
+        });
+
+        this.headerTagIds = tags;
+        return tags;
+    }
+
+    private parseComplexType(
+        def: FixComplexType,
+        tokens: { id: string, value: string }[],
+        startIndex: number,
+        allowSkipUnknown: boolean
+    ): { data: any, dataWithHeaders: any, nextIndex: number } {
+        const data: any = {};
+        const dataWithHeaders: any = {};
+
+        const order = def.getFieldOrder();
+        let orderIndex = 0;
+        let index = startIndex;
+
+        while (index < tokens.length && orderIndex < order.length) {
+            const { id: tagId, value: tagValue } = tokens[index];
+            let matched = false;
+
+            for (let i = orderIndex; i < order.length; i++) {
+                const entry = order[i];
+
+                if (entry.type === "field") {
+                    const field = def.fields.get(entry.name);
+                    if (field && field.def.number === tagId) {
+                        data[entry.name] = tagValue;
+                        dataWithHeaders[`${entry.name}[${tagId}]`] = tagValue;
+                        index += 1;
+                        orderIndex = i + 1;
+                        matched = true;
+                        break;
                     }
                 }
 
-            } while (!fieldDef && currentGroupStack.length !== 0)
+                if (entry.type === "group") {
+                    const groupDef = def.groups.get(entry.name);
+                    if (groupDef && groupDef.id === tagId) {
+                        const count = Number(tagValue);
+                        index += 1;
 
-            switch (fieldDef?.type) {
-                case "group": {
-                    const groupDef = fieldDef.field;
-                    if (groupDef) {
-                        currentGroupStack.push({
-                            def: groupDef, len: Number(fieldValue), value: [] as any,
-                            currentRepetitionField: groupDef.getFieldOrder()[0].name,
-                            parentDef: currentDef,
-                            parentDataObj: currentData, parentDataWithHeaderObj: currentDataWithHeaders
-                        })
-
-                        defStack.push(groupDef)
-                        currentDef = defStack[defStack.length - 1]
-                        currentData = null;
-                        currentDataWithHeaders = null;
-                    }
-                    break;
-                }
-                case "field": {
-                    if (currentGroupStack.length > 0) {
-                        const currentGroup = currentGroupStack[currentGroupStack.length - 1]
-                        if (currentGroup.currentRepetitionField === fieldDef.name) {
-                            currentData = {};
-                            currentDataWithHeaders = {};
-                            currentGroup.value.push({ data: currentData, dataWithHeaders: currentDataWithHeaders })
+                        const groupData: any[] = [];
+                        const groupHeaders: any[] = [];
+                        for (let rep = 0; rep < count; rep++) {
+                            const parsed = this.parseComplexType(groupDef, tokens, index, false);
+                            if (parsed.nextIndex === index) {
+                                break;
+                            }
+                            groupData.push(parsed.data);
+                            groupHeaders.push(parsed.dataWithHeaders);
+                            index = parsed.nextIndex;
                         }
-                    }
 
-                    currentData[fieldDef.name] = fieldValue
-                    currentDataWithHeaders[`${fieldDef.name}[${fieldId}]`] = fieldValue;
-                } break;
+                        data[entry.name] = groupData;
+                        dataWithHeaders[`${entry.name}[${tagId}]`] = groupHeaders;
+                        orderIndex = i + 1;
+                        matched = true;
+                        break;
+                    }
+                }
+
+                if (entry.type === "component") {
+                    const compDef = def.components.get(entry.name);
+                    if (compDef && compDef.getFieldForId(tagId)) {
+                        const parsed = this.parseComplexType(compDef, tokens, index, false);
+                        if (parsed.nextIndex === index) {
+                            break;
+                        }
+
+                        if (Object.keys(parsed.data).length > 0) {
+                            data[entry.name] = parsed.data;
+                        }
+                        mergeIntoObject(dataWithHeaders, parsed.dataWithHeaders);
+
+                        index = parsed.nextIndex;
+                        orderIndex = i + 1;
+                        matched = true;
+                        break;
+                    }
+                }
             }
 
-        })
+            if (!matched) {
+                const outOfOrderIndex = order.findIndex(entry => {
+                    if (entry.type === "field") {
+                        const field = def.fields.get(entry.name);
+                        return field?.def.number === tagId;
+                    }
+                    if (entry.type === "group") {
+                        const groupDef = def.groups.get(entry.name);
+                        return groupDef?.id === tagId;
+                    }
+                    if (entry.type === "component") {
+                        const compDef = def.components.get(entry.name);
+                        return !!compDef?.getFieldForId(tagId);
+                    }
+                    return false;
+                });
 
-        return { data: this.fillComponents(msgDef, data), dataWithHeaders }
+                if (outOfOrderIndex >= 0) {
+                    const entry = order[outOfOrderIndex];
+
+                    if (entry.type === "field") {
+                        data[entry.name] = tagValue;
+                        dataWithHeaders[`${entry.name}[${tagId}]`] = tagValue;
+                        index += 1;
+                        orderIndex = Math.max(orderIndex, outOfOrderIndex + 1);
+                        matched = true;
+                    } else if (entry.type === "group") {
+                        const groupDef = def.groups.get(entry.name);
+                        if (groupDef) {
+                            const count = Number(tagValue);
+                            index += 1;
+
+                            const groupData: any[] = [];
+                            const groupHeaders: any[] = [];
+                            for (let rep = 0; rep < count; rep++) {
+                                const parsed = this.parseComplexType(groupDef, tokens, index, false);
+                                if (parsed.nextIndex === index) {
+                                    break;
+                                }
+                                groupData.push(parsed.data);
+                                groupHeaders.push(parsed.dataWithHeaders);
+                                index = parsed.nextIndex;
+                            }
+
+                            data[entry.name] = groupData;
+                            dataWithHeaders[`${entry.name}[${tagId}]`] = groupHeaders;
+                            orderIndex = Math.max(orderIndex, outOfOrderIndex + 1);
+                            matched = true;
+                        }
+                    } else if (entry.type === "component") {
+                        const compDef = def.components.get(entry.name);
+                        if (compDef) {
+                            const parsed = this.parseComplexType(compDef, tokens, index, false);
+                            if (parsed.nextIndex === index) {
+                                matched = false;
+                            } else {
+                                if (Object.keys(parsed.data).length > 0) {
+                                    if (data[entry.name] && typeof data[entry.name] === "object") {
+                                        mergeIntoObject(data[entry.name], parsed.data);
+                                    } else {
+                                        data[entry.name] = parsed.data;
+                                    }
+                                }
+                                mergeIntoObject(dataWithHeaders, parsed.dataWithHeaders);
+                                index = parsed.nextIndex;
+                                orderIndex = Math.max(orderIndex, outOfOrderIndex + 1);
+                                matched = true;
+                            }
+                        }
+                    }
+                }
+
+                if (!matched && allowSkipUnknown) {
+                    index += 1;
+                    continue;
+                }
+
+                if (allowSkipUnknown) {
+                    index += 1;
+                    continue;
+                }
+                break;
+            }
+        }
+
+        return { data, dataWithHeaders, nextIndex: index };
+    }
+
+    private decodeInternals(msgDef: FixComplexType, fields: string[]) {
+        const headerTags = this.getHeaderTagIds();
+        const tokens = this.tokenizeFields(fields).filter(token => !headerTags.has(token.id) && token.id !== "10");
+        const { data, dataWithHeaders } = this.parseComplexType(msgDef, tokens, 0, true);
+        return { data, dataWithHeaders };
     }
 
     decodeFixMessage(msg: string): { msg: FixComplexType, header: FixMsgHeader } | undefined {
@@ -445,7 +595,7 @@ export class FixDefinitionParser {
 
         const msgType = this.getTagValue(fields, "35")?.data;
         if (!msgType) {
-            console.log("Unsupported message type: ", msgType)
+            console.error("Unsupported message type: ", msgType)
             return undefined;
         }
 

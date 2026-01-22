@@ -10,6 +10,7 @@ import { GlobalServiceRegistry } from 'src/services/GlobalServiceRegistry';
 import { LM } from 'src/translations/language-manager';
 import { FixForm } from './FixForm';
 import './NewMessageFromRaw.scss';
+import { LogService } from 'src/services/log-management/LogService';
 
 const { TextArea } = Input;
 
@@ -151,10 +152,11 @@ export class NewMessageFromRaw extends React.Component<NewMessageFromRawProps, N
         this.setState({ inProgress: true })
         GlobalServiceRegistry.favoriteManager.addToFavorites((session as FixSession).profile, message, name, message.getValue()).then(() => {
             this.setState({ inProgress: false })
+            LogService.log('Add to favorites successful', name);
             Toast.success(getIntlMessage("msg_saving_success_title"), getIntlMessage("msg_saving_success", { name }))
         }).catch(error => {
             this.setState({ inProgress: false })
-            console.log('Saving failed', error);
+            LogService.error('Saving failed', error);
             Toast.error(getIntlMessage("msg_saving_failed_title"), getIntlMessage("msg_saving_failed"))
         });
     }

@@ -8,6 +8,7 @@ import { BaseProfile, Profile, ProfileWithCredentials, ServerProfile, ServerSide
 import { SocketInst, SocketSSLConfigs } from '../socket-management/SocketManagementSevice';
 import { FixDefinitionParser, FixMessageDef, FixMsgHeader } from './FixDefinitionParser';
 import { DEFAULT_HB_INTERVAL, FixComplexType, FixFieldDef, HBMonitor } from './FixDefs';
+import { LogService } from '../log-management/LogService';
 
 const { log } = console;
 
@@ -89,7 +90,7 @@ export abstract class BaseClientFixSession {
             path: profile.dictionaryLocation,
             transportDicPath: profile.transportDictionaryLocation,
             fixVersion: profile.fixVersion
-        }, () => {
+        }, GlobalServiceRegistry.fileManger, () => {
             this.parserInitialized = true;
             this.evaluteAndSendReady();
         });
@@ -138,7 +139,7 @@ export abstract class BaseClientFixSession {
     }
 
     destroy() {
-        console.log("Session destroyed");
+        LogService.log("Session destroyed");
         this.parser.destroy();
         this.socket?.end();
         this.isDestroyed = true;
@@ -306,7 +307,6 @@ export abstract class BaseClientFixSession {
             let sub: Subscription | undefined;
             try {
                 sub = this.socket?.getSocketEventObservable().subscribe(event => {
-                    console.log(JSON.stringify(event))
                     if (event.type === "disconnect") {
                         sub?.unsubscribe();
                         reject(new Error("socket closed"));
@@ -350,7 +350,7 @@ export abstract class BaseClientFixSession {
                 this.disconnect(true);
                 const data = msg.getValue();
                 if (data.Text) {
-                    Toast.error(data.Text);
+                    Toast.error("Logout message: " + data.Text);
                 }
                 break;
 
@@ -453,7 +453,7 @@ export abstract class BaseClientFixSession {
         const msg = this.createNewMessageInst("Logout");
         if (!dontSendMsg && msg) {
             msg.setValue({ Text: this.testRequestid++ });
-            this.send(msg);
+            await this.send(msg);
         }
         await this.socket?.end();
         // await new Promise(result => setTimeout(result, 2500));

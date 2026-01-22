@@ -14,6 +14,7 @@ function initModules(mainWindow) {
   require("./secure-key-store/secure-key-event-handler")(mainWindow)
   require("./socket-manager/socket-event-handler")(mainWindow)
   require("./network-manager/network-event-handler")(mainWindow)
+  require("./log-manager/log-event-handler")(mainWindow)
 }
 // ipcMain.on('ipc-example', async (event, arg) => {
 //     const msgTemplate =  `IPC test: ${pingPong}`;

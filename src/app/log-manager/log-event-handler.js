@@ -15,11 +15,8 @@ module.exports = (mainWindow) => {
       case "error":
         console.error(args[1], ...args.slice(2));
         break;
-
       default:
-        response = {
-          error: new Error(`Unsupported operation received ${args[0]}`),
-        };
+        console.log(args[1], ...args.slice(2));
         break;
     }
   });

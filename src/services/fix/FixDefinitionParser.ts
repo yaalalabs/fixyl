@@ -1,4 +1,3 @@
-
 import { removeFalsyKeys } from "src/utils/utils";
 import { FixVersion, FixXmlNode, FixFieldDef, FixComplexType, FixField, Parameters } from "./FixDefs";
 
@@ -43,7 +42,6 @@ export class FixDefinitionParser {
     private fieldMap = new Map<string, FixFieldDef>();
     private componentMap = new Map<string, FixComplexType>();
     private headerFields = new Map<string, { field: FixComplexType | FixField, type: "field" | "component" | "group" }>();
-    private headerTagIds?: Set<string>;
 
     constructor(private readonly dictionaryInfo: {
         path: string,
@@ -367,227 +365,81 @@ export class FixDefinitionParser {
         return ret;
     }
 
-    private tokenizeFields(fields: string[]): { id: string, value: string }[] {
-        const tokens: { id: string, value: string }[] = [];
-        fields.forEach(raw => {
-            if (!raw) {
-                return;
-            }
-            const sep = raw.indexOf('=');
-            if (sep <= 0) {
-                return;
-            }
-            const id = raw.substring(0, sep);
-            const value = raw.substring(sep + 1);
-            tokens.push({ id, value });
-        });
-        return tokens;
-    }
+    private decodeInternals(msgDef: FixComplexType, fields: string[]) {
+        const data: any = {}
+        const dataWithHeaders: any = {}
+        const defStack = [msgDef]
 
-    private collectTagIds(def: FixComplexType, tags: Set<string>, visited = new Set<FixComplexType>()) {
-        if (visited.has(def)) {
-            return;
-        }
-        visited.add(def);
+        let currentDef = defStack[0]
+        let currentData: any = data;
+        let currentDataWithHeaders: any = dataWithHeaders;
+        let currentGroupStack: {
+            len: number, def: FixComplexType, value: { data: any, dataWithHeaders: any }[], currentRepetitionField: string,
+            parentDef: FixComplexType, parentDataObj: any, parentDataWithHeaderObj: any
+        }[] = [];
 
-        def.fields.forEach(field => tags.add(field.def.number));
-        def.groups.forEach(group => {
-            tags.add(group.id);
-            this.collectTagIds(group, tags, visited);
-        });
-        def.components.forEach(comp => this.collectTagIds(comp, tags, visited));
-    }
+        fields.forEach(inst => {
+            let keyValuePair = inst.split('=');
+            const fieldId = keyValuePair[0];
+            const fieldValue = keyValuePair[1];
+            let fieldDef: any;
+            do {
+                fieldDef = currentDef.getFieldForId(fieldId)
 
-    private getHeaderTagIds(): Set<string> {
-        if (this.headerTagIds) {
-            return this.headerTagIds;
-        }
-
-        const tags = new Set<string>();
-        this.headerFields.forEach(inst => {
-            if (inst.type === "field") {
-                tags.add((inst.field as FixField).def.number);
-            } else {
-                this.collectTagIds(inst.field as FixComplexType, tags);
-            }
-        });
-
-        this.headerTagIds = tags;
-        return tags;
-    }
-
-    private parseComplexType(
-        def: FixComplexType,
-        tokens: { id: string, value: string }[],
-        startIndex: number,
-        allowSkipUnknown: boolean
-    ): { data: any, dataWithHeaders: any, nextIndex: number } {
-        const data: any = {};
-        const dataWithHeaders: any = {};
-
-        const order = def.getFieldOrder();
-        let orderIndex = 0;
-        let index = startIndex;
-
-        while (index < tokens.length && orderIndex < order.length) {
-            const { id: tagId, value: tagValue } = tokens[index];
-            let matched = false;
-
-            for (let i = orderIndex; i < order.length; i++) {
-                const entry = order[i];
-
-                if (entry.type === "field") {
-                    const field = def.fields.get(entry.name);
-                    if (field && field.def.number === tagId) {
-                        data[entry.name] = tagValue;
-                        dataWithHeaders[`${entry.name}[${tagId}]`] = tagValue;
-                        index += 1;
-                        orderIndex = i + 1;
-                        matched = true;
-                        break;
-                    }
-                }
-
-                if (entry.type === "group") {
-                    const groupDef = def.groups.get(entry.name);
-                    if (groupDef && groupDef.id === tagId) {
-                        const count = Number(tagValue);
-                        index += 1;
-
-                        const groupData: any[] = [];
-                        const groupHeaders: any[] = [];
-                        for (let rep = 0; rep < count; rep++) {
-                            const parsed = this.parseComplexType(groupDef, tokens, index, false);
-                            if (parsed.nextIndex === index) {
-                                break;
-                            }
-                            groupData.push(parsed.data);
-                            groupHeaders.push(parsed.dataWithHeaders);
-                            index = parsed.nextIndex;
-                        }
-
-                        data[entry.name] = groupData;
-                        dataWithHeaders[`${entry.name}[${tagId}]`] = groupHeaders;
-                        orderIndex = i + 1;
-                        matched = true;
-                        break;
-                    }
-                }
-
-                if (entry.type === "component") {
-                    const compDef = def.components.get(entry.name);
-                    if (compDef && compDef.getFieldForId(tagId)) {
-                        const parsed = this.parseComplexType(compDef, tokens, index, false);
-                        if (parsed.nextIndex === index) {
+                if (!fieldDef) {
+                    if (currentGroupStack.length > 0) {
+                        const lastGroup = currentGroupStack.pop()
+                        if (!lastGroup) {
+                            console.error("failed to load def for field", keyValuePair);
                             break;
                         }
 
-                        if (Object.keys(parsed.data).length > 0) {
-                            data[entry.name] = parsed.data;
-                        }
-                        mergeIntoObject(dataWithHeaders, parsed.dataWithHeaders);
-
-                        index = parsed.nextIndex;
-                        orderIndex = i + 1;
-                        matched = true;
-                        break;
+                        currentDef = lastGroup.parentDef;
+                        currentData = lastGroup.parentDataObj;
+                        currentDataWithHeaders = lastGroup.parentDataWithHeaderObj;
+                        currentData[lastGroup.def.name] = lastGroup.value.map(inst => inst.data);
+                        currentDataWithHeaders[`${lastGroup.def.name}[${lastGroup.def.id}]`] = lastGroup.value.map(inst => inst.dataWithHeaders);
                     }
                 }
+
+            } while (!fieldDef && currentGroupStack.length !== 0)
+
+            switch (fieldDef?.type) {
+                case "group": {
+                    const groupDef = fieldDef.field;
+                    if (groupDef) {
+                        currentGroupStack.push({
+                            def: groupDef, len: Number(fieldValue), value: [] as any,
+                            currentRepetitionField: groupDef.getFieldOrder()[0].name,
+                            parentDef: currentDef,
+                            parentDataObj: currentData, parentDataWithHeaderObj: currentDataWithHeaders
+                        })
+
+                        defStack.push(groupDef)
+                        currentDef = defStack[defStack.length - 1]
+                        currentData = null;
+                        currentDataWithHeaders = null;
+                    }
+                    break;
+                }
+                case "field": {
+                    if (currentGroupStack.length > 0) {
+                        const currentGroup = currentGroupStack[currentGroupStack.length - 1]
+                        if (currentGroup.currentRepetitionField === fieldDef.name) {
+                            currentData = {};
+                            currentDataWithHeaders = {};
+                            currentGroup.value.push({ data: currentData, dataWithHeaders: currentDataWithHeaders })
+                        }
+                    }
+
+                    currentData[fieldDef.name] = fieldValue
+                    currentDataWithHeaders[`${fieldDef.name}[${fieldId}]`] = fieldValue;
+                } break;
             }
 
-            if (!matched) {
-                const outOfOrderIndex = order.findIndex(entry => {
-                    if (entry.type === "field") {
-                        const field = def.fields.get(entry.name);
-                        return field?.def.number === tagId;
-                    }
-                    if (entry.type === "group") {
-                        const groupDef = def.groups.get(entry.name);
-                        return groupDef?.id === tagId;
-                    }
-                    if (entry.type === "component") {
-                        const compDef = def.components.get(entry.name);
-                        return !!compDef?.getFieldForId(tagId);
-                    }
-                    return false;
-                });
+        })
 
-                if (outOfOrderIndex >= 0) {
-                    const entry = order[outOfOrderIndex];
-
-                    if (entry.type === "field") {
-                        data[entry.name] = tagValue;
-                        dataWithHeaders[`${entry.name}[${tagId}]`] = tagValue;
-                        index += 1;
-                        orderIndex = Math.max(orderIndex, outOfOrderIndex + 1);
-                        matched = true;
-                    } else if (entry.type === "group") {
-                        const groupDef = def.groups.get(entry.name);
-                        if (groupDef) {
-                            const count = Number(tagValue);
-                            index += 1;
-
-                            const groupData: any[] = [];
-                            const groupHeaders: any[] = [];
-                            for (let rep = 0; rep < count; rep++) {
-                                const parsed = this.parseComplexType(groupDef, tokens, index, false);
-                                if (parsed.nextIndex === index) {
-                                    break;
-                                }
-                                groupData.push(parsed.data);
-                                groupHeaders.push(parsed.dataWithHeaders);
-                                index = parsed.nextIndex;
-                            }
-
-                            data[entry.name] = groupData;
-                            dataWithHeaders[`${entry.name}[${tagId}]`] = groupHeaders;
-                            orderIndex = Math.max(orderIndex, outOfOrderIndex + 1);
-                            matched = true;
-                        }
-                    } else if (entry.type === "component") {
-                        const compDef = def.components.get(entry.name);
-                        if (compDef) {
-                            const parsed = this.parseComplexType(compDef, tokens, index, false);
-                            if (parsed.nextIndex === index) {
-                                matched = false;
-                            } else {
-                                if (Object.keys(parsed.data).length > 0) {
-                                    if (data[entry.name] && typeof data[entry.name] === "object") {
-                                        mergeIntoObject(data[entry.name], parsed.data);
-                                    } else {
-                                        data[entry.name] = parsed.data;
-                                    }
-                                }
-                                mergeIntoObject(dataWithHeaders, parsed.dataWithHeaders);
-                                index = parsed.nextIndex;
-                                orderIndex = Math.max(orderIndex, outOfOrderIndex + 1);
-                                matched = true;
-                            }
-                        }
-                    }
-                }
-
-                if (!matched && allowSkipUnknown) {
-                    index += 1;
-                    continue;
-                }
-
-                if (allowSkipUnknown) {
-                    index += 1;
-                    continue;
-                }
-                break;
-            }
-        }
-
-        return { data, dataWithHeaders, nextIndex: index };
-    }
-
-    private decodeInternals(msgDef: FixComplexType, fields: string[]) {
-        const headerTags = this.getHeaderTagIds();
-        const tokens = this.tokenizeFields(fields).filter(token => !headerTags.has(token.id) && token.id !== "10");
-        const { data, dataWithHeaders } = this.parseComplexType(msgDef, tokens, 0, true);
-        return { data, dataWithHeaders };
+        return { data: this.fillComponents(msgDef, data), dataWithHeaders }
     }
 
     decodeFixMessage(msg: string): { msg: FixComplexType, header: FixMsgHeader } | undefined {

@@ -20,7 +20,6 @@ interface MessageViewProps {
 
 export class MessageView extends React.Component<MessageViewProps, any> {
   private searchFormRef: any = React.createRef();
-  private markInstance: any;
   private martkUpdateTimeout: any;
   private componentKey = uuidv4();
 
@@ -126,27 +125,38 @@ export class MessageView extends React.Component<MessageViewProps, any> {
                   clearTimeout(this.martkUpdateTimeout);
                   const itemArray: any[] = [];
 
-                  this.markInstance = new Mark(document.querySelector(`#search-node-msg-view${this.componentKey}`));
-                  this.markInstance.unmark({
+                  const markInstance = new Mark(document.querySelector(`#search-node-msg-view${this.componentKey}`));
+                  const rawMarkInstance = new Mark(document.querySelector(`#raw-msg-view${this.componentKey}`));
+                  
+                  markInstance.unmark({
                     done: () => {
-                      this.markInstance.mark(this.state.searchText, {
-                        each: (data: any) => {
-                          clearTimeout(this.martkUpdateTimeout);
-                          itemArray.push(data);
+                      rawMarkInstance.unmark({
+                        done: () => {
+                          markInstance.mark(this.state.searchText, {
+                            each: (data: any) => {
+                              clearTimeout(this.martkUpdateTimeout);
+                              itemArray.push(data);
 
-                          this.martkUpdateTimeout = setTimeout(() => {
-                            let currentMarkedIndex = undefined;
-                            if (itemArray.length > 0) {
-                              currentMarkedIndex = 0;
-                              itemArray[0].scrollIntoView();
-                            }
+                              this.martkUpdateTimeout = setTimeout(() => {
+                                let currentMarkedIndex = undefined;
+                                if (itemArray.length > 0) {
+                                  currentMarkedIndex = 0;
+                                  itemArray[0].scrollIntoView();
+                                }
 
-                            this.setState({ markedItems: itemArray, currentMarkedIndex })
-                          })
-                        },
+                                this.setState({ markedItems: itemArray, currentMarkedIndex })
+                              })
+                            },
+                          });
+                          
+                          // Also highlight in raw message view
+                          rawMarkInstance.mark(this.state.searchText);
+                        }
                       });
-                    }
+                    }                    
                   });
+
+                  
                 });
 
               }} />
@@ -159,7 +169,7 @@ export class MessageView extends React.Component<MessageViewProps, any> {
 
       {selectedMsg && !hideRawMsg && <div className="raw-message-wrapper">
         <div className="title">{getIntlMessage("raw_message")}</div>
-        <div className="raw-msg" onClick={() => this.copyToClipboard(selectedMsg.rawMsg)}>
+        <div className="raw-msg" onClick={() => this.copyToClipboard(selectedMsg.rawMsg)}  id={`raw-msg-view${this.componentKey}`}>
           {this.alterMsgToDisplay(selectedMsg.rawMsg)}
           <div className="copy-indicator">{getIntlMessage("copy")}</div>
         </div>

@@ -140,8 +140,11 @@ export abstract class BaseClientFixSession {
 
     destroy() {
         LogService.log("Session destroyed");
+        this.hbMonitor?.stopHBTimer();
+        this.connected = false;
         this.parser.destroy();
         this.socket?.end();
+        this.socket = undefined;
         this.isDestroyed = true;
     }
 
@@ -455,12 +458,10 @@ export abstract class BaseClientFixSession {
             msg.setValue({ Text: this.testRequestid++ });
             await this.send(msg);
         }
+        this.hbMonitor?.stopHBTimer();
+        this.connected = false;
+        this.publishSocketEvent({ event: FixSessionEventType.DISCONNECT });
         await this.socket?.end();
-        // await new Promise(result => setTimeout(result, 2500));
-        // await this.socket.destroy();
-        // this.connected = false;
-        // await new Promise(result => setTimeout(result, 2500));
-        // debug('(' + this.profile.name + ') disconnected');
     }
 
     protected generateFixMessageHeaders = (msgDef: FixMessageDef, tx: number): FixMsgHeader => {
@@ -542,6 +543,11 @@ export class FixSession extends BaseClientFixSession {
     }
 
     async connect(): Promise<void> {
+        if (this.socket) {
+            this.socket.end();
+            this.socket = undefined;
+        }
+
         const { ip, port } = this.profile;
         const sslConfigs: SocketSSLConfigs = {
             sslEnabled: this.profile.sslEnabled, sslProtocol: this.profile.sslProtocol

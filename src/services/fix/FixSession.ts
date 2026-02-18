@@ -269,16 +269,17 @@ export abstract class BaseClientFixSession {
     }
 
     public async send(msgDef: FixMessageDef, parameters?: Parameters): Promise<any> {
+        const resolvedParams = parameters ?? this.getSessionParameters(true);
         this.evaluateOutputMessage(msgDef);
         const releaseLock = await this.acquireLock(); // accuire lock
         try {
             const header = this.generateFixMessageHeaders(msgDef, this.tx);
-            const result = await this.sendInternal(header, msgDef, parameters);
+            const result = await this.sendInternal(header, msgDef, resolvedParams);
             if (result) {
                 if (this.resendRequestEnabled) {
                     this.resendCache.set(this.tx, {
                         msgDef, header,
-                        parameters: parameters ? deepCopyObject(parameters) : undefined
+                        parameters: resolvedParams ? deepCopyObject(resolvedParams) : undefined
                     });
                 }
 

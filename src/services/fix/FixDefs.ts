@@ -85,15 +85,34 @@ export class FixFieldDef {
         const match = setRegex.exec(inputValue)
         if (match && parameters) {
             const param = match[1].trim();
-            return parameters[param].value
+            if (!parameters[param]) {
+                console.warn(`Parameter "${param}" not found for {set:} filler`);
+                return inputValue;
+            }
+            return parameters[param].value;
+        }
+
+        const getRegex = /{get:(.*?)}/g;
+        const getMatch = getRegex.exec(inputValue)
+        if (getMatch && parameters) {
+            const param = getMatch[1].trim();
+            if (!parameters[param]) {
+                console.warn(`Parameter "${param}" not found for {get:} filler`);
+                return inputValue;
+            }
+            return parameters[param].value;
         }
 
         const setRegexInc = /{incr:(.*?)}/g;
         const incMatch = setRegexInc.exec(inputValue)
         if (incMatch && parameters) {
             const param = incMatch[1].trim();
+            if (!parameters[param]) {
+                console.warn(`Parameter "${param}" not found for {incr:} filler`);
+                return inputValue;
+            }
             if (!parameters[param].count) {
-                parameters[param].count = 1
+                parameters[param].count = 1;
             } else {
                 parameters[param].count!++;
             }

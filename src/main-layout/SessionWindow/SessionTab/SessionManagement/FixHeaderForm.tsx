@@ -7,7 +7,7 @@ import moment from 'moment';
 import React from 'react';
 import { IgnorableInput } from 'src/common/IgnorableInput/IgnorableInput';
 import { Toast } from 'src/common/Toast/Toast';
-import { FixComplexType, FixField } from 'src/services/fix/FixDefs';
+import { FixComplexType, FixField, FixFieldValueFiller } from 'src/services/fix/FixDefs';
 import { FixMessage, FixSession } from 'src/services/fix/FixSession';
 import { GlobalServiceRegistry } from 'src/services/GlobalServiceRegistry';
 import { LM } from 'src/translations/language-manager';
@@ -177,6 +177,14 @@ export class FixHeaderForm extends React.Component<FixHeaderFormProps, FixHeader
             case "monthyear":
             case "utcdateonly":
             case "utctimeonly":
+                if (typeof value === "string" && (
+                    value === FixFieldValueFiller.AUTO_GEN ||
+                    value.startsWith("{set:") ||
+                    value.startsWith("{get:") ||
+                    value.startsWith("{incr:")
+                )) {
+                    return value;
+                }
                 return moment(value);
             default:
                 return value;

@@ -114,13 +114,13 @@ export class FixFieldDef {
             case "multiplecharvalue":
                 return Array.isArray(inputValue) ? inputValue.join(" ") : inputValue;
             case "utctimestamp":
-                return moment(inputValue).utc().format("YYYYMMDD-HH:mm:ss.000");
+                return moment(inputValue, ["YYYYMMDD-HH:mm:ss.SSS", moment.ISO_8601]).utc().format("YYYYMMDD-HH:mm:ss.000");
             case 'monthyear':
-                return moment(inputValue).utc().format("YYYYMM")
+                return moment(inputValue, ["YYYYMM", moment.ISO_8601]).utc().format("YYYYMM")
             case 'utcdateonly':
-                return moment(inputValue).utc().format("YYYYMMDD-HH")
+                return moment(inputValue, ["YYYYMMDD", moment.ISO_8601]).utc().format("YYYYMMDD-HH")
             case 'utctimeonly':
-                return moment(inputValue).utc().format("mm:ss.000")
+                return moment(inputValue, ["HH:mm:ss.SSS", moment.ISO_8601]).utc().format("mm:ss.000")
             case 'boolean':
                 let ret = inputValue;
                 if (typeof inputValue === "boolean") {

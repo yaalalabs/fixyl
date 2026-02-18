@@ -172,11 +172,12 @@ export class FixHeaderForm extends React.Component<FixHeaderFormProps, FixHeader
             return undefined;
         }
 
-        switch (field.def.type.toLowerCase()) {
+        const type = field.def.type.toLowerCase();
+        switch (type) {
             case "utctimestamp":
             case "monthyear":
             case "utcdateonly":
-            case "utctimeonly":
+            case "utctimeonly": {
                 if (typeof value === "string" && (
                     value === FixFieldValueFiller.AUTO_GEN ||
                     value.startsWith("{set:") ||
@@ -185,7 +186,14 @@ export class FixHeaderForm extends React.Component<FixHeaderFormProps, FixHeader
                 )) {
                     return value;
                 }
-                return moment(value);
+                const fixFormats: Record<string, string> = {
+                    utctimestamp: "YYYYMMDD-HH:mm:ss.SSS",
+                    monthyear: "YYYYMM",
+                    utcdateonly: "YYYYMMDD",
+                    utctimeonly: "HH:mm:ss.SSS",
+                };
+                return moment(value, [fixFormats[type], moment.ISO_8601]);
+            }
             default:
                 return value;
         }

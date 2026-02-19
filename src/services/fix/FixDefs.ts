@@ -85,15 +85,34 @@ export class FixFieldDef {
         const match = setRegex.exec(inputValue)
         if (match && parameters) {
             const param = match[1].trim();
-            return parameters[param].value
+            if (!parameters[param]) {
+                console.warn(`Parameter "${param}" not found for {set:} filler`);
+                return inputValue;
+            }
+            return parameters[param].value;
+        }
+
+        const getRegex = /{get:(.*?)}/g;
+        const getMatch = getRegex.exec(inputValue)
+        if (getMatch && parameters) {
+            const param = getMatch[1].trim();
+            if (!parameters[param]) {
+                console.warn(`Parameter "${param}" not found for {get:} filler`);
+                return inputValue;
+            }
+            return parameters[param].value;
         }
 
         const setRegexInc = /{incr:(.*?)}/g;
         const incMatch = setRegexInc.exec(inputValue)
         if (incMatch && parameters) {
             const param = incMatch[1].trim();
+            if (!parameters[param]) {
+                console.warn(`Parameter "${param}" not found for {incr:} filler`);
+                return inputValue;
+            }
             if (!parameters[param].count) {
-                parameters[param].count = 1
+                parameters[param].count = 1;
             } else {
                 parameters[param].count!++;
             }
@@ -114,13 +133,13 @@ export class FixFieldDef {
             case "multiplecharvalue":
                 return Array.isArray(inputValue) ? inputValue.join(" ") : inputValue;
             case "utctimestamp":
-                return moment(inputValue).utc().format("YYYYMMDD-HH:mm:ss.000");
+                return moment(inputValue, ["YYYYMMDD-HH:mm:ss.SSS", moment.ISO_8601]).utc().format("YYYYMMDD-HH:mm:ss.000");
             case 'monthyear':
-                return moment(inputValue).utc().format("YYYYMM")
+                return moment(inputValue, ["YYYYMM", moment.ISO_8601]).utc().format("YYYYMM")
             case 'utcdateonly':
-                return moment(inputValue).utc().format("YYYYMMDD-HH")
+                return moment(inputValue, ["YYYYMMDD", moment.ISO_8601]).utc().format("YYYYMMDD-HH")
             case 'utctimeonly':
-                return moment(inputValue).utc().format("mm:ss.000")
+                return moment(inputValue, ["HH:mm:ss.SSS", moment.ISO_8601]).utc().format("mm:ss.000")
             case 'boolean':
                 let ret = inputValue;
                 if (typeof inputValue === "boolean") {
@@ -209,6 +228,22 @@ export class FixComplexType {
 
     getFieldOrder(): FieldOrderEntry[] {
         return this.fieldOrder;
+    }
+
+    getFirstWireFieldName(): string {
+        for (const entry of this.fieldOrder) {
+            if (entry.type === "field" || entry.type === "group") {
+                return entry.name;
+            }
+            if (entry.type === "component") {
+                const comp = this.components.get(entry.name);
+                if (comp) {
+                    const resolved = comp.getFirstWireFieldName();
+                    if (resolved) return resolved;
+                }
+            }
+        }
+        return this.fieldOrder[0]?.name ?? "";
     }
 
     getComponentRefs(id: string, ref: string[]): boolean {

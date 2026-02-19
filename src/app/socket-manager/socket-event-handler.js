@@ -20,6 +20,7 @@ module.exports = (mainWindow) => {
         break
       case 'write': 
         response = await SocketManager.write(id, args[2], mainWindow)
+        break
       default:
         response = {
           error: new Error(`Unsupported operation received ${args[0]}`),

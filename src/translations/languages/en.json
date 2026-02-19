@@ -8,6 +8,10 @@
 		"server": "Server"
 	},
 	"profile_management": {
+		"profile_saving_success_title": "Saving Profile",
+		"profile_saving_success": "Profile saved successfully",
+		"profile_saving_failed_title": "Saving Profile",
+		"profile_saving_failed": "Error occurred while saving the data. Check whether the profile name is already in use.",
 		"title": "Client Profile Management",
 		"new_profile": "New Client Profile",
 		"name": "Name",

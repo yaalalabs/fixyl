@@ -54,8 +54,16 @@ module.exports = class SocketManager {
   }
   
   static disconnectSocket = async (id, mainWindow) => {
-    if (this.allSockets[id]) {
-      this.allSockets[id].end()
+    const socket = this.allSockets[id];
+    if (socket) {
+      socket.end();
+      setTimeout(() => {
+        if (!socket.destroyed) {
+          socket.destroy();
+        }
+      }, 2000);
+      delete this.allSockets[id];
+      return { id, type: 'disconnect' };
     }
   }
 
@@ -221,6 +229,13 @@ module.exports = class SocketManager {
                 }
 
                 console.log("end")
+              })
+              .on('close', () => {
+                if (this.isWinDestroyed(mainWindow)) {
+                  return;
+                }
+
+                console.log("close")
                 mainWindow.webContents.send(
                   'socketManagerIn',
                   JSON.stringify({ type: 'disconnect', id }),

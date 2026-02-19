@@ -119,10 +119,14 @@ export class ServerManager extends React.Component<ServerManagerProps, ServerMan
         this.onStart(profile)
 
         if (save) {
-            GlobalServiceRegistry.profile.addOrEditServerProfile(profile);
+            if (GlobalServiceRegistry.profile.addOrEditServerProfile(profile)) {
+                Toast.success(getIntlMessage("profile_saving_success_title"), getIntlMessage("profile_saving_success"))
+                this.onCloseNewPanel();
+            } else {
+                Toast.error(getIntlMessage("profile_saving_failed_title"), getIntlMessage("profile_saving_failed"))
+            }
         }
 
-        this.onCloseNewPanel();
     }
 
     private onCloseNewPanel = () => {

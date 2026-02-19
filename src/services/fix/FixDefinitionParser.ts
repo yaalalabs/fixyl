@@ -404,13 +404,17 @@ export class FixDefinitionParser {
 
             } while (!fieldDef && currentGroupStack.length !== 0)
 
+            if (!fieldDef) {
+                fieldDef = currentDef.getFieldForId(fieldId)
+            }
+
             switch (fieldDef?.type) {
                 case "group": {
                     const groupDef = fieldDef.field;
                     if (groupDef) {
                         currentGroupStack.push({
                             def: groupDef, len: Number(fieldValue), value: [] as any,
-                            currentRepetitionField: groupDef.getFieldOrder()[0].name,
+                            currentRepetitionField: groupDef.getFirstWireFieldName(),
                             parentDef: currentDef,
                             parentDataObj: currentData, parentDataWithHeaderObj: currentDataWithHeaders
                         })
@@ -459,7 +463,7 @@ export class FixDefinitionParser {
             const def = msgDef.clone();
             (def as FixComplexType).setValue(data);
             (def as FixComplexType).setValueWithHeaders(dataWithHeaders);
-
+            
             return { msg: def, header: this.decodeHeader(fields) }
         }
 

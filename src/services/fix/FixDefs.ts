@@ -230,6 +230,22 @@ export class FixComplexType {
         return this.fieldOrder;
     }
 
+    getFirstWireFieldName(): string {
+        for (const entry of this.fieldOrder) {
+            if (entry.type === "field" || entry.type === "group") {
+                return entry.name;
+            }
+            if (entry.type === "component") {
+                const comp = this.components.get(entry.name);
+                if (comp) {
+                    const resolved = comp.getFirstWireFieldName();
+                    if (resolved) return resolved;
+                }
+            }
+        }
+        return this.fieldOrder[0]?.name ?? "";
+    }
+
     getComponentRefs(id: string, ref: string[]): boolean {
         let ret = false;
         if (this.fields.get(id)) {

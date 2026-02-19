@@ -254,7 +254,7 @@ export class FixDefinitionParser {
         return fixMsgBody;
     }
 
-    private encodeCustomHeaders(customHeaderData: any) {
+    private encodeCustomHeaders(customHeaderData: any, parameters?: Parameters) {
         removeFalsyKeys(customHeaderData);
         const properties = Object.keys(customHeaderData);
         let fixMsgHeader = "";
@@ -266,16 +266,16 @@ export class FixDefinitionParser {
                     const arrayData = customHeaderData[property] as any[];
                     fixMsgHeader += `${def.number}=${arrayData.length}${SOH}`;
                     arrayData.forEach(inst => {
-                        fixMsgHeader += this.encodeToFixBody(def, inst)
+                        fixMsgHeader += this.encodeToFixBody(def, inst, parameters)
                     })
                 } else {
-                    const fielData = def.formatValueToPack(customHeaderData[property]);
+                    const fielData = def.formatValueToPack(customHeaderData[property], parameters);
                     fixMsgHeader += `${def.number}=${fielData}${SOH}`
                 }
             } else {
                 def = this.componentMap.get(property);
                 if (def) {
-                    fixMsgHeader += this.encodeToFixBody(def, customHeaderData[property]);
+                    fixMsgHeader += this.encodeToFixBody(def, customHeaderData[property], parameters);
                 }
             }
         })
@@ -283,7 +283,7 @@ export class FixDefinitionParser {
         return fixMsgHeader;
     }
 
-    private encodeHeader(header: FixMsgHeader, customHeaders?: any) {
+    private encodeHeader(header: FixMsgHeader, customHeaders?: any, parameters?: Parameters) {
         let ret = '35=' + header.msgType +
             `${SOH}34=` + header.sequence +
             `${SOH}52=` + header.time +
@@ -291,7 +291,7 @@ export class FixDefinitionParser {
             `${SOH}56=` + header.targetCompId + SOH;
 
         if (customHeaders) {
-            ret += this.encodeCustomHeaders(customHeaders)
+            ret += this.encodeCustomHeaders(customHeaders, parameters)
         }
 
         return ret;
@@ -300,7 +300,7 @@ export class FixDefinitionParser {
 
     encodeToFix(msgDef: FixComplexType, data: any, header: FixMsgHeader, parameters?: Parameters, customHeaders?: any): string {
         const messageBody = this.encodeToFixBody(msgDef, data, parameters);
-        const messageHeader = this.encodeHeader(header, customHeaders);
+        const messageHeader = this.encodeHeader(header, customHeaders, parameters);
         const msg = messageHeader + messageBody;
         let message = this.BEGIN_STRING + SOH + '9=' + msg.length + SOH + msg;
         message += '10=' + this.checksum(message) + SOH;

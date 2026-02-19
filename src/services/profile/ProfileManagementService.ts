@@ -84,6 +84,13 @@ export class ProfileManagementService {
     }
 
     addOrEditServerProfile(profile: ServerProfile): boolean {
+        const existingProfile = this.getProfile(profile.name);
+
+        // If the profile name is already in use and the type is different, we will stop replacing the profile data.
+        if (existingProfile && profile.type !== existingProfile.type) {
+            return false;
+        }
+
         this.profiles.set(profile.name, profile);
         this.saveAllProfilesInDevice();
         this.profileUpdateSubject.next();
@@ -91,6 +98,13 @@ export class ProfileManagementService {
     }
 
     addOrEditProfile(profile: ProfileWithCredentials): boolean {
+        const existingProfile = this.getProfile(profile.name);
+
+        // If the profile name is already in use and the type is different, we will stop replacing the profile data.
+        if (existingProfile && profile.type !== existingProfile.type) {
+            return false;
+        }
+
         this.profiles.set(profile.name, profile);
         this.saveAllProfilesInDevice();
         this.addCredentialsToDevice(profile.name, { username: profile.username, password: profile.password, certPassword: profile.sslCertificatePassword });

@@ -15,6 +15,7 @@ import { NavigationPathAction } from 'src/services/navigation/NevigationService'
 import { ProfileInstance } from './ProfileInstance';
 import { deepCopyObject } from 'src/utils/utils';
 import Checkbox from 'antd/lib/checkbox/Checkbox';
+import { Toast } from 'src/common/Toast/Toast';
 
 const { Option } = Select;
 const { Panel } = Collapse;
@@ -90,8 +91,12 @@ export class ProfilePanel extends React.Component<ProfilePanelProps, ProfilePane
     }
 
     private onSubmitNewProfile = (data: any) => {
-        GlobalServiceRegistry.profile.addOrEditProfile(data);
-        this.onCloseNewPanel();
+        if (GlobalServiceRegistry.profile.addOrEditProfile(data)) {
+            Toast.success(getIntlMessage("profile_saving_success_title"), getIntlMessage("profile_saving_success"))
+            this.onCloseNewPanel();
+        } else {
+            Toast.error(getIntlMessage("profile_saving_failed_title"), getIntlMessage("profile_saving_failed"))
+        }
     }
 
     private onCloseNewPanel = () => {

@@ -2,6 +2,10 @@
   "name": "fixyl",
   "version": "1.0.18",
   "private": true,
+  "author": {
+    "name": "Yaala Labs",
+    "email": "hello@yaalalabs.com"
+  },
   "engines": {
     "node": ">=22.12.0"
   },
@@ -72,7 +76,7 @@
     "copyright": "Copyright @2021-2022 Yaala Labs",
     "buildVersion": "1",
     "linux": {
-      "target": ["AppImage", "deb"]
+      "target": ["AppImage"]
     }
   }
 }

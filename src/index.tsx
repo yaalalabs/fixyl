@@ -1,6 +1,10 @@
 import React from 'react';
+import { AllCommunityModule, ModuleRegistry, provideGlobalGridOptions } from 'ag-grid-community';
 import './index.scss';
 import { App } from './App';
+
+ModuleRegistry.registerModules([AllCommunityModule]);
+provideGlobalGridOptions({ theme: 'legacy' });
 import reportWebVitals from './reportWebVitals';
 import { LM } from './translations/language-manager';
 import { StrictMode } from 'react'

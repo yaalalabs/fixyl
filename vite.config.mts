@@ -1,41 +1,45 @@
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react-swc';
-import commonjs from 'vite-plugin-commonjs';
+import react from '@vitejs/plugin-react-swc'
+import commonjs from 'vite-plugin-commonjs'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), commonjs(),],
+  plugins: [react(), commonjs()],
   server: {
     port: 3000,
   },
   css: {
     preprocessorOptions: {
       scss: {
+        loadPaths: [path.resolve(__dirname, 'node_modules')],
         quietDeps: true,
-        silenceDeprecations: ['legacy-js-api', 'import']
-      }
-    }
+        silenceDeprecations: ['legacy-js-api', 'import'],
+      },
+    },
   },
   resolve: {
     alias: {
-      src: "/src",
+      src: '/src',
     },
   },
   define: {
     global: {},
   },
-  base: "./",
+  base: './',
   build: {
     outDir: 'build',
-    emptyOutDir: true, // also necessary
-    assetsDir: '.', // Place all assets (CSS/JS) directly in the root
+    emptyOutDir: true,
+    assetsDir: '.',
     rollupOptions: {
       output: {
-        // Ensure files are placed directly in the root
         chunkFileNames: '[name]-[hash].js',
         entryFileNames: '[name]-[hash].js',
         assetFileNames: '[name]-[hash][extname]',
       },
     },
-  }
+  },
 })

@@ -53,11 +53,16 @@ export class FixDefinitionParser {
     }
 
     private parseDefinition() {
+        console.log('parser parseDefinition====>', this.dictionaryInfo);
         this.loadDictionary(this.dictionaryInfo.path, true, () => {
+            console.log('parser parseDefinition1====>', this.dictionaryInfo);
             if (!this.dictionaryInfo.transportDicPath) {
+                console.log('parser parseDefinition2====>', this.dictionaryInfo);
                 this.readyCB()
             } else {
+                console.log('parser parseDefinition3====>', this.dictionaryInfo);
                 this.loadDictionary(this.dictionaryInfo.transportDicPath, true, () => {
+                    console.log('parser parseDefinition4====>', this.dictionaryInfo);
                     this.readyCB()
                 })
             }

@@ -8,7 +8,7 @@ import { transformDate } from 'src/utils/utils';
 import { Subscription } from 'rxjs';
 import { IntraTabCommunicator, FixCommMsg } from '../../../../common/IntraTabCommunicator';
 import { MessageDiffViewer } from './MessageDiffViewer';
-import { ColDef, ColumnApi, GridApi } from 'ag-grid-community';
+import { ColDef, GridApi } from 'ag-grid-community';
 import { AgGridReact } from "ag-grid-react";
 
 const getIntlMessage = (msg: string) => {
@@ -38,7 +38,6 @@ interface SessoinMessageStreamState {
 
 export class SessoinMessageStream extends React.Component<SessoinMessageStreamProps, SessoinMessageStreamState> {
   protected gridApi?: GridApi;
-  protected gridColumnApi?: ColumnApi;
   private sessionSub?: Subscription;
   private ref: any = React.createRef();
   private resizeObserver: any;
@@ -86,7 +85,6 @@ export class SessoinMessageStream extends React.Component<SessoinMessageStreamPr
 
   protected onGridReady = (params: any): void => {
     this.gridApi = params.api;
-    this.gridColumnApi = params.columnApi;
   }
 
   componentDidMount() {
@@ -249,7 +247,7 @@ export class SessoinMessageStream extends React.Component<SessoinMessageStreamPr
   }
 
   private onClear = () => {
-    this.gridApi?.setRowData([])
+    this.gridApi?.setGridOption('rowData', [])
   }
 
   private getPopoverForm = () => {

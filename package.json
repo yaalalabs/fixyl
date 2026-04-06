@@ -70,6 +70,9 @@
     "extends": null,
     "productName": "FIXYL",
     "copyright": "Copyright @2021-2022 Yaala Labs",
-    "buildVersion": "1"
+    "buildVersion": "1",
+    "linux": {
+      "target": ["AppImage", "deb"]
+    }
   }
 }

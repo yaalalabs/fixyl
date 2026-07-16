@@ -119,7 +119,7 @@ export class SessoinMessageStream extends React.Component<SessoinMessageStreamPr
     const { data } = event;
 
     if (event.event === FixSessionEventType.DATA && data) {
-      const id = data.msg.name + data.timestamp;
+      const id = `${data.direction}-${data.sequence}-${data.msg.name}-${data.timestamp}`;
       return {
         direction: data.direction, message: data.msg.name,
         length: data.length, time: data.timestamp, msg: data.msg,

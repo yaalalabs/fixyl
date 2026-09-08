@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Minimal FIX 4.4 dictionary used by the unit tests. It follows the QuickFIX
+  dictionary layout (header / messages / components / fields) with just enough
+  content to exercise header encoding, message-level header overrides, groups,
+  components and the {incr:} / {get:} parameter fillers.
+-->
+<fix type="FIX" major="4" minor="4" servicepack="0">
+  <header>
+    <field name="BeginString" required="Y"/>
+    <field name="BodyLength" required="Y"/>
+    <field name="MsgType" required="Y"/>
+    <field name="SenderCompID" required="Y"/>
+    <field name="TargetCompID" required="Y"/>
+    <field name="OnBehalfOfCompID" required="N"/>
+    <field name="DeliverToCompID" required="N"/>
+    <field name="SecureDataLen" required="N"/>
+    <field name="SecureData" required="N"/>
+    <field name="MsgSeqNum" required="Y"/>
+    <field name="PossDupFlag" required="N"/>
+    <field name="SendingTime" required="Y"/>
+    <field name="OrigSendingTime" required="N"/>
+    <group name="NoHops" required="N">
+      <field name="HopCompID" required="N"/>
+      <field name="HopSendingTime" required="N"/>
+    </group>
+  </header>
+  <trailer>
+    <field name="CheckSum" required="Y"/>
+  </trailer>
+  <messages>
+    <message name="Heartbeat" msgtype="0" msgcat="admin">
+      <field name="TestReqID" required="N"/>
+    </message>
+    <message name="TestRequest" msgtype="1" msgcat="admin">
+      <field name="TestReqID" required="Y"/>
+    </message>
+    <message name="ResendRequest" msgtype="2" msgcat="admin">
+      <field name="BeginSeqNo" required="Y"/>
+      <field name="EndSeqNo" required="Y"/>
+    </message>
+    <message name="Reject" msgtype="3" msgcat="admin">
+      <field name="RefSeqNum" required="Y"/>
+      <field name="Text" required="N"/>
+    </message>
+    <message name="SequenceReset" msgtype="4" msgcat="admin">
+      <field name="GapFillFlag" required="N"/>
+      <field name="NewSeqNo" required="Y"/>
+    </message>
+    <message name="Logout" msgtype="5" msgcat="admin">
+      <field name="Text" required="N"/>
+    </message>
+    <message name="Logon" msgtype="A" msgcat="admin">
+      <field name="EncryptMethod" required="Y"/>
+      <field name="HeartBtInt" required="Y"/>
+      <field name="ResetSeqNumFlag" required="N"/>
+      <field name="Username" required="N"/>
+      <field name="Password" required="N"/>
+    </message>
+    <message name="NewOrderSingle" msgtype="D" msgcat="app">
+      <field name="ClOrdID" required="Y"/>
+      <component name="Instrument" required="Y"/>
+      <field name="Side" required="Y"/>
+      <field name="TransactTime" required="Y"/>
+      <field name="OrderQty" required="N"/>
+      <field name="OrdType" required="Y"/>
+      <field name="Price" required="N"/>
+      <group name="NoPartyIDs" required="N">
+        <field name="PartyID" required="N"/>
+        <field name="PartyRole" required="N"/>
+      </group>
+    </message>
+    <message name="ExecutionReport" msgtype="8" msgcat="app">
+      <field name="OrderID" required="Y"/>
+      <field name="ClOrdID" required="N"/>
+      <field name="ExecType" required="Y"/>
+      <field name="OrdStatus" required="Y"/>
+      <component name="Instrument" required="Y"/>
+      <field name="Side" required="Y"/>
+    </message>
+  </messages>
+  <components>
+    <component name="Instrument">
+      <field name="Symbol" required="N"/>
+      <field name="SecurityID" required="N"/>
+    </component>
+  </components>
+  <fields>
+    <field number="6" name="AvgPx" type="PRICE"/>
+    <field number="7" name="BeginSeqNo" type="SEQNUM"/>
+    <field number="8" name="BeginString" type="STRING"/>
+    <field number="9" name="BodyLength" type="LENGTH"/>
+    <field number="10" name="CheckSum" type="STRING"/>
+    <field number="11" name="ClOrdID" type="STRING"/>
+    <field number="16" name="EndSeqNo" type="SEQNUM"/>
+    <field number="34" name="MsgSeqNum" type="SEQNUM"/>
+    <field number="35" name="MsgType" type="STRING"/>
+    <field number="37" name="OrderID" type="STRING"/>
+    <field number="38" name="OrderQty" type="QTY"/>
+    <field number="39" name="OrdStatus" type="CHAR">
+      <value enum="0" description="NEW"/>
+      <value enum="2" description="FILLED"/>
+    </field>
+    <field number="40" name="OrdType" type="CHAR">
+      <value enum="1" description="MARKET"/>
+      <value enum="2" description="LIMIT"/>
+    </field>
+    <field number="43" name="PossDupFlag" type="BOOLEAN"/>
+    <field number="44" name="Price" type="PRICE"/>
+    <field number="45" name="RefSeqNum" type="SEQNUM"/>
+    <field number="48" name="SecurityID" type="STRING"/>
+    <field number="49" name="SenderCompID" type="STRING"/>
+    <field number="52" name="SendingTime" type="UTCTIMESTAMP"/>
+    <field number="54" name="Side" type="CHAR">
+      <value enum="1" description="BUY"/>
+      <value enum="2" description="SELL"/>
+    </field>
+    <field number="55" name="Symbol" type="STRING"/>
+    <field number="56" name="TargetCompID" type="STRING"/>
+    <field number="58" name="Text" type="STRING"/>
+    <field number="60" name="TransactTime" type="UTCTIMESTAMP"/>
+    <field number="90" name="SecureDataLen" type="LENGTH"/>
+    <field number="91" name="SecureData" type="DATA"/>
+    <field number="95" name="RawDataLength" type="LENGTH"/>
+    <field number="98" name="EncryptMethod" type="INT"/>
+    <field number="108" name="HeartBtInt" type="INT"/>
+    <field number="112" name="TestReqID" type="STRING"/>
+    <field number="115" name="OnBehalfOfCompID" type="STRING"/>
+    <field number="122" name="OrigSendingTime" type="UTCTIMESTAMP"/>
+    <field number="123" name="GapFillFlag" type="BOOLEAN"/>
+    <field number="128" name="DeliverToCompID" type="STRING"/>
+    <field number="141" name="ResetSeqNumFlag" type="BOOLEAN"/>
+    <field number="150" name="ExecType" type="CHAR">
+      <value enum="0" description="NEW"/>
+      <value enum="F" description="TRADE"/>
+    </field>
+    <field number="36" name="NewSeqNo" type="SEQNUM"/>
+    <field number="447" name="PartyIDSource" type="CHAR"/>
+    <field number="448" name="PartyID" type="STRING"/>
+    <field number="452" name="PartyRole" type="INT"/>
+    <field number="453" name="NoPartyIDs" type="NUMINGROUP"/>
+    <field number="553" name="Username" type="STRING"/>
+    <field number="554" name="Password" type="STRING"/>
+    <field number="627" name="NoHops" type="NUMINGROUP"/>
+    <field number="628" name="HopCompID" type="STRING"/>
+    <field number="629" name="HopSendingTime" type="UTCTIMESTAMP"/>
+  </fields>
+</fix>

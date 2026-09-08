@@ -2,12 +2,12 @@ import {
     CloseOutlined, MinusCircleOutlined, PlusOutlined,
     SendOutlined, StarOutlined, DownOutlined, UpOutlined
 } from '@ant-design/icons';
-import { Form, Input, Button, Popover } from 'antd';
+import { Form, Input, Button, Popover, Collapse } from 'antd';
 import moment from 'moment';
 import React, { useRef } from 'react';
 import { IgnorableInput } from 'src/common/IgnorableInput/IgnorableInput';
 import { Toast } from 'src/common/Toast/Toast';
-import { FixComplexType, FixField, FixFieldValueFiller } from 'src/services/fix/FixDefs';
+import { FixComplexType, FixField, FixFieldValueFiller, HeaderOverrides, MESSAGE_LEVEL_HEADER_FIELDS, getEffectiveHeaderOverrides } from 'src/services/fix/FixDefs';
 import { BaseClientFixSession, FixMessage, FixSession } from 'src/services/fix/FixSession';
 import { GlobalServiceRegistry } from 'src/services/GlobalServiceRegistry';
 import { LM } from 'src/translations/language-manager';
@@ -15,10 +15,17 @@ import "./FixForm.scss";
 import { LogService } from 'src/services/log-management/LogService';
 
 const Mark = require("mark.js");
+const { Panel } = Collapse;
 
 const getIntlMessage = (msg: string, options?: any) => {
     return LM.getMessage(`fix_form.${msg}`, options);
 }
+
+/** Form-name namespace of the message-level header fields; body fields live under "root". */
+const HEADER_FIELD_PREFIX = "header";
+const HEADER_PANEL_KEY = "header-overrides";
+/** Text the field search must not mark: collapsed panel content and the explanatory hint. */
+const SEARCH_EXCLUDES = [".ant-collapse-content-hidden", ".ant-collapse-content-hidden *", ".header-overrides-hint", ".header-overrides-hint *"];
 
 const SaveAsForm = ({ togglePopover, onAddToFavorites, name }: {
     togglePopover: (state: boolean) => void,
@@ -79,11 +86,14 @@ interface FixFormProps {
     value?: any;
     disabled?: boolean;
     viewOnly?: boolean;
-    onSend?: (data: any) => void;
+    /** Body values, and the message-level header fields (undefined when none are set). */
+    onSend?: (data: any, headerOverrides?: HeaderOverrides) => void;
     name?: string;
     saveMode?: boolean;
     enableIgnore?: boolean;
     preferredFavName?: string;
+    /** Hides the message-level header section, e.g. for expected incoming messages. */
+    hideHeaderOverrides?: boolean;
 }
 
 interface FixFormState {
@@ -93,6 +103,7 @@ interface FixFormState {
     searchText?: string;
     markedItems: any[];
     currentMarkedIndex?: any;
+    headerPanelOpen: boolean;
 }
 
 export class FixForm extends React.Component<FixFormProps, FixFormState> {
@@ -108,13 +119,14 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
             initialized: true,
             saving: false,
             confirmVisible: false,
-            markedItems: []
+            markedItems: [],
+            headerPanelOpen: !!props.message?.getHeaderOverrides()
         }
     }
 
     componentDidUpdate(prevProp: FixFormProps) {
         if (prevProp.message !== this.props.message || prevProp.value !== this.props.value) {
-            this.setState({ initialized: false })
+            this.setState({ initialized: false, headerPanelOpen: !!this.props.message.getHeaderOverrides() })
 
             setTimeout(() => {
                 this.setState({ initialized: true })
@@ -204,20 +216,67 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
         return { ...fieldData, ...groupData, ...componentData };
     }
 
+    /**
+     * Header fields that may be set on this message (see MESSAGE_LEVEL_HEADER_FIELDS), resolved
+     * against the loaded dictionary. Never required here: an empty value means "use the profile".
+     */
+    private getMessageLevelHeaderFields = (): FixField[] => {
+        const { session } = this.props;
+        const headerFields = session.getHeaderFields();
+        const fields: FixField[] = [];
+
+        MESSAGE_LEVEL_HEADER_FIELDS.forEach(name => {
+            const headerField = headerFields.find(inst => inst.type === "field" && (inst.field as FixField).def.name === name);
+            const def = headerField ? (headerField.field as FixField).def : session.getFieldDef(name);
+            if (def) {
+                fields.push(new FixField(def, false));
+            }
+        });
+
+        return fields;
+    }
+
+    private getHeaderOverrideData = (data: any): HeaderOverrides | undefined => {
+        const raw: HeaderOverrides = {};
+        this.getMessageLevelHeaderFields().forEach(field => {
+            let value = data?.[`${HEADER_FIELD_PREFIX}__${field.def.name}__0`];
+            if (typeof value === "object" && value !== null && typeof value.toISOString === "function") {
+                value = value.toISOString();
+            }
+
+            raw[field.def.name] = value;
+        })
+
+        // Same normalisation as the encoder, so what gets saved is exactly what gets sent.
+        const effective = getEffectiveHeaderOverrides(raw);
+        return Object.keys(effective).length > 0 ? effective : undefined;
+    }
+
+    private createHeaderOverrideFormData = () => {
+        const overrides = this.props.message.getHeaderOverrides();
+        const ret: any = {};
+        this.getMessageLevelHeaderFields().forEach(field => {
+            ret[`${HEADER_FIELD_PREFIX}__${field.def.name}__0`] = this.getValue(field, overrides);
+        })
+
+        return ret;
+    }
+
     onFinished = (data: any) => {
         const { onSend } = this.props;
         const ret = this.getMessageData(data);
 
-        onSend?.(ret);
+        onSend?.(ret, this.getHeaderOverrideData(data));
     }
 
     private onAddToFavorites = (name: string) => {
         const { session, message } = this.props;
         const data = this.formRef.current?.getFieldsValue();
         const ret = this.getMessageData(data);
+        const headerOverrides = this.getHeaderOverrideData(data);
         this.setState({ saving: true })
 
-        GlobalServiceRegistry.favoriteManager.addToFavorites((session as FixSession).profile, message, name, ret).then(() => {
+        GlobalServiceRegistry.favoriteManager.addToFavorites((session as FixSession).profile, message, name, ret, headerOverrides).then(() => {
             this.setState({ saving: false })
             LogService.log('Add to favorites successful', name);
             Toast.success(getIntlMessage("msg_saving_success_title"), getIntlMessage("msg_saving_success", { name }))
@@ -334,13 +393,15 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
     private getInitialValues() {
         const { session, value } = this.props;
         const { hbInterval, password } = (session as FixSession).profile;
+        const headerValues = this.createHeaderOverrideFormData();
         if (value) {
-            return this.createFormData(value);
+            return { ...this.createFormData(value), ...headerValues };
         }
 
         return {
             root__HeartBtInt__0: hbInterval,
-            root__Password__0: password
+            root__Password__0: password,
+            ...headerValues
         };
     }
 
@@ -364,7 +425,7 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
             }
         }
 
-        return <div className="fix-field-wrapper" style={{ marginLeft: level * 10 }}>
+        return <div className="fix-field-wrapper" key={fieldName} style={{ marginLeft: level * 10 }}>
             {<Form.Item name={fieldName} label={<span>{def.name}<span className="field-number">[{def.number}]</span></span>}
                 rules={[{ required: field.required, message: 'Please input valid value!' }]} >
                 {this.getFieldRender(field, field.required, parent, fieldIterationIndex)}
@@ -421,6 +482,42 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
         </div>
     }
 
+    /**
+     * True when the search text names one of the message-level header fields, e.g. "OnBehalf".
+     * Needs a few characters so that typing the first letter of a body field does not open the panel.
+     */
+    private searchHitsHeaderField = (searchText?: string) => {
+        if (!searchText || searchText.trim().length < 3 || this.props.hideHeaderOverrides) {
+            return false;
+        }
+
+        const needle = searchText.trim().toLowerCase();
+        return this.getMessageLevelHeaderFields().some(field => field.def.name.toLowerCase().indexOf(needle) > -1);
+    }
+
+    private renderHeaderOverrides = () => {
+        const { hideHeaderOverrides, removeNonFilledFields, message } = this.props;
+        const { headerPanelOpen } = this.state;
+        if (hideHeaderOverrides) {
+            return null;
+        }
+
+        const fields = this.getMessageLevelHeaderFields();
+        const hasOverrides = !!message.getHeaderOverrides();
+        if (fields.length === 0 || (removeNonFilledFields && !hasOverrides)) {
+            return null;
+        }
+
+        // forceRender keeps the fields in the form while collapsed, so the field search can find them.
+        return <Collapse className="header-overrides" activeKey={headerPanelOpen ? [HEADER_PANEL_KEY] : []} expandIconPosition="end"
+            onChange={(keys) => this.setState({ headerPanelOpen: (Array.isArray(keys) ? keys : [keys]).indexOf(HEADER_PANEL_KEY) > -1 })}>
+            <Panel header={getIntlMessage("header_overrides")} key={HEADER_PANEL_KEY} forceRender>
+                <div className="header-overrides-hint">{getIntlMessage("header_overrides_hint")}</div>
+                {fields.map(field => this.renderField(field, 0, 0, HEADER_FIELD_PREFIX))}
+            </Panel>
+        </Collapse>
+    }
+
     private renderFormFields = (message: FixComplexType, level: number, fieldIterationIndex: number, parent: string) => {
         return message.getFieldOrder().map(inst => {
             switch (inst.type) {
@@ -447,7 +544,10 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
             <Form ref={this.searchFormRef}>
                 <Form.Item name="search">
                     <Input placeholder={getIntlMessage("search")} onChange={(e) => {
-                        this.setState({ searchText: e.target.value, markedItems: [], currentMarkedIndex: undefined }, () => {
+                        const searchText = e.target.value;
+                        // Open the header panel when the search names one of its fields, otherwise its matches stay hidden.
+                        const headerPanelOpen = this.state.headerPanelOpen || this.searchHitsHeaderField(searchText);
+                        this.setState({ searchText, markedItems: [], currentMarkedIndex: undefined, headerPanelOpen }, () => {
                             clearTimeout(this.martkUpdateTimeout);
                             const itemArray: any[] = [];
 
@@ -455,6 +555,7 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
                             this.markInstance.unmark({
                                 done: () => {
                                     this.markInstance.mark(this.state.searchText, {
+                                        exclude: SEARCH_EXCLUDES,
                                         each: (data: any) => {
                                             clearTimeout(this.martkUpdateTimeout);
                                             itemArray.push(data);
@@ -516,6 +617,7 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
             {this.renderSearchForm()}
             {initialized && <Form ref={this.formRef} layout="horizontal" initialValues={this.getInitialValues()} labelCol={{ span: 10 }} labelAlign="left" onFinish={this.onFinished}>
                 <div className="form-body" id={`search-node${name}`}>
+                    {this.renderHeaderOverrides()}
                     {this.renderFormFields(message, 0, 0, "root")}
                 </div>
                 {!viewOnly && <div className="form-footer">

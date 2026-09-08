@@ -49,6 +49,14 @@ npm run start
 
 This launches a React development server on `localhost:3000`, and starts an Electron application instance pointing to it. Make sure that port `3000` is not already occupied by some other program.
 
+**Running the tests:**
+
+```bash
+npm test
+```
+
+This runs the unit tests (vitest) under `src/**/*.test.ts`; `npm run test:watch` keeps them running while you edit.
+
 # Usage
 
 ### First start-up
@@ -144,6 +152,11 @@ Following are some noteworthy features of this form:
 
 1. If you press `Ctrl + F` you will get a search panel for searching through message fields.
 2. The form also supports auto-generated fields. In order to use this, set the value of the field to `{auto-gen}`. Currently, auto generation of values are only supported on FIX fields of type `string`, `char`, `int`, `float`, `utctimestamp`, `monthyear`, `utcdateonly`, and `utctimeonly`. For example, if a date/time field is set to auto generate, the field value would be auto populated with the date always being set to the current date.
+3. The `Header Overrides` section at the top of the form lets you set `OnBehalfOfCompID [115]` and `DeliverToCompID [128]` for that message only. A value entered here replaces the value configured in the profile's `Header Fields` (General tab); an empty field keeps the profile value. The overrides are stored with favorites and scenario input messages, and a raw message that already carries tag 115 or 128 keeps them as well.
+
+## Parameters
+
+Global parameters (`Parameters` menu) and session parameters (General tab of a session) can be referenced from any field with `{get:name}`, `{set:name}` and `{incr:name}`. `{incr:name}` appends a counter to the parameter value and increments it each time a field that references it is encoded (once per such field, per sent message). The counter is written to the working directory together with the parameter (`global_params.json` for global parameters, `profiles.json` for session parameters), so it continues where it left off after a restart. Adding a parameter again with the same name resets its counter.
 
 ## Scenario Configuration
 

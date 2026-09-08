@@ -1,5 +1,5 @@
 import { removeFalsyKeys } from "src/utils/utils";
-import { FixVersion, FixXmlNode, FixFieldDef, FixComplexType, FixField, Parameters } from "./FixDefs";
+import { FixVersion, FixXmlNode, FixFieldDef, FixComplexType, FixField, Parameters, HeaderOverrides, MESSAGE_LEVEL_HEADER_FIELDS } from "./FixDefs";
 
 const parser = require('xml-reader');
 
@@ -335,6 +335,24 @@ export class FixDefinitionParser {
         }
     }
 
+    /**
+     * Header tags are not part of a message definition, so decodeInternals drops them. The
+     * message-level header fields are returned separately so a caller that re-uses the decoded
+     * message (raw message tab) can keep them; inbound traffic ignores them.
+     */
+    private decodeMessageLevelHeaderFields(fields: string[]): HeaderOverrides | undefined {
+        const overrides: HeaderOverrides = {};
+        MESSAGE_LEVEL_HEADER_FIELDS.forEach(name => {
+            const def = this.fieldMap.get(name);
+            const tag = def ? this.getTagValue(fields, def.number) : undefined;
+            if (tag && tag.data) {
+                overrides[name] = tag.data;
+            }
+        });
+
+        return Object.keys(overrides).length > 0 ? overrides : undefined;
+    }
+
     private fillComponents(msgDef: FixComplexType, data: any) {
         const ret: any = {}
         Object.keys(data).forEach(key => {
@@ -451,7 +469,7 @@ export class FixDefinitionParser {
         return { data: this.fillComponents(msgDef, data), dataWithHeaders }
     }
 
-    decodeFixMessage(msg: string): { msg: FixComplexType, header: FixMsgHeader } | undefined {
+    decodeFixMessage(msg: string): { msg: FixComplexType, header: FixMsgHeader, headerOverrides?: HeaderOverrides } | undefined {
         const fields = msg.split(SOH);
 
         const msgType = this.getTagValue(fields, "35")?.data;
@@ -468,8 +486,8 @@ export class FixDefinitionParser {
             const def = msgDef.clone();
             (def as FixComplexType).setValue(data);
             (def as FixComplexType).setValueWithHeaders(dataWithHeaders);
-            
-            return { msg: def, header: this.decodeHeader(fields) }
+
+            return { msg: def, header: this.decodeHeader(fields), headerOverrides: this.decodeMessageLevelHeaderFields(fields) }
         }
 
         return undefined;

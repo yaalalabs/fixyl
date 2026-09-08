@@ -389,6 +389,7 @@ export class ScenarioInstance extends React.Component<ScenarioInstanceProps, Sce
                     if (activeStage) {
                         if (activeStage.msg) {
                             activeStage.msg.setValue(msg.getValue());
+                            activeStage.msg.setHeaderOverrides(msg.getHeaderOverrides());
                             this.setState({ addMsgVisible: false })
                             return
                         }

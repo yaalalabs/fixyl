@@ -172,7 +172,8 @@ export class Favorites extends React.Component<FavoritesProps, FavoritesState> {
                 <Popover title={getIntlMessage("message", { msg: msg.name })} placement="right"
                     trigger="click" overlayClassName="msg-view-wrapper"
                     content={<div className="msg-view">
-                        <ReactJson src={msg.getValue()} theme="google" style={{ backgroundColor: "transparent" }} />
+                        <ReactJson src={msg.getHeaderOverrides() ? { headerOverrides: msg.getHeaderOverrides(), ...msg.getValue() } : msg.getValue()}
+                            theme="google" style={{ backgroundColor: "transparent" }} />
                     </div>}>
                     <Tooltip title={getIntlMessage("view")}>
                         <Button className="action-btn" icon={<EyeOutlined />}></Button>
@@ -267,9 +268,10 @@ export class Favorites extends React.Component<FavoritesProps, FavoritesState> {
             >
                 <FixForm message={editMsg} session={session} name="fav" value={editMsg.getValue()} hideTitle={true}
                     removeNonFilledFields={removeNonFilledFields} preferredFavName={currentFavName}
-                    disabled={!connected} onSend={(data) => {
+                    disabled={!connected} onSend={(data, headerOverrides) => {
                         const msg = editMsg.clone();
                         msg.setValue(data);
+                        msg.setHeaderOverrides(headerOverrides);
                         session.send(msg)
                     }} />
             </Drawer>}

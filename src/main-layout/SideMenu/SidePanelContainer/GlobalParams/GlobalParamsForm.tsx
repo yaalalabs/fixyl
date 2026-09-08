@@ -4,6 +4,7 @@ import {
 } from '@ant-design/icons';
 import { Button, Popover } from 'antd';
 import React from 'react';
+import { Subscription } from 'rxjs';
 import { LM } from 'src/translations/language-manager';
 import "../../../../main-layout/SessionWindow/SessionTab/SessionManagement/ParamsForm.scss";
 import { GlobalParameterService } from "../../../../services/GlobalParameterService";
@@ -24,6 +25,7 @@ export class GlobalParamsForm extends React.Component<any, GlobalParamsFormState
     private formRef: any = React.createRef();
     private initialRenderTimer: any;
     private globalParamsManager: GlobalParameterService;
+    private updateSub?: Subscription;
 
     constructor(props: any) {
         super(props)
@@ -37,10 +39,13 @@ export class GlobalParamsForm extends React.Component<any, GlobalParamsFormState
 
     componentDidMount(): void {
         this.loadAll();
+        // Counters change while messages are sent; keep the table in sync with the persisted state.
+        this.updateSub = this.globalParamsManager.getUpdateObservable().subscribe(() => this.forceUpdate());
     }
 
     componentWillUnmount(): void {
         clearTimeout(this.initialRenderTimer)
+        this.updateSub?.unsubscribe();
     }
 
     private loadAll() {

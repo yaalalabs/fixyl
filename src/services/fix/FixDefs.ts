@@ -26,6 +26,38 @@ export const FixDataTypes = ['STRING', 'CHAR', 'PRICE', 'SEQNUM', 'LENGTH', 'AMT
 
 export const DEFAULT_HB_INTERVAL = 30;
 
+/**
+ * Header fields that can be set on an individual message in addition to the profile-level
+ * header fields. A value set on the message wins over the profile value for that message only.
+ */
+export const MESSAGE_LEVEL_HEADER_FIELDS: readonly string[] = ["OnBehalfOfCompID", "DeliverToCompID"];
+
+export type HeaderOverrides = { [fieldName: string]: any };
+
+const hasHeaderValue = (value: any) =>
+    value !== undefined && value !== null && !(typeof value === "string" && value.trim() === "");
+
+/**
+ * Keeps only the message-level header fields that carry a value. Empty (or blank) inputs fall
+ * back to the profile-level header field instead of erasing it during the merge, and names
+ * outside MESSAGE_LEVEL_HEADER_FIELDS are ignored so hand-edited favorite or scenario files
+ * cannot inject arbitrary header tags.
+ */
+export const getEffectiveHeaderOverrides = (overrides?: HeaderOverrides): HeaderOverrides => {
+    const effective: HeaderOverrides = {};
+    if (!overrides) {
+        return effective;
+    }
+
+    MESSAGE_LEVEL_HEADER_FIELDS.forEach(name => {
+        if (hasHeaderValue(overrides[name])) {
+            effective[name] = overrides[name];
+        }
+    });
+
+    return effective;
+}
+
 export enum FixFieldValueFiller {
     AUTO_GEN = "{auto-gen}",
 }
@@ -184,6 +216,8 @@ export class FixComplexType {
 
     private value: any;
     private valueWithHeaders: any;
+    /** Message-level header fields (see MESSAGE_LEVEL_HEADER_FIELDS); kept apart from the body value. */
+    private headerOverrides?: HeaderOverrides;
 
     constructor(private xmlNode: FixXmlNode, private fieldDefMap: Map<string, FixFieldDef>) {
         this.name = xmlNode.attributes.name;
@@ -224,6 +258,16 @@ export class FixComplexType {
 
     setValueWithHeaders(value: any) {
         this.valueWithHeaders = value;
+    }
+
+    /** Stores message-level header fields; entries without a value are dropped, an empty set clears them. */
+    setHeaderOverrides(overrides?: HeaderOverrides) {
+        const effective = getEffectiveHeaderOverrides(overrides);
+        this.headerOverrides = Object.keys(effective).length > 0 ? effective : undefined;
+    }
+
+    getHeaderOverrides(): HeaderOverrides | undefined {
+        return this.headerOverrides;
     }
 
     getFieldOrder(): FieldOrderEntry[] {

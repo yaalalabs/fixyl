@@ -1,7 +1,8 @@
 import { AutoComplete, Empty, Input } from 'antd';
 import React from 'react';
 import { Subscription } from 'rxjs';
-import { BaseClientFixSession, FixMessage, FixSession, FixSessionEventType } from 'src/services/fix/FixSession';
+import { HeaderOverrides } from 'src/services/fix/FixDefs';
+import { BaseClientFixSession, FixMessage, FixSessionEventType } from 'src/services/fix/FixSession';
 import { LM } from 'src/translations/language-manager';
 import { FixForm } from './FixForm';
 import './NewMessage.scss';
@@ -69,9 +70,10 @@ export class NewMessage extends React.Component<NewMessageProps, NewMessageState
         }
     }
 
-    private onSend = (data: any) => {
+    private onSend = (data: any, headerOverrides?: HeaderOverrides) => {
         const { selectedMessage } = this.state;
         selectedMessage?.setValue(data);
+        selectedMessage?.setHeaderOverrides(headerOverrides);
 
         if (selectedMessage) {
             this.setState({ sending: false });

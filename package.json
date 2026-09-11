@@ -42,7 +42,9 @@
     "electron": "electron .",
     "build": "npm run react-build && npm run electron-build",
     "react-build": "vite build",
-    "electron-build": "electron-builder"
+    "electron-build": "electron-builder",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "devDependencies": {
     "@types/react": "^18.3.3",
@@ -60,7 +62,8 @@
     "typescript": "^4.0.3",
     "typescript-eslint": "^8.0.1",
     "vite": "^6.4.1",
-    "vite-plugin-eslint2": "^5.0.1"
+    "vite-plugin-eslint2": "^5.0.1",
+    "vitest": "^5.0.0"
   },
   "optionalDependencies": {
     "iconv-corefoundation": "^1.1.7"

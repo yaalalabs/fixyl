@@ -150,7 +150,7 @@ export class NewMessageFromRaw extends React.Component<NewMessageFromRawProps, N
         }
 
         this.setState({ inProgress: true })
-        GlobalServiceRegistry.favoriteManager.addToFavorites((session as FixSession).profile, message, name, message.getValue()).then(() => {
+        GlobalServiceRegistry.favoriteManager.addToFavorites((session as FixSession).profile, message, name, message.getValue(), message.getHeaderOverrides()).then(() => {
             this.setState({ inProgress: false })
             LogService.log('Add to favorites successful', name);
             Toast.success(getIntlMessage("msg_saving_success_title"), getIntlMessage("msg_saving_success", { name }))
@@ -237,9 +237,10 @@ export class NewMessageFromRaw extends React.Component<NewMessageFromRawProps, N
                 >
                     <FixForm message={message} session={session} name="fav" value={message.getValue()} hideTitle={true}
                         removeNonFilledFields={removeNonFilledFields}
-                        disabled={!connected} onSend={(data) => {
+                        disabled={!connected} onSend={(data, headerOverrides) => {
                             const msg = message.clone();
                             msg.setValue(data);
+                            msg.setHeaderOverrides(headerOverrides);
                             session.send(msg)
                         }} />
                 </Drawer>}

@@ -4,6 +4,7 @@ import {
 } from '@ant-design/icons';
 import { Button, Popover } from 'antd';
 import React from 'react';
+import { Subscription } from 'rxjs';
 import { FixSession } from 'src/services/fix/FixSession';
 import { LM } from 'src/translations/language-manager';
 import "./ParamsForm.scss";
@@ -26,6 +27,7 @@ export class SessionParamsForm extends React.Component<SessionParamsFormProps, S
     fieldIterationIndex = 0;
     private formRef: any = React.createRef();
     private initialRenderTimer: any;
+    private sessionSub?: Subscription;
 
     constructor(props: any) {
         super(props)
@@ -38,10 +40,24 @@ export class SessionParamsForm extends React.Component<SessionParamsFormProps, S
 
     componentDidMount(): void {
         this.loadAll();
+        this.subscribeSession();
+    }
+
+    componentDidUpdate(prevProps: Readonly<SessionParamsFormProps>): void {
+        if (prevProps.session !== this.props.session) {
+            this.subscribeSession();
+        }
     }
 
     componentWillUnmount(): void {
         clearTimeout(this.initialRenderTimer)
+        this.sessionSub?.unsubscribe();
+    }
+
+    /** Counters change whenever a message is encoded; keep the table in sync with the session. */
+    private subscribeSession() {
+        this.sessionSub?.unsubscribe();
+        this.sessionSub = this.props.session.getParameterUpdateObservable().subscribe(() => this.forceUpdate());
     }
 
 

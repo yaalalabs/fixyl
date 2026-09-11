@@ -156,7 +156,9 @@
 		"msg_saving_success": "{ name } ප්‍රියතමයන් වෙත සාර්ථකව එකතු කරන ලදී",
 		"msg_saving_failed_title": "ප්‍රියතමයන් වෙත එක් කරන්න",
 		"msg_saving_failed": "දත්ත සුරැකීමේදී දෝෂයක් ඇති විය",
-		"search": "සොයන්න"
+		"search": "සොයන්න",
+		"header_overrides": "Header Overrides",
+		"header_overrides_hint": "Sent in the header of this message only. Leave a field empty to use the value from the profile header fields."
 	},
 	"fix_session": {
 		"msg_disconnect": "සැසිය විසන්ධි විය { name } : { ip }",

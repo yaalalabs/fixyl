@@ -17,7 +17,9 @@ export class FileManagementService {
   constructor() {
     this.fileApi.receive("fileManagerIn", (data: string) => {
       const inputData = JSON.parse(data) as FileResponse;
-      this.requestMap.get(inputData.requestId)?.(inputData);
+      const resolve = this.requestMap.get(inputData.requestId);
+      this.requestMap.delete(inputData.requestId);
+      resolve?.(inputData);
     });
   }
 

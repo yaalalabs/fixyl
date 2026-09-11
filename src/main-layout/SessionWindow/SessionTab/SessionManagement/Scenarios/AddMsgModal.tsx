@@ -2,7 +2,7 @@ import { LM } from "src/translations/language-manager";
 import React from "react";
 import { ModalBox } from "src/common/Modal/ModalBox";
 import "./AddMsgModal.scss";
-import { FixComplexType } from "src/services/fix/FixDefs";
+import { FixComplexType, HeaderOverrides } from "src/services/fix/FixDefs";
 import { FixForm } from "../FixForm";
 import { FixSession } from "src/services/fix/FixSession";
 import { AutoComplete, Empty, Input } from "antd";
@@ -50,10 +50,11 @@ export class AddMsgModal extends React.Component<AddMsgModalProps, AddMsgModalSt
         }
     }
 
-    private onAdd = (data: any) => {
+    private onAdd = (data: any, headerOverrides?: HeaderOverrides) => {
         const { selectedMessage } = this.state;
         if (selectedMessage) {
             selectedMessage.setValue(data);
+            selectedMessage.setHeaderOverrides(headerOverrides);
 
             const { onAdd } = this.props;
             onAdd(selectedMessage);
@@ -92,7 +93,7 @@ export class AddMsgModal extends React.Component<AddMsgModalProps, AddMsgModalSt
 
                             </Empty>
                         </div>}
-                        {selectedMessage && <FixForm enableIgnore={type === "OUT"} session={session} message={selectedMessage}
+                        {selectedMessage && <FixForm enableIgnore={type === "OUT"} hideHeaderOverrides={type === "OUT"} session={session} message={selectedMessage}
                             onSend={this.onAdd} saveMode={true} value={editMsg?.getValue()} />}
                     </div>
                 </div>

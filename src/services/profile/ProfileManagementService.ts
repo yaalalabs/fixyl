@@ -9,6 +9,8 @@ export class ProfileManagementService {
     private profiles = new Map<string, BaseProfile>();
     private profileUpdateSubject = new Subject<void>();
     private secureKeyManager = new SecureKeyManager();
+    private profilesWriteInFlight = false;
+    private profilesWriteQueued = false;
 
     constructor(private appManager: AppManagementService, private fileManager: FileManagementService) {
         this.appManager.getServiceInitObservable().subscribe((state) => {
@@ -26,7 +28,8 @@ export class ProfileManagementService {
 
     private async loadFromDevice() {
         const profileInfo = await this.loadGeneralProfileInfo();
-        profileInfo.forEach(async inst => {
+        // Wait for every profile: a save issued before the map is complete would drop profiles.
+        await Promise.all(profileInfo.map(async inst => {
             let profile: BaseProfile;
             if (inst.type !== "SERVER") {
                 const clProfile: ProfileWithCredentials = ({ ...inst, username: "", password: "" })
@@ -48,7 +51,7 @@ export class ProfileManagementService {
 
 
             this.profiles.set(profile.name, profile);
-        })
+        }));
     }
 
     private loadGeneralProfileInfo(): Promise<Profile[]> {
@@ -114,13 +117,43 @@ export class ProfileManagementService {
         return true
     }
 
+    /**
+     * Persists a session's parameters (including `{incr:}` counters) to profiles.json without
+     * re-saving credentials, without replacing the registered profile object and without notifying
+     * profile listeners. If the session holds a detached copy of the profile (the profile was
+     * edited while the session was open) only its sessionParams are carried over. Profiles that
+     * were never registered, such as those of temporary sessions, are ignored.
+     */
+    saveSessionParameters(profile: BaseProfile): boolean {
+        const registered = this.profiles.get(profile.name);
+        if (!registered || registered.type !== profile.type) {
+            return false;
+        }
+
+        if (registered !== profile) {
+            registered.sessionParams = profile.sessionParams;
+        }
+
+        this.saveAllProfilesInDevice();
+        return true;
+    }
+
     removeProfile(profile: BaseProfile) {
         this.profiles.delete(profile.name);
         this.saveAllProfilesInDevice();
         this.profileUpdateSubject.next();
     }
 
+    /**
+     * Writes profiles.json with the current profiles. Writes never overlap: a save requested while
+     * one is in flight is coalesced into a single follow-up write of the latest state.
+     */
     private saveAllProfilesInDevice() {
+        if (this.profilesWriteInFlight) {
+            this.profilesWriteQueued = true;
+            return;
+        }
+
         const data: BaseProfile[] = Array.from(this.profiles.values()).map(profile => {
             const temp = { ...profile };
             if (profile.type !== "SERVER") {
@@ -131,7 +164,21 @@ export class ProfileManagementService {
             return temp;
         })
 
-        this.fileManager.writeFile(this.appManager.getProfilesFile(), JSON.stringify(data));
+        this.profilesWriteInFlight = true;
+        this.fileManager.writeFile(this.appManager.getProfilesFile(), JSON.stringify(data))
+            .then(result => {
+                if (result && result.error) {
+                    console.error("Failed to write profiles", result.error);
+                }
+            })
+            .catch(error => console.error("Failed to write profiles", error))
+            .then(() => {
+                this.profilesWriteInFlight = false;
+                if (this.profilesWriteQueued) {
+                    this.profilesWriteQueued = false;
+                    this.saveAllProfilesInDevice();
+                }
+            });
     }
 
     private addCredentialsToDevice(name: string, credentials: { username: string, password: string, certPassword?: string }) {

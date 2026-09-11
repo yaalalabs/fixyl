@@ -7,7 +7,7 @@ import { GlobalServiceRegistry } from '../GlobalServiceRegistry';
 import { BaseProfile, Profile, ProfileWithCredentials, ServerProfile, ServerSideClientProfile } from '../profile/ProfileDefs';
 import { SocketInst, SocketSSLConfigs } from '../socket-management/SocketManagementSevice';
 import { FixDefinitionParser, FixMessageDef, FixMsgHeader } from './FixDefinitionParser';
-import { DEFAULT_HB_INTERVAL, FixComplexType, FixFieldDef, HBMonitor } from './FixDefs';
+import { DEFAULT_HB_INTERVAL, FixComplexType, FixFieldDef, HBMonitor, getEffectiveHeaderOverrides } from './FixDefs';
 import { LogService } from '../log-management/LogService';
 
 const { log } = console;
@@ -63,6 +63,7 @@ export abstract class BaseClientFixSession {
     protected connected = false;
     protected parserInitialized = false;
     protected socketDataSubject = new Subject<FixSessionEvent>();
+    protected parameterUpdateSubject = new Subject<void>();
     protected parser: FixDefinitionParser;
 
     protected txLock: Promise<any>;
@@ -79,6 +80,8 @@ export abstract class BaseClientFixSession {
     protected sequenceResetRequestEnabled = false;
     protected resendRequestEnabled = false;
     protected sessionParams: Parameters = {};
+    /** JSON of the session parameters as last persisted; lets send() skip redundant profile writes. */
+    protected sessionParamsSnapshot = JSON.stringify({});
     protected socketDataEventHistory: FixSessionEvent[] = []
 
     protected resendCache = new Map<number, { msgDef: FixComplexType, header: FixMsgHeader, parameters?: Parameters }>();
@@ -103,6 +106,7 @@ export abstract class BaseClientFixSession {
         this.sequenceResetRequestEnabled = !!this.profile.sequenceResetRequestEnabled;
         this.resendRequestEnabled = !!this.profile.resendRequestEnabled;
         this.sessionParams = this.profile.sessionParams ? this.profile.sessionParams : {};
+        this.sessionParamsSnapshot = JSON.stringify(this.sessionParams);
     }
 
     protected publishSocketEvent(event: FixSessionEvent) {
@@ -129,13 +133,42 @@ export abstract class BaseClientFixSession {
     setSessionParameter(param: string, value: any) {
         this.sessionParams[param] = { value };
         this.profile.sessionParams = this.sessionParams;
+        this.sessionParamsSnapshot = JSON.stringify(this.sessionParams);
         this.updateProfile();
+        this.parameterUpdateSubject.next();
     }
 
     removeSessionParameter(param: string) {
         delete this.sessionParams[param];
         this.profile.sessionParams = this.sessionParams;
+        this.sessionParamsSnapshot = JSON.stringify(this.sessionParams);
         this.updateProfile();
+        this.parameterUpdateSubject.next();
+    }
+
+    /** Emits whenever the session parameters change, including counters incremented by a send. */
+    getParameterUpdateObservable(): Observable<void> {
+        return this.parameterUpdateSubject.asObservable();
+    }
+
+    /**
+     * The `{incr:}` field filler increments Parameter.count on the live global and session
+     * parameter objects while a message is encoded. Write those counters to disk so they survive
+     * an application restart. Cheap no-op when nothing changed; never throws.
+     */
+    protected persistParameterCounters() {
+        try {
+            GlobalServiceRegistry.globalParamsManager.persistIfChanged();
+
+            const snapshot = JSON.stringify(this.sessionParams);
+            if (snapshot !== this.sessionParamsSnapshot) {
+                this.sessionParamsSnapshot = snapshot;
+                this.persistSessionParameters();
+                this.parameterUpdateSubject.next();
+            }
+        } catch (error) {
+            console.error("Failed to persist parameter counters", error);
+        }
     }
 
     destroy() {
@@ -210,6 +243,9 @@ export abstract class BaseClientFixSession {
 
     protected abstract updateProfile(): void;
 
+    /** Writes the session parameters (including counters) to the profile store. */
+    protected abstract persistSessionParameters(): void;
+
     getConnectedTime() {
         if (this.connectedTime) {
             return moment(this.connectedTime).format("YYYY-MM-DD HH:mm:ss.000");
@@ -278,7 +314,7 @@ export abstract class BaseClientFixSession {
             if (result) {
                 if (this.resendRequestEnabled) {
                     this.resendCache.set(this.tx, {
-                        msgDef, header,
+                        msgDef: this.snapshotMessage(msgDef), header,
                         parameters: resolvedParams ? deepCopyObject(resolvedParams) : undefined
                     });
                 }
@@ -288,8 +324,20 @@ export abstract class BaseClientFixSession {
         } catch (error) {
             throw error;
         } finally {
-            releaseLock()
+            releaseLock();
+            this.persistParameterCounters();
         }
+    }
+
+    /**
+     * Copies a message's body and header overrides. The forms keep editing the same instance
+     * between sends, so the resend cache must hold what was actually sent under a sequence number.
+     */
+    protected snapshotMessage(msgDef: FixMessageDef): FixMessageDef {
+        const snapshot = msgDef.clone();
+        snapshot.setValue(deepCopyObject(msgDef.getValue()));
+        snapshot.setHeaderOverrides(msgDef.getHeaderOverrides());
+        return snapshot;
     }
 
     protected sendInternal(header: FixMsgHeader, msgDef: FixMessageDef, parameters?: Parameters, additionalHeaders?: any): Promise<any> {
@@ -476,20 +524,33 @@ export abstract class BaseClientFixSession {
     }
 
     public encodeToFix = (header: FixMsgHeader, msgDef: FixMessageDef, parameters?: Parameters, additionalHeaders?: any): string => {
-        let newHeaders: any = {};
-        if (this.profile.headerFields) {
-            newHeaders = { ...this.profile.headerFields }
-        }
+        // Precedence, lowest to highest: profile header fields, message-level overrides,
+        // headers the session itself has to force (e.g. PossDupFlag on a resend).
+        // Deep copy: the encoder strips empty keys from the object it receives.
+        let newHeaders: any = {
+            ...deepCopyObject(this.profile.headerFields ?? {}),
+            ...getEffectiveHeaderOverrides(msgDef.getHeaderOverrides()),
+        };
 
         if (additionalHeaders) {
             newHeaders = { ...newHeaders, ...additionalHeaders }
         }
-        
+
         return this.parser.encodeToFix(msgDef, msgDef.getValue(), header, parameters, newHeaders)
     }
 
+    /**
+     * Decodes a wire message for re-use (raw message tab, message viewers). Message-level header
+     * tags found on the wire are kept as overrides so the message can be sent or saved with them.
+     */
     public decodeFixMessage = (msg: string) => {
-        return this.parser.decodeFixMessage(msg)?.msg
+        const decoded = this.parser.decodeFixMessage(msg);
+        if (!decoded) {
+            return undefined;
+        }
+
+        decoded.msg.setHeaderOverrides(decoded.headerOverrides);
+        return decoded.msg;
     }
 }
 
@@ -502,6 +563,10 @@ export class FixSession extends BaseClientFixSession {
 
     protected updateProfile() {
         GlobalServiceRegistry.profile.addOrEditProfile(this.profile);
+    }
+
+    protected persistSessionParameters() {
+        GlobalServiceRegistry.profile.saveSessionParameters(this.profile);
     }
 
     private onData(data: string) {
@@ -607,6 +672,10 @@ export class ServerSideFixClientSession extends BaseClientFixSession {
 
     protected updateProfile() {
         // GlobalServiceRegistry.profile.addOrEditProfile(this.profile);
+    }
+
+    protected persistSessionParameters() {
+        // Server side client sessions share the server profile, which is not persisted from here.
     }
 
     private onData(data: string) {

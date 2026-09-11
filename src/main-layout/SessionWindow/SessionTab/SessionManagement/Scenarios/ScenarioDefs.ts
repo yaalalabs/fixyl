@@ -1,6 +1,6 @@
 import { arrayMove } from "react-sortable-hoc";
 import { Subject, Subscription } from "rxjs";
-import { FixComplexType } from "src/services/fix/FixDefs";
+import { FixComplexType, HeaderOverrides } from "src/services/fix/FixDefs";
 import { BaseClientFixSession, FixSession, FixSessionEventType, Parameters } from "src/services/fix/FixSession";
 import { LM } from "src/translations/language-manager";
 import { CancelablePromise, makeCancelable, removeFalsyKeys } from "src/utils/utils";
@@ -276,6 +276,7 @@ export class Stage {
             const inputMsg = this.session.createNewMessageInst(structure.inputMsg.name);
             if (inputMsg) {
                 inputMsg.setValue(JSON.parse(structure.inputMsg.data));
+                inputMsg.setHeaderOverrides(structure.inputMsg.headerOverrides);
                 this.setInput(inputMsg)
             }
         }
@@ -297,7 +298,11 @@ export class Stage {
             waitTime: this.waitTime ? (this.waitTime / 1000) : undefined,
             stageWaitTime: this.stageWaitTime ? (this.stageWaitTime / 1000) : undefined,
             skipped: this.skipped,
-            inputMsg: this.inputMsg ? { name: this.inputMsg.name, data: JSON.stringify(this.inputMsg.getValue()) } : undefined,
+            inputMsg: this.inputMsg ? {
+                name: this.inputMsg.name,
+                data: JSON.stringify(this.inputMsg.getValue()),
+                headerOverrides: this.inputMsg.getHeaderOverrides()
+            } : undefined,
             outputMsgs: Array.from(this.outputMsgs.values()).map(inst => ({ name: inst.msg.name, data: JSON.stringify(inst.msg.getValue()) }))
         }
     }
@@ -372,7 +377,7 @@ export class Stage {
 
 interface SaveFileStageStructure {
     name: string, waitTime?: number, skipped: boolean, stageWaitTime?: number, waitIndefinitely?: boolean,
-    inputMsg?: { name: string, data: string }, outputMsgs: { name: string, data: string }[]
+    inputMsg?: { name: string, data: string, headerOverrides?: HeaderOverrides }, outputMsgs: { name: string, data: string }[]
 }
 interface SaveFileStructure {
     stages: SaveFileStageStructure[]

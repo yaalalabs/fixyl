@@ -31,6 +31,38 @@
         flex-grow: 1;
         padding-top: 15px;
 
+        .header-overrides {
+            margin-bottom: 15px;
+            background: var(--shade-375);
+            border: 1px solid var(--shade-300);
+
+            .ant-collapse-item {
+                border-bottom: none;
+            }
+
+            .ant-collapse-header {
+                color: var(--text-color-accent-1);
+                font-weight: 500;
+                padding: 8px 32px 8px 12px;
+            }
+
+            .ant-collapse-content {
+                background: transparent;
+                border-top: 1px solid var(--shade-300);
+                color: var(--text-color);
+            }
+
+            .ant-collapse-content-box {
+                padding: 12px 12px 0 12px;
+            }
+
+            .header-overrides-hint {
+                font-size: 11px;
+                color: var(--shade-250);
+                margin-bottom: 12px;
+            }
+        }
+
         .fix-field-wrapper {
             .field-number {
                 margin-left: 5px;

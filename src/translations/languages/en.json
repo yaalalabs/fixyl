@@ -189,7 +189,9 @@
 		"profile_saving_success": "Header fields saved successfully",
 		"profile_saving_failed_title": "Saving Header Fields",
 		"profile_saving_failed": "Error occurred while saving the data",
-		"search": "Search Field"
+		"search": "Search Field",
+		"header_overrides": "Header Overrides",
+		"header_overrides_hint": "Sent in the header of this message only. Leave a field empty to use the value from the profile header fields."
 	},
 	"field_input_wrapper": {
 		"auto_gen": "Auto generate",

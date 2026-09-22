@@ -32,9 +32,11 @@ vi.mock('src/common/Toast/Toast', () => ({ Toast: { error: vi.fn(), success: vi.
 vi.mock('src/translations/language-manager', () => ({ LM: { getMessage: (key: string) => key } }));
 vi.mock('../log-management/LogService', () => ({ LogService: { log: vi.fn(), error: vi.fn(), warn: vi.fn(), info: vi.fn(), debug: vi.fn() } }));
 
-import { FixSession } from './FixSession';
+import { FixSession, ServerSideFixClientSession } from './FixSession';
 import { GlobalServiceRegistry } from '../GlobalServiceRegistry';
 import { SOH } from './FixDefinitionParser';
+import { Subject } from 'rxjs';
+import { MINIMAL_FIX44_PATH } from 'src/test-support/testDictionary';
 
 const tagValue = (wire: string, tag: string) => wire.split(SOH).filter(Boolean).map(kv => kv.split('=')).filter(([k]) => k === tag).map(([, v]) => v);
 
@@ -256,5 +258,77 @@ describe('FixSession decode paths and resend snapshots', () => {
         expect(updates).not.toHaveBeenCalled();
         await session.send(newOrder(session, '{incr:SESS}'));
         expect(updates).toHaveBeenCalledTimes(1);
+    });
+});
+
+const createLogon = (session: FixSession | ServerSideFixClientSession) => {
+    const msg = session.createNewMessageInst('Logon')!;
+    msg.setValue({ EncryptMethod: '0', HeartBtInt: '30' });
+    return msg;
+};
+
+describe('FixSession auto-login initiator vs acceptor', () => {
+    beforeEach(() => {
+        vi.mocked(GlobalServiceRegistry.favoriteManager.getFavorite).mockReset();
+    });
+
+    it('client auto-login still sends Logon on ready', async () => {
+        const profile = { ...createProfile(), autoLoginEnabled: true, autoLoginMsg: 'MyLogon' };
+        const { session, sent } = await createSession(profile as any);
+        const loginMsg = createLogon(session);
+        vi.mocked(GlobalServiceRegistry.favoriteManager.getFavorite).mockResolvedValue(loginMsg);
+
+        (session as any).connected = true;
+        await (session as any).evaluteAndSendReady();
+        await until(() => sent.length > 0);
+
+        expect(GlobalServiceRegistry.favoriteManager.getFavorite).toHaveBeenCalledWith('MyLogon', session);
+        expect(tagValue(sent[0], '35')).toEqual(['A']);
+    });
+
+    it('server-side session waits for inbound Logon then auto-replies once', async () => {
+        const profile = {
+            name: 'server-profile', type: 'SERVER' as const, port: 9876,
+            senderCompId: 'SERVER', targetCompId: 'CLIENT',
+            dictionaryLocation: MINIMAL_FIX44_PATH, fixVersion: FixVersion.FIX_4,
+            autoLoginEnabled: true, autoLoginMsg: 'ServerLogon',
+        };
+        const socketEvents = new Subject<any>();
+        const mockSocket = {
+            write: vi.fn(),
+            end: vi.fn(),
+            getSocketEventObservable: () => socketEvents.asObservable(),
+        };
+        const session = new ServerSideFixClientSession(profile as any, mockSocket as any);
+        const sent: string[] = [];
+        (session as any).writeToSocket = async (data: string) => { sent.push(data); return true; };
+
+        await until(() => session.isReady());
+        await new Promise(resolve => setTimeout(resolve, 20));
+        expect(sent).toHaveLength(0);
+        expect(GlobalServiceRegistry.favoriteManager.getFavorite).not.toHaveBeenCalled();
+
+        const reply = createLogon(session);
+        vi.mocked(GlobalServiceRegistry.favoriteManager.getFavorite).mockResolvedValue(reply);
+
+        // Build an inbound Logon using a throwaway client session for encoding helpers.
+        const { session: encoder } = await createSession();
+        const inbound = createLogon(encoder);
+        const wire = encoder.encodeToFix(
+            { msgType: 'A', sequence: 1, time: '20260908-10:00:00.000', senderCompId: 'CLIENT', targetCompId: 'SERVER' },
+            inbound,
+        );
+
+        (session as any).onData(wire);
+        await until(() => sent.length === 1);
+
+        expect(GlobalServiceRegistry.favoriteManager.getFavorite).toHaveBeenCalledWith('ServerLogon', session);
+        expect(tagValue(sent[0], '35')).toEqual(['A']);
+
+        (session as any).onData(wire);
+        await new Promise(resolve => setTimeout(resolve, 20));
+        expect(sent).toHaveLength(1);
+
+        session.destroy();
     });
 });

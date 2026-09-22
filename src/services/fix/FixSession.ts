@@ -77,6 +77,8 @@ export abstract class BaseClientFixSession {
     protected hbEnabled = true;
     protected testRequestEnabled = true;
     protected autoLoginEnabled = false;
+    /** Prevents an acceptor session from auto-replying to more than one inbound Logon. */
+    protected logonReplySent = false;
     protected sequenceResetRequestEnabled = false;
     protected resendRequestEnabled = false;
     protected sessionParams: Parameters = {};
@@ -281,7 +283,8 @@ export abstract class BaseClientFixSession {
     protected async evaluteAndSendReady() {
         if (this.isReady()) {
             this.publishSocketEvent({ event: FixSessionEventType.READY })
-            if (this.autoLoginEnabled && this.profile.autoLoginMsg) {
+            // Initiator only: acceptors wait for an inbound Logon (see evaluateInputMessage).
+            if (this.type === "CLIENT" && this.autoLoginEnabled && this.profile.autoLoginMsg) {
                 try {
                     const loginMsg = await GlobalServiceRegistry.favoriteManager.getFavorite(this.profile.autoLoginMsg, this);
                     if (loginMsg) {
@@ -393,7 +396,12 @@ export abstract class BaseClientFixSession {
                 this.sendHB();
                 break;
             case "logon":
-                this.hbMonitor?.startHBTimer();
+                if (this.type === "SERVER_SIDE_CLIENT" && this.autoLoginEnabled && this.profile.autoLoginMsg && !this.logonReplySent) {
+                    this.logonReplySent = true;
+                    void this.sendAcceptorLogonReply();
+                } else {
+                    this.hbMonitor?.startHBTimer();
+                }
                 break;
             case "resendrequest":
                 this.onResendRequest(msg);
@@ -406,6 +414,21 @@ export abstract class BaseClientFixSession {
                 }
                 break;
 
+        }
+    }
+
+    /** Acceptor auto-login: reply to an inbound Logon with the configured favorite, then start HB. */
+    protected async sendAcceptorLogonReply() {
+        try {
+            const loginMsg = await GlobalServiceRegistry.favoriteManager.getFavorite(this.profile.autoLoginMsg, this);
+            if (loginMsg) {
+                await this.send(loginMsg);
+            }
+        } catch (error) {
+            this.logonReplySent = false;
+            console.error("Error occurred while sending acceptor auto login reply", { error });
+        } finally {
+            this.hbMonitor?.startHBTimer();
         }
     }
 
@@ -509,6 +532,7 @@ export abstract class BaseClientFixSession {
         }
         this.hbMonitor?.stopHBTimer();
         this.connected = false;
+        this.logonReplySent = false;
         this.publishSocketEvent({ event: FixSessionEventType.DISCONNECT });
         await this.socket?.end();
     }
@@ -712,6 +736,7 @@ export class ServerSideFixClientSession extends BaseClientFixSession {
     private onDisconnect() {
         log('server side client disconnected');
         this.connected = false;
+        this.logonReplySent = false;
         this.publishSocketEvent({ event: FixSessionEventType.DISCONNECT })
         Toast.error(getIntlMessage("msg_server_disconnect"))
     }

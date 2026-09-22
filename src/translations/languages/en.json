@@ -110,6 +110,7 @@
 		"enable_seq_rest_request": "Enable sequence reset requests",
 		"enable_resend_request": "Enable resend requests",
 		"enable_auto_login": "Enable auto login",
+		"enable_auto_login_reply": "Auto reply to Logon",
 		"auto_login_msg": "Preffered login message",
 		"favorites_title": "My Favorites",
 		"message": "Message: { msg }",

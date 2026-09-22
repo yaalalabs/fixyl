@@ -63,7 +63,9 @@ const AutoLoginForm = ({ onChange, session, togglePopover }: {
             <div className="form-item-container">
                 <Form.Item valuePropName="checked" name="state" rules={[{
                     required: true,
-                }]} label={getIntlMessage("enable_auto_login")}>
+                }]} label={session.getType() === "SERVER_SIDE_CLIENT"
+                    ? getIntlMessage("enable_auto_login_reply")
+                    : getIntlMessage("enable_auto_login")}>
                     <Switch />
                 </Form.Item>
                 <Form.Item name="loginMsg" rules={[{
@@ -230,13 +232,17 @@ export class GeneralInfo extends React.Component<GeneralInfoProps, GeneralInfoSt
                             this.setState({ resendRequestEnabled: checked })
                             session.enableResendRequest(checked)
                         }} />)}
-                    {this.getFieldValue(getIntlMessage("enable_auto_login"),
+                    {this.getFieldValue(session.getType() === "SERVER_SIDE_CLIENT"
+                        ? getIntlMessage("enable_auto_login_reply")
+                        : getIntlMessage("enable_auto_login"),
                         <Popover
                             content={<AutoLoginForm togglePopover={this.togglePopover} session={session} onChange={(checked, loginMsg) => {
                                 this.setState({ autoLoginEnabled: checked })
                                 session.enableAutoLogin(checked, loginMsg)
                             }} />}
-                            title={getIntlMessage("enable_auto_login").toUpperCase()}
+                            title={(session.getType() === "SERVER_SIDE_CLIENT"
+                                ? getIntlMessage("enable_auto_login_reply")
+                                : getIntlMessage("enable_auto_login")).toUpperCase()}
                             placement="top"
                             visible={autoLoginFormVisible}
                         >

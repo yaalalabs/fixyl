@@ -86,6 +86,7 @@
 		"enable_seq_rest_request": "අනුපිළිවෙල යළි පිහිටුවීමේ ඉල්ලීම් සබල කරන්න",
 		"enable_resend_request": "නැවත යැවීමේ ඉල්ලීම් සබල කරන්න",
 		"enable_auto_login": "Enable auto login",
+		"enable_auto_login_reply": "Auto reply to Logon",
 		"auto_login_msg": "Preffered login message",
 		"favorites_title": "මගේ ප්‍රියතම",
 		"message": "පණිවුඩය: { msg }",
